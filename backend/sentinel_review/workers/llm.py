@@ -12,7 +12,11 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from django.conf import settings
+from pydantic import ValidationError
 
+from sentinel_review.api.metrics import llm_errors, token_cost
+
+from .circuit_breaker import CircuitBreakerOpenError, llm_circuit_breaker
 from .schemas import SYSTEM_PROMPT, Finding, ReviewOutput, get_few_shot_examples
 
 logger = logging.getLogger(__name__)
@@ -47,62 +51,127 @@ class LLMProvider:
         """Review a diff and return structured findings."""
         raise NotImplementedError
 
+    def _review_with_retry(
+        self,
+        diff: str,
+        repo_context: str | None = None,
+        file_contents: dict[str, str] | None = None,
+    ) -> LLMResult:
+        """Call review_diff with automatic retry on validation failures.
+
+        On a malformed JSON or Pydantic validation error, retries once with
+        a corrective follow-up message showing the validation error.
+        """
+        # First attempt
+        result = self._call_api(diff, repo_context, file_contents, corrective_hint=None)
+        if result.validation_success:
+            return result
+
+        # Retry with corrective hint
+        logger.warning(
+            "LLM validation failed (attempt 1/2): %s. Retrying with corrective hint.",
+            result.error_message,
+        )
+        result = self._call_api(
+            diff, repo_context, file_contents, corrective_hint=result.error_message
+        )
+        if result.validation_success:
+            logger.info("LLM retry succeeded after corrective hint.")
+            return result
+
+        logger.error("LLM validation failed after retry: %s", result.error_message)
+        return result
+
+    def _call_api(self, diff, repo_context, file_contents, corrective_hint=None) -> LLMResult:
+        """Subclasses implement this - sends the actual API request."""
+        raise NotImplementedError
+
     @staticmethod
     def _build_prompt(
         diff: str,
         repo_context: str | None = None,
         file_contents: dict[str, str] | None = None,
+        corrective_hint: str | None = None,
     ) -> list[dict[str, Any]]:
         """Build the full prompt with system prompt, few-shot examples, and diff."""
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
+        # Add corrective hint if this is a retry
+        if corrective_hint:
+            messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        "Note: Your previous response failed validation with this error:\n"
+                        f"{corrective_hint}\n\n"
+                        "Please return ONLY valid JSON matching the required schema. "
+                        "Double-check your JSON syntax before responding."
+                    ),
+                }
+            )
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": "I understand. I will ensure my response is valid JSON matching the required schema.",
+                }
+            )
+
         # Add repo context if available
         if repo_context:
-            messages.append({
-                "role": "user",
-                "content": f"Repository context:\n{repo_context[:4000]}",
-            })
-            messages.append({
-                "role": "assistant",
-                "content": "Understood. I'll consider this context during the review.",
-            })
+            messages.append(
+                {
+                    "role": "user",
+                    "content": f"Repository context:\n{repo_context[:4000]}",
+                }
+            )
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": "Understood. I'll consider this context during the review.",
+                }
+            )
 
-        # Add file contents if available (for repo-context retrieval)
+        # Add file contents if available
         if file_contents:
             file_blob = "\n\n".join(
-                f"### {path}\n```\n{content[:5000]}\n```"
-                for path, content in file_contents.items()
+                f"### {path}\n```\n{content[:5000]}\n```" for path, content in file_contents.items()
             )
-            messages.append({
-                "role": "user",
-                "content": f"Full file contents for context:\n{file_blob[:10000]}",
-            })
-            messages.append({
-                "role": "assistant",
-                "content": "Thanks, I have the full context of the changed files.",
-            })
+            messages.append(
+                {
+                    "role": "user",
+                    "content": f"Full file contents for context:\n{file_blob[:10000]}",
+                }
+            )
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": "Thanks, I have the full context of the changed files.",
+                }
+            )
 
         # Add few-shot examples
         for example in get_few_shot_examples():
             messages.append(example)
 
         # Main diff to review
-        messages.append({
-            "role": "user",
-            "content": f"Review this pull request diff:\n\n```diff\n{diff[:30000]}\n```\n\n"
-            "Return your findings as a JSON object with a 'findings' array.",
-        })
+        messages.append(
+            {
+                "role": "user",
+                "content": (
+                    f"Review this pull request diff:\n\n```diff\n{diff[:30000]}\n```\n\n"
+                    "Return your findings as a JSON object with a 'findings' array."
+                ),
+            }
+        )
 
         return messages
 
     @staticmethod
     def _validate_and_parse(raw_output: str) -> tuple[list[Finding], bool, str]:
-        """
-        Validate and parse the LLM's JSON output against the ReviewOutput schema.
+        """Validate and parse the LLM's JSON output against the ReviewOutput schema.
 
         Returns: (findings, success, error_message)
         """
-        # Try to extract JSON from the response
         json_str = raw_output.strip()
 
         # Handle code-block wrapped JSON
@@ -114,16 +183,14 @@ class LLMProvider:
         try:
             data = json.loads(json_str)
         except json.JSONDecodeError as e:
-            error_msg = f"Failed to parse JSON from LLM output: {e}"
-            logger.error(error_msg)
-            return [], False, error_msg
+            return [], False, f"Failed to parse JSON from LLM output: {e}"
 
         try:
             review_output = ReviewOutput(**data)
-        except Exception as e:
-            error_msg = f"Pydantic validation failed: {e}"
-            logger.error(error_msg)
-            return [], False, error_msg
+        except ValidationError as e:
+            return [], False, f"Pydantic validation failed: {e}"
+        except TypeError as e:
+            return [], False, f"Type error in LLM output: {e}"
 
         return review_output.findings, True, ""
 
@@ -137,61 +204,75 @@ class AnthropicProvider(LLMProvider):
         self.api_key = settings.ANTHROPIC_API_KEY
         self.model = settings.ANTHROPIC_MODEL
 
-    def review_diff(
-        self,
-        diff: str,
-        repo_context: str | None = None,
-        file_contents: dict[str, str] | None = None,
-    ) -> LLMResult:
-        import anthropic
+    def review_diff(self, diff, repo_context=None, file_contents=None) -> LLMResult:
+        """Review a diff with automatic retry on validation failures."""
+        return self._review_with_retry(diff, repo_context, file_contents)
 
+    def _call_api(self, diff, repo_context, file_contents, corrective_hint=None) -> LLMResult:
         if not self.api_key:
             return LLMResult(
-                error_message="Anthropic API key not configured",
-                validation_success=False,
+                error_message="Anthropic API key not configured", validation_success=False
             )
 
-        messages = self._build_prompt(diff, repo_context, file_contents)
+        messages = self._build_prompt(diff, repo_context, file_contents, corrective_hint)
         system_content = messages[0]["content"]
         user_assistant_messages = messages[1:]
 
         start_time = time.time()
 
         try:
-            client = anthropic.Anthropic(api_key=self.api_key)
-            response = client.messages.create(
-                model=self.model,
-                max_tokens=4096,
-                system=system_content,
-                messages=user_assistant_messages,
+            # Use circuit breaker to protect against LLM provider outages
+            response = llm_circuit_breaker.call(
+                lambda: self._do_anthropic_call(system_content, user_assistant_messages, start_time)
             )
+            return response
 
+        except CircuitBreakerOpenError as e:
             latency_ms = int((time.time() - start_time) * 1000)
-            raw_text = response.content[0].text
-            total_tokens = response.usage.input_tokens + response.usage.output_tokens
-
-            # Validate and parse
-            findings, success, error_msg = self._validate_and_parse(raw_text)
-
-            return LLMResult(
-                findings=findings,
-                raw_output=raw_text,
-                total_tokens=total_tokens,
-                latency_ms=latency_ms,
-                provider=self.provider_name,
-                model=self.model,
-                validation_success=success,
-                error_message=error_msg,
-            )
-
+            logger.error("Circuit breaker open for Anthropic: %s", e)
+            llm_errors.labels(provider=self.provider_name).inc()
+            return LLMResult(error_message=str(e), latency_ms=latency_ms, validation_success=False)
+        except (ConnectionError, TimeoutError) as e:
+            latency_ms = int((time.time() - start_time) * 1000)
+            logger.error("Anthropic API connection error: %s", e)
+            llm_errors.labels(provider=self.provider_name).inc()
+            return LLMResult(error_message=str(e), latency_ms=latency_ms, validation_success=False)
         except Exception as e:
             latency_ms = int((time.time() - start_time) * 1000)
-            logger.error(f"Anthropic API error: {e}")
-            return LLMResult(
-                error_message=str(e),
-                latency_ms=latency_ms,
-                validation_success=False,
-            )
+            logger.error("Anthropic API error: %s", e)
+            llm_errors.labels(provider=self.provider_name).inc()
+            return LLMResult(error_message=str(e), latency_ms=latency_ms, validation_success=False)
+
+    def _do_anthropic_call(self, system_content, user_assistant_messages, start_time):
+        """Actual Anthropic API call — separated for circuit breaker wrapping."""
+        import anthropic
+
+        client = anthropic.Anthropic(api_key=self.api_key)
+        response = client.messages.create(
+            model=self.model,
+            max_tokens=4096,
+            system=system_content,
+            messages=user_assistant_messages,
+        )
+
+        latency_ms = int((time.time() - start_time) * 1000)
+        raw_text = response.content[0].text
+        total_tokens = response.usage.input_tokens + response.usage.output_tokens
+
+        token_cost.labels(provider=self.provider_name, model=self.model).inc(total_tokens)
+
+        findings, success, error_msg = self._validate_and_parse(raw_text)
+
+        return LLMResult(
+            findings=findings,
+            raw_output=raw_text,
+            total_tokens=total_tokens,
+            latency_ms=latency_ms,
+            provider=self.provider_name,
+            model=self.model,
+            validation_success=success,
+            error_message=error_msg,
+        )
 
 
 class OpenAIProvider(LLMProvider):
@@ -203,67 +284,77 @@ class OpenAIProvider(LLMProvider):
         self.api_key = settings.OPENAI_API_KEY
         self.model = settings.OPENAI_MODEL
 
-    def review_diff(
-        self,
-        diff: str,
-        repo_context: str | None = None,
-        file_contents: dict[str, str] | None = None,
-    ) -> LLMResult:
-        from openai import OpenAI
+    def review_diff(self, diff, repo_context=None, file_contents=None) -> LLMResult:
+        """Review a diff with automatic retry on validation failures."""
+        return self._review_with_retry(diff, repo_context, file_contents)
 
+    def _call_api(self, diff, repo_context, file_contents, corrective_hint=None) -> LLMResult:
         if not self.api_key:
             return LLMResult(
-                error_message="OpenAI API key not configured",
-                validation_success=False,
+                error_message="OpenAI API key not configured", validation_success=False
             )
 
-        build_messages = self._build_prompt(diff, repo_context, file_contents)
-        # For OpenAI, combine system into messages
-        openai_messages = [
-            {"role": "system", "content": build_messages[0]["content"]}
-        ]
+        build_messages = self._build_prompt(diff, repo_context, file_contents, corrective_hint)
+        openai_messages = [{"role": "system", "content": build_messages[0]["content"]}]
         for msg in build_messages[1:]:
-            openai_messages.append(
-                {"role": msg["role"], "content": msg["content"]}
-            )
+            openai_messages.append({"role": msg["role"], "content": msg["content"]})
 
         start_time = time.time()
 
         try:
-            client = OpenAI(api_key=self.api_key)
-            response = client.chat.completions.create(
-                model=self.model,
-                messages=openai_messages,
-                max_tokens=4096,
-                temperature=0.1,
+            # Use circuit breaker to protect against LLM provider outages
+            response = llm_circuit_breaker.call(
+                lambda: self._do_openai_call(openai_messages, start_time)
             )
+            return response
 
+        except CircuitBreakerOpenError as e:
             latency_ms = int((time.time() - start_time) * 1000)
-            raw_text = response.choices[0].message.content or ""
-            usage = response.usage
-            total_tokens = (usage.input_tokens + usage.output_tokens) if usage else 0
-
-            findings, success, error_msg = self._validate_and_parse(raw_text)
-
-            return LLMResult(
-                findings=findings,
-                raw_output=raw_text,
-                total_tokens=total_tokens,
-                latency_ms=latency_ms,
-                provider=self.provider_name,
-                model=self.model,
-                validation_success=success,
-                error_message=error_msg,
-            )
-
+            logger.error("Circuit breaker open for OpenAI: %s", e)
+            llm_errors.labels(provider=self.provider_name).inc()
+            return LLMResult(error_message=str(e), latency_ms=latency_ms, validation_success=False)
+        except (ConnectionError, TimeoutError) as e:
+            latency_ms = int((time.time() - start_time) * 1000)
+            logger.error("OpenAI API connection error: %s", e)
+            llm_errors.labels(provider=self.provider_name).inc()
+            return LLMResult(error_message=str(e), latency_ms=latency_ms, validation_success=False)
         except Exception as e:
             latency_ms = int((time.time() - start_time) * 1000)
-            logger.error(f"OpenAI API error: {e}")
-            return LLMResult(
-                error_message=str(e),
-                latency_ms=latency_ms,
-                validation_success=False,
-            )
+            logger.error("OpenAI API error: %s", e)
+            llm_errors.labels(provider=self.provider_name).inc()
+            return LLMResult(error_message=str(e), latency_ms=latency_ms, validation_success=False)
+
+    def _do_openai_call(self, openai_messages, start_time):
+        """Actual OpenAI API call — separated for circuit breaker wrapping."""
+        from openai import OpenAI
+
+        client = OpenAI(api_key=self.api_key)
+        response = client.chat.completions.create(
+            model=self.model,
+            messages=openai_messages,
+            max_tokens=4096,
+            temperature=0.1,
+        )
+
+        latency_ms = int((time.time() - start_time) * 1000)
+        raw_text = response.choices[0].message.content or ""
+        usage = response.usage
+        total_tokens = (usage.input_tokens + usage.output_tokens) if usage else 0
+
+        token_cost.labels(provider=self.provider_name, model=self.model).inc(total_tokens)
+
+        findings, success, error_msg = self._validate_and_parse(raw_text)
+
+        return LLMResult(
+            findings=findings,
+            raw_output=raw_text,
+            total_tokens=total_tokens,
+            latency_ms=latency_ms,
+            provider=self.provider_name,
+            model=self.model,
+            validation_success=success,
+            error_message=error_msg,
+        )
 
 
 def get_llm_provider() -> LLMProvider:

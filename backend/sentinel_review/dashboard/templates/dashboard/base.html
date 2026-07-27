@@ -4,47 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Sentinel Review{% endblock %}</title>
-    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/alpinejs@3.14.3" defer integrity="sha384-FaTt/NLFN5pEj78WmJSLETKwbxSc1PrQ13ZJmS9MhMyCmL6O1JpFpJ3rJ2d6K8F" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" integrity="sha384-6c2RwHoiZGRc5rSOKGMK8Bq6b0OVRN2C5QFp2qZz5H8XXPKB5W1F6T0DQQrx6rT" crossorigin="anonymous"></script>
+    <script
+        src="https://unpkg.com/htmx.org@1.9.12"
+        integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
+        crossorigin="anonymous"
+        onerror="console.error('HTMX failed to load — dynamic updates disabled')"></script>
+    <script
+        src="https://unpkg.com/alpinejs@3.14.3"
+        defer
+        integrity="sha384-FaTt/NLFN5pEj78WmJSLETKwbxSc1PrQ13ZJmS9MhMyCmL6O1JpFpJ3rJ2d6K8F"
+        crossorigin="anonymous"
+        onerror="document.getElementById('alpine-fallback')?.classList.remove('hidden')"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"
+        integrity="sha384-6c2RwHoiZGRc5rSOKGMK8Bq6b0OVRN2C5QFp2qZz5H8XXPKB5W1F6T0DQQrx6rT"
+        crossorigin="anonymous"
+        onerror="window.chartJsLoaded = false"></script>
     <style>
-        /* Minimal custom CSS — using utility classes via Tailwind CDN */
+        /* Custom CSS (Tailwind utility replacement — no CDN needed) */
         [x-cloak] { display: none !important; }
-        .severity-blocking { @apply border-l-4 border-red-500 bg-red-950/30; }
-        .severity-warning { @apply border-l-4 border-amber-500 bg-amber-950/30; }
-        .severity-nit { @apply border-l-4 border-sky-500 bg-sky-950/30; }
-        .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
-        .badge-blocking { @apply badge bg-red-900/50 text-red-300; }
-        .badge-warning { @apply badge bg-amber-900/50 text-amber-300; }
-        .badge-nit { @apply badge bg-sky-900/50 text-sky-300; }
-        .badge-bug { @apply badge bg-red-900/50 text-red-300; }
-        .badge-security { @apply badge bg-purple-900/50 text-purple-300; }
-        .badge-style { @apply badge bg-emerald-900/50 text-emerald-300; }
-        .badge-suggestion { @apply badge bg-blue-900/50 text-blue-300; }
+        .severity-blocking { border-left: 4px solid #ef4444; background-color: rgba(127, 29, 29, 0.3); }
+        .severity-warning { border-left: 4px solid #f59e0b; background-color: rgba(120, 53, 15, 0.3); }
+        .severity-nit { border-left: 4px solid #0ea5e9; background-color: rgba(12, 74, 110, 0.3); }
+        .badge { display: inline-flex; align-items: center; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+        .badge-blocking { background-color: rgba(127, 29, 29, 0.5); color: #fca5a5; }
+        .badge-warning { background-color: rgba(120, 53, 15, 0.5); color: #fde68a; }
+        .badge-nit { background-color: rgba(12, 74, 110, 0.5); color: #bae6fd; }
+        .badge-bug { background-color: rgba(127, 29, 29, 0.5); color: #fca5a5; }
+        .badge-security { background-color: rgba(88, 28, 135, 0.5); color: #d8b4fe; }
+        .badge-style { background-color: rgba(6, 78, 59, 0.5); color: #6ee7b7; }
+        .badge-suggestion { background-color: rgba(30, 64, 175, 0.5); color: #93c5fd; }
+        /* HTMX loading indicator */
+        .htmx-indicator { opacity: 0; transition: opacity 200ms ease-in; }
+        .htmx-request .htmx-indicator { opacity: 1; }
+        .htmx-request.htmx-indicator { opacity: 1; }
     </style>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/output.css">
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        sentinel: {
-                            50: '#eef2ff',
-                            100: '#e0e7ff',
-                            200: '#c7d2fe',
-                            300: '#a5b4fc',
-                            400: '#818cf8',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            800: '#3730a3',
-                            900: '#312e81',
-                            950: '#1e1b4b',
-                        }
-                    }
-                }
+        window.chartJsLoaded = true;
+        // Alpine.js fallback
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Alpine === 'undefined') {
+                document.getElementById('alpine-fallback')?.classList.remove('hidden');
             }
-        }
+        });
     </script>
 </head>
 <body class="h-full bg-gray-950 text-gray-100">
@@ -70,6 +73,16 @@
                 </div>
             </div>
         </nav>
+
+        <!-- Alpine.js fallback warning (hidden by default) -->
+        <div id="alpine-fallback" class="hidden bg-amber-900/50 border-b border-amber-700 px-4 py-2 text-amber-200 text-sm text-center">
+            ⚠️ Interactive features are unavailable — Alpine.js failed to load. Try refreshing the page.
+        </div>
+
+        <!-- Loading indicator for HTMX requests (shown during any hx-* request) -->
+        <div id="global-loading" class="htmx-indicator fixed top-0 left-0 right-0 z-50">
+            <div class="h-1 bg-sentinel-600 animate-pulse"></div>
+        </div>
 
         <!-- Main Content -->
         <main>

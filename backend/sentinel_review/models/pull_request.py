@@ -11,17 +11,13 @@ class PullRequest(models.Model):
         CLOSED = "closed", "Closed"
         MERGED = "merged", "Merged"
 
-    repo = models.ForeignKey(
-        Repo, on_delete=models.CASCADE, related_name="pull_requests"
-    )
+    repo = models.ForeignKey(Repo, on_delete=models.CASCADE, related_name="pull_requests")
     github_pr_number = models.IntegerField()
     title = models.CharField(max_length=500, blank=True, default="")
     author_login = models.CharField(max_length=255, blank=True, default="")
     head_sha = models.CharField(max_length=40, blank=True, default="")
     base_sha = models.CharField(max_length=40, blank=True, default="")
-    status = models.CharField(
-        max_length=10, choices=Status.choices, default=Status.OPEN
-    )
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

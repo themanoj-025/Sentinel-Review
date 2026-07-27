@@ -13,7 +13,7 @@ If you discover a security vulnerability in Sentinel Review, please report it pr
 
 **Do not** open a public GitHub issue for security vulnerabilities.
 
-Instead, send a detailed report to **security@example.com** (replace with your actual security contact). Please include:
+Instead, send a detailed report to **security@sentinel-review.dev**. Please include:
 
 - Description of the vulnerability
 - Steps to reproduce

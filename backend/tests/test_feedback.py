@@ -8,6 +8,7 @@ Covers:
 - Duplicate reactions are skipped (get_or_create)
 - compute_usefulness_rate returns correct stats
 """
+
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
@@ -121,17 +122,18 @@ class TestProcessReaction:
         from sentinel_review.models.repo import Repo
         from sentinel_review.models.review import Review
 
-        inst = Installation.objects.create(
-            github_installation_id=9999, account_login="orphan"
-        )
-        repo = Repo.objects.create(
-            installation=inst, github_repo_id=999, full_name="orphan/repo"
-        )
+        inst = Installation.objects.create(github_installation_id=9999, account_login="orphan")
+        repo = Repo.objects.create(installation=inst, github_repo_id=999, full_name="orphan/repo")
         pr = PullRequest.objects.create(repo=repo, github_pr_number=1)
         review = Review.objects.create(pull_request=pr)
         comment = Comment.objects.create(
-            review=review, github_comment_id=7777, file_path="x.py",
-            line_number=1, category="bug", severity="warning", content="Test",
+            review=review,
+            github_comment_id=7777,
+            file_path="x.py",
+            line_number=1,
+            category="bug",
+            severity="warning",
+            content="Test",
         )
 
         result = process_reaction(

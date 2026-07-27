@@ -9,6 +9,7 @@ Covers:
 - merge_with_llm_findings adds unmatched semgrep findings
 - Error handling for timeouts and exceptions
 """
+
 from __future__ import annotations
 
 import pytest

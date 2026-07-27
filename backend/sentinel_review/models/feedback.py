@@ -10,9 +10,7 @@ class Feedback(models.Model):
         THUMBS_UP = "thumbs_up", "👍 Thumbs Up"
         THUMBS_DOWN = "thumbs_down", "👎 Thumbs Down"
 
-    comment = models.ForeignKey(
-        Comment, on_delete=models.CASCADE, related_name="feedback"
-    )
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="feedback")
     reaction = models.CharField(max_length=20, choices=Reaction.choices)
     reactor_login = models.CharField(max_length=255, blank=True, default="")
     github_reaction_id = models.BigIntegerField(null=True, blank=True)
@@ -25,6 +23,7 @@ class Feedback(models.Model):
         indexes = [
             models.Index(fields=["comment"]),
             models.Index(fields=["reaction"]),
+            models.Index(fields=["comment", "reaction"]),
         ]
         constraints = [
             models.UniqueConstraint(

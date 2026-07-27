@@ -11,6 +11,7 @@ Covers:
 - Review comment events enqueue feedback tasks
 - Celery task is called with correct arguments (eager mode)
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -32,9 +33,7 @@ WH_SETTING = override_settings(WEBHOOK_SECRET=TEST_SECRET)
 
 def _sign_payload(payload: bytes, secret: str = TEST_SECRET) -> str:
     """Compute HMAC-SHA256 signature for a payload."""
-    digest = hmac.new(
-        secret.encode("utf-8"), msg=payload, digestmod=hashlib.sha256
-    ).hexdigest()
+    digest = hmac.new(secret.encode("utf-8"), msg=payload, digestmod=hashlib.sha256).hexdigest()
     return f"sha256={digest}"
 
 
@@ -101,7 +100,7 @@ class TestWebhookSignatureRejection:
             content_type="application/json",
             HTTP_X_HUB_SIGNATURE_256=sig,
             HTTP_X_GITHUB_EVENT="pull_request",
-            HTTP_X_GITHUB_DELIVERY="test-delivery",
+            HTTP_X_GITHUB_DELIVERY="test-valid-signature",
         )
         assert response.status_code in (200, 202)
 
@@ -126,12 +125,14 @@ class TestWebhookEventHandling:
     @WH_SETTING
     def test_pr_unsupported_action_returns_200(self, client: Client):
         """PR events with unsupported actions (closed) should return 200."""
-        payload = json.dumps({
-            "action": "closed",
-            "pull_request": {"number": 1},
-            "repository": {"id": 1, "full_name": "a/b", "owner": {"login": "a"}},
-            "installation": {"id": 1},
-        })
+        payload = json.dumps(
+            {
+                "action": "closed",
+                "pull_request": {"number": 1},
+                "repository": {"id": 1, "full_name": "a/b", "owner": {"login": "a"}},
+                "installation": {"id": 1},
+            }
+        )
         sig = _sign_payload(payload.encode())
         response = client.post(
             WEBHOOK_URL,
@@ -145,11 +146,13 @@ class TestWebhookEventHandling:
     @override_settings(WEBHOOK_SECRET=TEST_SECRET, CELERY_TASK_ALWAYS_EAGER=True)
     def test_review_comment_event_returns_202(self, client: Client):
         """Review comment events should be acknowledged."""
-        payload = json.dumps({
-            "action": "created",
-            "comment": {"id": 3001},
-            "repository": {"full_name": "testowner/testrepo"},
-        })
+        payload = json.dumps(
+            {
+                "action": "created",
+                "comment": {"id": 3001},
+                "repository": {"full_name": "testowner/testrepo"},
+            }
+        )
         sig = _sign_payload(payload.encode())
         response = client.post(
             WEBHOOK_URL,
@@ -188,16 +191,14 @@ class TestWebhookJobEnqueueing:
         payload_bytes = json.dumps(webhook_payload).encode("utf-8")
         sig = _sign_payload(payload_bytes)
 
-        with patch(
-            "sentinel_review.workers.review_worker.review_pull_request.delay"
-        ) as mock_task:
+        with patch("sentinel_review.workers.review_worker.review_pull_request.delay") as mock_task:
             response = client.post(
                 WEBHOOK_URL,
                 data=payload_bytes,
                 content_type="application/json",
                 HTTP_X_HUB_SIGNATURE_256=sig,
                 HTTP_X_GITHUB_EVENT="pull_request",
-                HTTP_X_GITHUB_DELIVERY="test-delivery",
+                HTTP_X_GITHUB_DELIVERY="test-enqueue-pr",
             )
             assert response.status_code == 202
             mock_task.assert_called_once()
@@ -217,9 +218,7 @@ class TestWebhookJobEnqueueing:
         payload_bytes = json.dumps(webhook_payload).encode("utf-8")
         sig = _sign_payload(payload_bytes)
 
-        with patch(
-            "sentinel_review.workers.review_worker.review_pull_request.delay"
-        ) as mock_task:
+        with patch("sentinel_review.workers.review_worker.review_pull_request.delay") as mock_task:
             response = client.post(
                 WEBHOOK_URL,
                 data=payload_bytes,

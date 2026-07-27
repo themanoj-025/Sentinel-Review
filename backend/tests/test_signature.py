@@ -9,6 +9,7 @@ Covers:
 - Empty webhook secret disables verification (dev mode)
 - Invalid header format rejected
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -74,10 +75,19 @@ class TestVerifySignature:
 
     @WEBHOOK_SECRET_SETTING
     def test_no_webhook_secret_dev_mode(self, monkeypatch):
-        """With no webhook secret configured, verification should be skipped (dev mode)."""
+        """With no webhook secret in DEBUG mode, verification should be skipped."""
         monkeypatch.setattr("django.conf.settings.WEBHOOK_SECRET", "")
+        monkeypatch.setattr("django.conf.settings.DEBUG", True)
         payload = b'{"action": "opened"}'
         assert verify_signature(payload, None) is True
+
+    @WEBHOOK_SECRET_SETTING
+    def test_no_webhook_secret_production_rejected(self, monkeypatch):
+        """With no webhook secret in production (DEBUG=False), verification should fail."""
+        monkeypatch.setattr("django.conf.settings.WEBHOOK_SECRET", "")
+        monkeypatch.setattr("django.conf.settings.DEBUG", False)
+        payload = b'{"action": "opened"}'
+        assert verify_signature(payload, None) is False
 
     @WEBHOOK_SECRET_SETTING
     def test_constant_time_comparison(self):
@@ -108,8 +118,6 @@ class TestVerifySignature:
         """Test with a known computed signature value."""
         payload = b"test-payload"
         # Compute the expected signature manually
-        expected_digest = hmac.new(
-            TEST_SECRET, msg=payload, digestmod=hashlib.sha256
-        ).hexdigest()
+        expected_digest = hmac.new(TEST_SECRET, msg=payload, digestmod=hashlib.sha256).hexdigest()
         sig = f"sha256={expected_digest}"
         assert verify_signature(payload, sig) is True

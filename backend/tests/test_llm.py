@@ -10,6 +10,7 @@ Covers:
 - Error state handling
 - get_llm_provider factory function
 """
+
 from __future__ import annotations
 
 import json
@@ -79,18 +80,20 @@ class TestLLMProviderBase:
 
     def test_validate_and_parse_valid_json(self):
         """_validate_and_parse should accept valid ReviewOutput JSON."""
-        raw = json.dumps({
-            "findings": [
-                {
-                    "file_path": "app.py",
-                    "line_number": 2,
-                    "category": "security",
-                    "severity": "blocking",
-                    "comment": "SQL injection.",
-                    "suggested_fix": None,
-                }
-            ]
-        })
+        raw = json.dumps(
+            {
+                "findings": [
+                    {
+                        "file_path": "app.py",
+                        "line_number": 2,
+                        "category": "security",
+                        "severity": "blocking",
+                        "comment": "SQL injection.",
+                        "suggested_fix": None,
+                    }
+                ]
+            }
+        )
         findings, success, error = LLMProvider._validate_and_parse(raw)
         assert success is True
         assert error == ""

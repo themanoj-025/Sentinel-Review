@@ -65,7 +65,7 @@ When a developer opens this PR (or pushes to it), the following happens:
 GitHub sends POST /webhooks/github
   Event: pull_request
   Action: opened
-  Repository: yourusername/sentinel-review
+  Repository: sentinel-review/sentinel-review
   PR Number: 42
 ```
 
@@ -153,7 +153,7 @@ function addition with proper docstrings).
 GitHub API call:
 
 ```
-POST /repos/yourusername/sentinel-review/pulls/42/reviews
+POST /repos/sentinel-review/sentinel-review/pulls/42/reviews
 ```
 
 The posted comment appears as an inline review on line 83 of the diff:

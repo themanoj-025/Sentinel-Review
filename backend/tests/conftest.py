@@ -4,6 +4,7 @@ Shared pytest fixtures for Sentinel Review tests.
 NOTE: All Django model imports happen inside fixture functions
 (to avoid AppRegistryNotReady during test collection).
 """
+
 from __future__ import annotations
 
 import json
@@ -41,26 +42,28 @@ index 111aaa..222bbb 100644
 +    return first_name + ' ' + last_name
 """
 
-SAMPLE_LLM_RESPONSE = json.dumps({
-    "findings": [
-        {
-            "file_path": "app.py",
-            "line_number": 2,
-            "category": "security",
-            "severity": "blocking",
-            "comment": "SQL injection vulnerability — user input is interpolated directly into query string.",
-            "suggested_fix": "Use parameterized queries: `cursor.execute('SELECT * FROM users WHERE email = %s', (email,))`",
-        },
-        {
-            "file_path": "app.py",
-            "line_number": 8,
-            "category": "security",
-            "severity": "blocking",
-            "comment": "SQL injection via string concatenation — never trust str(user_id).",
-            "suggested_fix": "Use parameterized queries with placeholders.",
-        },
-    ]
-})
+SAMPLE_LLM_RESPONSE = json.dumps(
+    {
+        "findings": [
+            {
+                "file_path": "app.py",
+                "line_number": 2,
+                "category": "security",
+                "severity": "blocking",
+                "comment": "SQL injection vulnerability — user input is interpolated directly into query string.",
+                "suggested_fix": "Use parameterized queries: `cursor.execute('SELECT * FROM users WHERE email = %s', (email,))`",
+            },
+            {
+                "file_path": "app.py",
+                "line_number": 8,
+                "category": "security",
+                "severity": "blocking",
+                "comment": "SQL injection via string concatenation — never trust str(user_id).",
+                "suggested_fix": "Use parameterized queries with placeholders.",
+            },
+        ]
+    }
+)
 
 SAMPLE_DIFF_WITH_CONTRIBUTING = """diff --git a/app.py b/app.py
 index 111aaa..222bbb 100644
@@ -133,31 +136,37 @@ def webhook_payload() -> dict[str, Any]:
 
 def _get_installation_model():
     from sentinel_review.models.installation import Installation
+
     return Installation
 
 
 def _get_repo_model():
     from sentinel_review.models.repo import Repo
+
     return Repo
 
 
 def _get_pull_request_model():
     from sentinel_review.models.pull_request import PullRequest
+
     return PullRequest
 
 
 def _get_review_model():
     from sentinel_review.models.review import Review
+
     return Review
 
 
 def _get_comment_model():
     from sentinel_review.models.comment import Comment
+
     return Comment
 
 
 def _get_feedback_model():
     from sentinel_review.models.feedback import Feedback
+
     return Feedback
 
 
@@ -266,3 +275,11 @@ def db_feedback(db_comments, db) -> list:  # type: ignore[no-untyped-def]
         reactor_login="reviewer1",
     )
     return [f1, f2, f3]
+
+
+@pytest.fixture
+def seeded_db(db_repo, db_pull_request, db_review, db_comments) -> tuple:  # type: ignore[no-untyped-def]
+    """Convenience fixture: returns (repo, pr, review) for view tests.
+    Also creates comments and feedback via db_comments.
+    """
+    return (db_repo, db_pull_request, db_review)

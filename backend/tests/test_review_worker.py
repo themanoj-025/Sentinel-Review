@@ -10,6 +10,7 @@ Covers:
 - Error handling at each stage
 - Completion and failure state recording
 """
+
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
@@ -19,12 +20,12 @@ from sentinel_review.models.comment import Comment
 from sentinel_review.models.repo import Repo
 from sentinel_review.models.review import Review
 from sentinel_review.workers.github_client import GitHubRepoContext
-from sentinel_review.workers.review_worker import (
+from sentinel_review.workers.pipeline import (
     _build_context_str,
     _deduplicate,
     _parse_changed_files,
-    review_pull_request,
 )
+from sentinel_review.workers.review_worker import review_pull_request
 
 # ─── Unit Tests: Helper Functions ───────────────────────────────────────
 
@@ -207,7 +208,7 @@ class TestReviewPullRequestTask:
     """Tests for the full review_pull_request Celery task with mocked deps."""
 
     @SETTINGS
-    @patch("sentinel_review.workers.review_worker.GitHubClient")
+    @patch("sentinel_review.workers.pipeline.GitHubClient")
     def test_private_repo_skipped(self, mock_github_client, db_installation, db):
         """Private repos without opt-in should be skipped."""
         Repo.objects.create(
@@ -229,8 +230,8 @@ class TestReviewPullRequestTask:
         assert "private_repo_not_opted_in" in result["reason"]
 
     @SETTINGS
-    @patch("sentinel_review.workers.review_worker.GitHubClient")
-    @patch("sentinel_review.workers.review_worker.get_llm_provider")
+    @patch("sentinel_review.workers.pipeline.GitHubClient")
+    @patch("sentinel_review.workers.pipeline.get_llm_provider")
     def test_github_error_propagates(self, mock_get_llm, mock_github_client, db):
         """An error in the review pipeline should be caught."""
         # Setup: mock GitHub client to succeed, mock LLM to fail
@@ -241,7 +242,6 @@ class TestReviewPullRequestTask:
         )
         mock_client.get_file_content.return_value = None
         mock_github_client.return_value = mock_client
-
 
         mock_provider = MagicMock()
         mock_provider.review_diff.side_effect = Exception("LLM API unavailable")
@@ -257,8 +257,8 @@ class TestReviewPullRequestTask:
         assert result["status"] == "error"
 
     @SETTINGS
-    @patch("sentinel_review.workers.review_worker.GitHubClient")
-    @patch("sentinel_review.workers.review_worker.get_llm_provider")
+    @patch("sentinel_review.workers.pipeline.GitHubClient")
+    @patch("sentinel_review.workers.pipeline.get_llm_provider")
     def test_full_pipeline(
         self,
         mock_get_llm,
@@ -341,8 +341,8 @@ class TestReviewPullRequestTask:
         assert review.token_cost == 500
 
     @SETTINGS
-    @patch("sentinel_review.workers.review_worker.GitHubClient")
-    @patch("sentinel_review.workers.review_worker.get_llm_provider")
+    @patch("sentinel_review.workers.pipeline.GitHubClient")
+    @patch("sentinel_review.workers.pipeline.get_llm_provider")
     def test_no_findings_posts_clean_review(
         self, mock_get_llm, mock_github_client, db_installation, db, sample_diff_safe: str
     ):
@@ -380,7 +380,7 @@ class TestReviewPullRequestTask:
         assert "No issues found" in call_kwargs.get("review_body", "")
 
     @SETTINGS
-    @patch("sentinel_review.workers.review_worker.GitHubClient")
+    @patch("sentinel_review.workers.pipeline.GitHubClient")
     def test_github_error_handled(self, mock_github_client, db_installation, db):
         """A GitHub API error should be recorded as failed."""
         mock_client = MagicMock()

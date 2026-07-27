@@ -20,8 +20,13 @@ class RepoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Repo
         fields = [
-            "id", "installation", "github_repo_id", "full_name",
-            "is_private", "config", "created_at",
+            "id",
+            "installation",
+            "github_repo_id",
+            "full_name",
+            "is_private",
+            "config",
+            "created_at",
         ]
 
 
@@ -31,8 +36,13 @@ class PullRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = PullRequest
         fields = [
-            "id", "repo", "github_pr_number", "title",
-            "author_login", "status", "created_at",
+            "id",
+            "repo",
+            "github_pr_number",
+            "title",
+            "author_login",
+            "status",
+            "created_at",
         ]
 
 
@@ -43,9 +53,18 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = [
-            "id", "review", "github_comment_id", "file_path",
-            "line_number", "category", "severity", "content",
-            "suggested_fix", "created_at", "upvotes", "downvotes",
+            "id",
+            "review",
+            "github_comment_id",
+            "file_path",
+            "line_number",
+            "category",
+            "severity",
+            "content",
+            "suggested_fix",
+            "created_at",
+            "upvotes",
+            "downvotes",
         ]
 
     def get_upvotes(self, obj) -> int:
@@ -62,10 +81,17 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = [
-            "id", "pull_request", "github_review_id",
-            "triggered_by", "status", "latency_ms",
-            "token_cost", "findings_count", "error_message",
-            "created_at", "comments",
+            "id",
+            "pull_request",
+            "github_review_id",
+            "triggered_by",
+            "status",
+            "latency_ms",
+            "token_cost",
+            "findings_count",
+            "error_message",
+            "created_at",
+            "comments",
         ]
 
 
@@ -77,6 +103,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
 class RepoConfigSerializer(serializers.Serializer):
     """Serializer for updating repo configuration."""
+
     enabled_categories = serializers.ListField(
         child=serializers.ChoiceField(choices=["bug", "style", "security", "suggestion"]),
         required=False,

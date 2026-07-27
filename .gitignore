@@ -74,6 +74,13 @@ data/*.json
 celerybeat-schedule*
 celerybeat.pid
 
+# ── Lint & Tool Caches ─────────────────────────────────────────────
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
 # ── Coverage & Reports ──────────────────────────────────────────────
 htmlcov/
 .coverage
@@ -89,9 +96,6 @@ reports/
 
 # ── Pytest ──────────────────────────────────────────────────────────
 .pytest_cache/
-.pytest_cache/
-test-results/
-__pycache__/
 
 # ── Static / Node (if any) ──────────────────────────────────────────
 node_modules/
@@ -99,24 +103,6 @@ package-lock.json
 yarn.lock
 *.js.map
 assets/webpack/
-
-# ── OS ──────────────────────────────────────────────────────────────
-.DS_Store
-.DS_Store?
-.AppleDouble
-.LSOverride
-Icon
-._*
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# ── MyPy & Type Checking ──────────────────────────────────────────
-.mypy_cache/
-.dmypy.json
-dmypy.json
-.pytype/
 
 # ── Sphinx / Docs builds ───────────────────────────────────────────
 docs/_build/

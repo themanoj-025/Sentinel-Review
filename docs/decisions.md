@@ -1,6 +1,7 @@
 # Sentinel Review — Architectural Decisions
 
 > *Record of key architectural decisions, their rationale, and alternatives considered.*
+> *Last updated: 2026-07-27 (6 new ADRs added during remediation)*
 
 ---
 
@@ -37,7 +38,7 @@
 **Decision:** Use Celery with Redis as both broker and result backend.
 
 **Rationale:**
-- Mature, well-documented task queue with Django integration (`django-celery-results`)
+- Mature, well-documented task queue with Django integration
 - Redis-as-broker is fast (sub-millisecond enqueue), matching the "fast receiver, slow worker" pattern
 - Task routing allows dedicated queues: `reviews` for LLM work, `feedback` for reaction polling
 - Flower provides a web-based monitoring UI out of the box
@@ -53,19 +54,14 @@
 
 **Status:** Accepted (2026-07-27)
 
-**Context:** The frontend must be Python-based — no React/Next.js/Vue. Some interactivity (toggling panels, inline config editing, live status) is needed.
+**Context:** The frontend must be Python-based — no React/Next.js/Vue. Some interactivity is needed.
 
 **Decision:** Use Django Templates + HTMX + Alpine.js.
 
 **Rationale:**
 - HTMX allows server-rendered HTML with partial page updates — no client-side state/data-fetching
 - Alpine.js (~15KB, no build step) handles tiny UI affordances like toggling a config panel
-- Tailwind CSS is NOT bundled — plain CSS with CSS variables keeps the Node dependency to zero
-
-**What counts as "Python-based under the hood":**
-- All state and data logic lives on the server (Django views)
-- HTMX is purely a hypermedia exchange mechanism
-- Alpine.js is used only for UI chrome (show/hide panels), never for data fetching
+- Tailwind CSS via compiled build (no CDN, no Node runtime at container runtime)
 
 ---
 
@@ -79,13 +75,8 @@
 
 **Rationale:**
 - Pydantic provides automatic type coercion and descriptive validation errors
-- Failed validations trigger a retry with error-correction prompt before dropping the chunk
+- Failed validations trigger a corrective retry before dropping the chunk
 - Schema doubles as documentation for the LLM prompt
-- Validation is deterministic code — LLM-untrusted
-
-**Consequences:**
-- LLM calls are wrapped in `try/except` with a retry mechanism
-- On retry failure, the chunk's findings are dropped and logged (never partially posted)
 
 ---
 
@@ -101,28 +92,21 @@
 - Semgrep is language-aware, rule-based, and deterministic — no false positives from hallucination
 - When LLM and Semgrep agree on a finding, it's marked as "high confidence"
 - Semgrep is optional — if not installed, the worker continues without it
-- Provides security-specific coverage (injection, hardcoded secrets, unsafe deserialization)
-
-**Consequences:**
-- Requires Semgrep CLI to be installed in the Docker image or worker environment
-- Adds ~.5-2s analysis time per file
-- Findings are merged via `merge_with_llm_findings()` which prevents duplicates
 
 ---
 
 ## ADR-6: HMAC-SHA256 for Webhook Verification
 
-**Status:** Accepted (2026-07-27)
+**Status:** Accepted (2026-07-27, updated 2026-07-27)
 
 **Context:** GitHub sends webhooks to a public endpoint. Requests could be spoofed.
 
-**Decision:** Verify every webhook using HMAC-SHA256 with constant-time comparison.
+**Decision:** Verify every webhook using HMAC-SHA256 with constant-time comparison. Production fails to start if `WEBHOOK_SECRET` is unset.
 
 **Rationale:**
 - GitHub signs every webhook with the shared secret using HMAC-SHA256
 - `hmac.compare_digest()` prevents timing attacks
-- Verification happens before any other processing (first gate)
-- Development mode: empty secret disables verification for local testing
+- **Updated:** Missing secret in production now raises `ImproperlyConfigured` (previously returned `True` — a security hole)
 
 ---
 
@@ -135,10 +119,8 @@
 **Decision:** Use GitHub App authentication: JWT → installation access token.
 
 **Rationale:**
-- GitHub Apps authenticate as the app itself (JWT), then impersonate installations for repo access
 - Installation tokens expire after 1 hour (short-lived, not persisted)
 - Tokens are cached in-memory and auto-refreshed before expiry
-- Private key never touches the repository — loaded from env/secrets manager
 
 ---
 
@@ -146,15 +128,9 @@
 
 **Status:** Accepted (2026-07-27)
 
-**Context:** Local development should not require a PostgreSQL server. Production needs full reliability.
+**Context:** Local development should not require a PostgreSQL server.
 
 **Decision:** Use `dj-database-url` with SQLite fallback; docker-compose provides PostgreSQL.
-
-**Rationale:**
-- Django's ORM abstracts the database layer — most dev work doesn't need PostgreSQL features
-- `psycopg[binary]` is installed for production while `sqlite3` is used for quick local testing
-- docker-compose always starts a PostgreSQL 16 container for the CI-matching environment
-- Schema migrations are tested against Postgres in CI
 
 ---
 
@@ -166,36 +142,23 @@
 
 **Decision:** Add a `private_repo_opt_in` boolean field in `Repo.config`, defaulting to `false`.
 
-**Rationale:**
-- The worker checks this flag BEFORE sending any data to the LLM or Semgrep
-- GitHub App permissions request only `contents: read` and `pull_requests: read/write`
-- The flag is toggleable via the dashboard or API — no code changes needed
-- This is a deterministic code check, not a prompt-level instruction
-
 ---
 
 ## ADR-10: Single Django App Layout
 
 **Status:** Accepted (2026-07-27)
 
-**Context:** The project has clear functional boundaries (webhooks, workers, API, dashboard, models).
+**Context:** The project has clear functional boundaries.
 
 **Decision:** Use a single Django project with logical sub-packages rather than multiple Django apps.
 
-**Rationale:**
-- All components share the same database and settings — no need for app isolation
-- Sub-packages (`models/`, `webhooks/`, `workers/`, `dashboard/`, `api/`) provide clear separation
-- Reduces migration complexity (single set of migrations)
-- Follows Django's "reusable app" conventions while keeping everything in one deployable unit
-
-**Sub-package structure:**
 ```
 sentinel_review/
-├── models/          # Database models (installation, repo, pr, review, comment, feedback)
-├── webhooks/        # GitHub webhook receiver (views, signature verification)
-├── workers/         # Celery tasks (review, feedback, LLM provider, GitHub client, Semgrep)
-├── dashboard/       # Server-rendered dashboard (views, templates, urls)
-└── api/             # DRF API endpoints (views, serializers, urls)
+├── models/          # Database models
+├── webhooks/        # GitHub webhook receiver
+├── workers/         # Celery tasks, pipeline, LLM, GitHub client
+├── dashboard/       # Server-rendered dashboard
+└── api/             # DRF REST API (v1 endpoints)
 ```
 
 ---
@@ -208,53 +171,27 @@ sentinel_review/
 
 **Decision:** Use `sentinel-review` as the repo/package slug.
 
-**Rationale:**
-- "Sentinel" = "always-watching, trustworthy guardian" — fits the PR-review agent concept
-- No collision with CodeRabbit, Greptile, or Copilot for PRs
-- Reads well as a GitHub App display name
-- Double-s as good CLI/binary naming (`sentinelctl`)
-
-**Fallback order (if slug is taken):** `sentinelreview-ai` → `patchsentry` → `diffsage`
-
 ---
 
 ## ADR-12: No JavaScript Frontend Framework
 
 **Status:** Accepted (2026-07-27)
 
-**Context:** The dashboard must be Python-rendered. A React/Vue/Svelte build step is explicitly disallowed.
+**Context:** The dashboard must be Python-rendered.
 
-**Decision:** Zero Node.js dependencies in the project. No `package.json`, no webpack/vite, no JS framework.
-
-**Rationale:**
-- The requirement explicitly states "Python-based frontend"
-- All HTML is rendered server-side via Django Templates
-- HTMX handles dynamic updates (partial page replacements via `HX-Request` headers)
-- Alpine.js handles local UI state (toggle panels, form interactions)
-- Tailwind CSS is loaded via CDN `<script>` tag — no build step, no PostCSS, no `tailwind.config.js` file
-- The only JS library is Chart.js (via `<script>` tag) for dashboard charts — documented as the sole exception
+**Decision:** Zero Node.js dependencies. Tailwind via compiled build step in Docker.
 
 ---
 
 ## ADR-13: Log Redaction for Secrets in Logs
 
-**Status:** Accepted (2026-07-27)
+**Status:** Accepted (2026-07-27, updated 2026-07-27)
 
-**Context:** Logger statements in the codebase may accidentally include API keys, tokens, passwords, or other secrets in log output. This is a compliance and security risk.
+**Context:** Logger statements may accidentally include API keys, tokens, or passwords in log output.
 
-**Decision:** Implement a server-side `logging.Filter` subclass that redacts sensitive patterns before log records reach the console handler.
+**Decision:** Implement a server-side `logging.Filter` subclass that redacts sensitive patterns.
 
-**Rationale:**
-- `logging.Filter` is the idiomatic Django/Python approach — no monkey-patching, no middleware
-- Runs on every log record regardless of logger, including third-party libraries
-- Patterns are regex-based, ordered by specificity to minimize false positives
-- Covers: Anthropic keys (`sk-ant-...`), OpenAI keys, private key PEM blocks, GitHub tokens, Bearer tokens, password assignments, JWT tokens, DB connection strings
-- Registered in `settings.py` as a handler-level filter on the `console` handler
-
-**Alternatives considered:**
-- **Custom logging formatter:** Would require subclassing every formatter
-- **Middleware-level redaction:** Too broad — would redact responses, not just logs
-- **Manual redaction in each logger call:** Error-prone, easy to miss
+**Updated:** Removed `[a-fA-F0-9]{40,}` pattern that falsely matched git commit SHAs.
 
 ---
 
@@ -262,14 +199,146 @@ sentinel_review/
 
 **Status:** Accepted (2026-07-27)
 
-**Context:** The project needs to be deployable to a public URL for GitHub webhooks to reach it (webhooks cannot hit `localhost`). Production deployment requires PostgreSQL, Redis, a web process, and a background worker process.
+**Context:** The project needs to be deployable to a public URL for GitHub webhooks.
 
-**Decision:** Provide platform-agnostic deployment configs for Render.com (`render.yaml`) and Fly.io (`fly.toml`).
+**Decision:** Provide platform-agnostic deployment configs for Render.com and Fly.io.
+
+---
+
+## ADR-15: Staged Pipeline Architecture (Post-Remediation)
+
+**Status:** Accepted (2026-07-27)
+
+**Context:** The original `review_pull_request` was a ~250-line monolith doing 7 sequential responsibilities. This made the function hard to test, hard to debug, and hard to extend.
+
+**Decision:** Extract each responsibility into a named **pipeline stage** with clear I/O via a typed `ReviewContext` dataclass.
+
+**Pipeline stages:**
+1. `UpsertStage` — DB records + private repo check
+2. `FetchDiffStage` — GitHub diff + file contents
+3. `FetchContextStage` — Repo metadata + `.sentinel-ignore` (non-fatal)
+4. `LLMReviewStage` — Cache check → LLM call → cache store
+5. `SemgrepStage` — Static analysis (non-fatal)
+6. `DedupeStage` — Merge, .sentinel-ignore filter, dedup, limit
+7. `PostCommentsStage` — Post inline comments + save to DB
 
 **Rationale:**
-- Both platforms offer free/cheap tiers suitable for a portfolio project
-- `render.yaml` is Render's Blueprint format — auto-detected when pushing to GitHub
-- `fly.toml` supports separate `[processes]` for web worker processes on the same app
-- Both configs use the existing Dockerfile for consistent build behavior
-- Secrets are passed via platform-managed environment variables (no `fly secrets` / Render dashboard)
-- Both support PostgreSQL 16 and Redis as managed resources
+- Each stage is independently unit-testable
+- A failure in one stage doesn't crash the entire pipeline
+- Stages can be reordered, removed, or added without touching other stages
+- The pipeline orchestrator is ~50 lines of glue code
+
+**Alternatives considered:**
+- **Decorator-based pipeline:** More clever but harder to debug
+- **Chain-of-Responsibility pattern:** Over-engineered for 7 stages
+- **Single function with helper calls:** The original approach — led to the 250-line monolith
+
+---
+
+## ADR-16: LLM Response Cache
+
+**Status:** Accepted (2026-07-27)
+
+**Context:** A PR with multiple `synchronize` events (e.g., force-push with no diff change) triggers a new LLM call for an identical diff. This wastes time and money.
+
+**Decision:** Cache LLM responses keyed by `SHA256(diff_content + repo_context)` hex digest.
+
+**Rationale:**
+- SHA256 guarantees collision resistance for cache keys
+- Redis is already running as the Celery broker — no new infrastructure
+- In-memory dict fallback works when Redis is unavailable
+- Cache TTL (3600s) is long enough to cover repeated `synchronize` events
+- Cache-hit/miss metrics exported to Prometheus
+
+**Cache invalidation:** Keyed by diff hash + context — any change to the diff or repo context produces a new key. No explicit invalidation needed.
+
+---
+
+## ADR-17: .sentinel-ignore File Support
+
+**Status:** Accepted (2026-07-27)
+
+**Context:** Repositories have generated files, vendor directories, and test artifacts that should never receive review comments. Currently, the only way to exclude files is per-repo config category filters.
+
+**Decision:** Support a `.sentinel-ignore` file in the repository root using `fnmatch` glob patterns (one per line, `#` comments).
+
+**Rationale:**
+- Industry-standard pattern: `.gitignore`, `.eslintignore`, `.dockerignore` all use similar formats
+- `fnmatch` is in the Python standard library — zero new dependencies
+- Patterns can target directories (`build/`), extensions (`*.generated.py`), or specific paths (`docs/*.md`)
+- In webhook mode, fetched from the repo's default branch via GitHub API
+- In GHA mode, read from the working directory
+
+---
+
+## ADR-18: GitHub Actions Execution Mode
+
+**Status:** Accepted (2026-07-27)
+
+**Context:** Not all teams want to host a Django/Celery/PostgreSQL/Redis stack for PR review. An alternative deployment model that runs as a CI step lowers the adoption barrier.
+
+**Decision:** Provide a composite GitHub Action (`action.yml`) that runs the same review pipeline directly in CI.
+
+**Rationale:**
+- Composite actions are self-contained — no Docker image to build or publish
+- Bypasses the entire Django/Celery/Redis stack
+- Reads `GITHUB_EVENT_PATH` for PR data, runs `git diff` for the diff (no GitHub API calls needed)
+- Reuses `SYSTEM_PROMPT`, `ReviewOutput` schema, and LLM callers from the webhook code
+- Demonstrates two integration patterns: webhook (server) + CI action (agentless)
+
+---
+
+## ADR-19: Multi-Model Comparison Framework
+
+**Status:** Accepted (2026-07-27)
+
+**Context:** Evaluation results depend heavily on which LLM provider is used. Anthropic Claude and OpenAI GPT-4o have different strengths for code review.
+
+**Decision:** Add a comparison script (`scripts/run_comparison.py`) that runs both providers against the same evaluation fixtures and produces a side-by-side table.
+
+**Rationale:**
+- Shares evaluation logic with `run_evaluation.py` (no code duplication)
+- Mock mode requires no API keys for quick testing
+- Live mode runs real LLM calls for accurate cost/latency/quality comparison
+- Output updates `docs/evaluation-report.md` with the comparison table
+
+---
+
+## ADR-20: Circuit Breaker for External Dependencies
+
+**Status:** Accepted (2026-07-27)
+
+**Context:** The GitHub API and LLM providers are external dependencies that can fail or become slow. Without protection, a cascading failure can exhaust Celery workers with retries.
+
+**Decision:** Implement a lightweight circuit breaker (CLOSED/OPEN/HALF_OPEN states) for GitHub API and LLM provider calls.
+
+**Rationale:**
+- Prevents thundering-herd retries during an outage
+- Three-state design follows Michael Nygard's "Release It!" pattern
+- No heavyweight library needed — ~100 lines of Python with configurable thresholds and cooldowns
+- Wired into both `GitHubClient` and the LLM provider layer
+
+**Configuration:**
+- Failure threshold: 3 failures in 60s window → OPEN
+- Cooldown: 120s before HALF_OPEN probe
+- Probe: single request allowed — success returns to CLOSED, failure resets cooldown
+
+---
+
+## ADR-21: Observability Stack — JSON Logs + Sentry + Prometheus
+
+**Status:** Accepted (2026-07-27)
+
+**Context:** The original project had no structured logging, no error tracking, and no metrics. Debugging production issues required ad-hoc log reading.
+
+**Decision:** Implement a three-layer observability stack:
+1. **Structured JSON logging** (controlled by `JSON_LOG` env var)
+2. **Sentry integration** (conditional on `SENTRY_DSN` env var)
+3. **Prometheus metrics** (controlled by `METRICS_ENABLED` env var)
+
+**Metrics exported:**
+- `review_latency` — histogram of pipeline execution time
+- `reviews_total` — counter of completed reviews (by status)
+- `llm_errors` — counter of LLM failures
+- `llm_cache_hits` / `llm_cache_misses` — cache effectiveness
+- `token_cost` — cumulative token usage and estimated cost

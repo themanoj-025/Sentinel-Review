@@ -34,17 +34,12 @@ def dashboard_home(request: HttpRequest) -> HttpResponse:
     usefulness = compute_usefulness_rate()
 
     # Recent reviews
-    recent_reviews = (
-        Review.objects.select_related("pull_request__repo")
-        .order_by("-created_at")[:10]
-    )
+    recent_reviews = Review.objects.select_related("pull_request__repo").order_by("-created_at")[
+        :10
+    ]
 
     # Reviews by status
-    status_counts = (
-        Review.objects.values("status")
-        .annotate(count=Count("id"))
-        .order_by("status")
-    )
+    status_counts = Review.objects.values("status").annotate(count=Count("id")).order_by("status")
 
     # Reviews over time (last 7 days)
     seven_days_ago = timezone.now() - timedelta(days=7)
@@ -72,10 +67,14 @@ def dashboard_home(request: HttpRequest) -> HttpResponse:
 
 def repo_list(request: HttpRequest) -> HttpResponse:
     """List all configured repositories."""
-    repos = Repo.objects.select_related("installation").annotate(
-        review_count=Count("pull_requests__reviews", distinct=True),
-        comment_count=Count("pull_requests__reviews__comments", distinct=True),
-    ).order_by("full_name")
+    repos = (
+        Repo.objects.select_related("installation")
+        .annotate(
+            review_count=Count("pull_requests__reviews", distinct=True),
+            comment_count=Count("pull_requests__reviews__comments", distinct=True),
+        )
+        .order_by("full_name")
+    )
 
     # HTMX partial for search
     search = request.GET.get("search", "")
@@ -103,7 +102,10 @@ def repo_detail(request: HttpRequest, repo_id: int) -> HttpResponse:
 
         config = dict(repo.config or {})
         config["enabled_categories"] = enabled_categories or [
-            "bug", "style", "security", "suggestion"
+            "bug",
+            "style",
+            "security",
+            "suggestion",
         ]
         config["max_comments"] = int(max_comments)
         config["private_repo_opt_in"] = private_opt_in
@@ -143,9 +145,7 @@ def repo_detail(request: HttpRequest, repo_id: int) -> HttpResponse:
 def review_detail(request: HttpRequest, review_id: int) -> HttpResponse:
     """Show details of a single review run."""
     review = get_object_or_404(
-        Review.objects.select_related(
-            "pull_request__repo__installation"
-        ),
+        Review.objects.select_related("pull_request__repo__installation"),
         id=review_id,
     )
 
@@ -170,25 +170,18 @@ def stats_overview(request: HttpRequest) -> HttpResponse:
     usefulness = compute_usefulness_rate()
 
     # Per-repo stats
-    repo_stats = (
-        Repo.objects.annotate(
-            review_count=Count("pull_requests__reviews", distinct=True),
-            comment_count=Count("pull_requests__reviews__comments", distinct=True),
-        )
-        .order_by("-comment_count")[:20]
-    )
+    repo_stats = Repo.objects.annotate(
+        review_count=Count("pull_requests__reviews", distinct=True),
+        comment_count=Count("pull_requests__reviews__comments", distinct=True),
+    ).order_by("-comment_count")[:20]
 
     # Comment volume by category
     category_volume = (
-        Comment.objects.values("category")
-        .annotate(count=Count("id"))
-        .order_by("-count")
+        Comment.objects.values("category").annotate(count=Count("id")).order_by("-count")
     )
 
     # Average latency
-    avg_latency = Review.objects.filter(
-        status=Review.Status.COMPLETED
-    ).aggregate(
+    avg_latency = Review.objects.filter(status=Review.Status.COMPLETED).aggregate(
         avg=Avg("latency_ms"),
         total_tokens=Avg("token_cost"),
     )

@@ -33,14 +33,30 @@ class PullRequestAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ["id", "pull_request", "status", "triggered_by", "findings_count", "latency_ms", "created_at"]
+    list_display = [
+        "id",
+        "pull_request",
+        "status",
+        "triggered_by",
+        "findings_count",
+        "latency_ms",
+        "created_at",
+    ]
     list_filter = ["status", "triggered_by"]
     readonly_fields = ["created_at", "updated_at"]
 
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ["id", "review", "file_path", "line_number", "category", "severity", "created_at"]
+    list_display = [
+        "id",
+        "review",
+        "file_path",
+        "line_number",
+        "category",
+        "severity",
+        "created_at",
+    ]
     list_filter = ["category", "severity"]
     search_fields = ["file_path", "content"]
     readonly_fields = ["created_at"]

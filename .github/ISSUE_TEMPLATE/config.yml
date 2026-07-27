@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
   - name: 📖 Documentation
-    url: https://github.com/yourusername/sentinel-review#readme
+    url: https://github.com/sentinel-review/sentinel-review#readme
     about: Check the README and docs/ directory before opening an issue
   - name: 💬 Discussions
-    url: https://github.com/yourusername/sentinel-review/discussions
+    url: https://github.com/sentinel-review/sentinel-review/discussions
     about: Ask questions and discuss ideas in GitHub Discussions

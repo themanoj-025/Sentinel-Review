@@ -54,9 +54,7 @@ def process_reaction(
 
     try:
         client = GitHubClient()
-        reactions = client.get_comment_reactions(
-            installation_id, repo_full_name, comment_id
-        )
+        reactions = client.get_comment_reactions(installation_id, repo_full_name, comment_id)
     except Exception as e:
         logger.error(f"Failed to fetch reactions: {e}")
         return {"status": "error", "error": str(e)}
@@ -106,9 +104,7 @@ def compute_usefulness_rate(repo_full_name: str | None = None) -> dict:
 
     comments = Comment.objects.all()
     if repo_full_name:
-        comments = comments.filter(
-            review__pull_request__repo__full_name=repo_full_name
-        )
+        comments = comments.filter(review__pull_request__repo__full_name=repo_full_name)
 
     total_comments = comments.count()
     commented_on = comments.filter(feedback__isnull=False).distinct().count()
@@ -143,14 +139,16 @@ def compute_usefulness_rate(repo_full_name: str | None = None) -> dict:
         cat_total = cat_up + cat_down
         cat_rate = round(cat_up / cat_total * 100, 1) if cat_total > 0 else 0.0
 
-        category_stats.append({
-            "category": cat_code,
-            "label": cat_label,
-            "total_comments": cat_count,
-            "upvotes": cat_up,
-            "downvotes": cat_down,
-            "usefulness_rate": cat_rate,
-        })
+        category_stats.append(
+            {
+                "category": cat_code,
+                "label": cat_label,
+                "total_comments": cat_count,
+                "upvotes": cat_up,
+                "downvotes": cat_down,
+                "usefulness_rate": cat_rate,
+            }
+        )
 
     return {
         "total_comments": total_comments,

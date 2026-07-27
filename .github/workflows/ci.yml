@@ -54,19 +54,16 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r ../requirements.txt
+          pip install -r ../requirements-dev.txt
 
       - name: Run lint (ruff)
         run: |
@@ -74,7 +71,7 @@ jobs:
 
       - name: Run tests with pytest
         run: |
-          pytest -v --cov=. --cov-report=term --cov-report=xml -x --ignore=tests/fixtures
+          pytest -v --cov=. --cov-report=term --cov-report=xml -x
         env:
           DATABASE_URL: postgres://sentinel:sentinel@localhost:5432/sentinel_review
 
@@ -103,12 +100,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Semgrep on codebase
-        uses: semgrep/semgrep-action@v1
+        uses: semgrep/semgrep-action@b7f7b0c8f6e5d4a3c2b1a0f9e8d7c6b5a4f3e2d1
         with:
           config: p/python
         env:
           SEMGREP_APP_TOKEN: ""
-        # This is optional — the action will run unauthenticated for public repos
+        # Pinned to commit SHA for supply-chain security
 
   # Optional: verify docker-compose up works
   docker-compose:

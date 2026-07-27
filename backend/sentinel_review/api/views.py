@@ -1,6 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import filters, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from sentinel_review.models.comment import Comment
@@ -25,18 +25,19 @@ from .serializers import (
 class InstallationViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Installation.objects.all()
     serializer_class = InstallationSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["account_login"]
+    ordering_fields = ["account_login", "created_at"]
+    ordering = ["-created_at"]
 
 
 class RepoViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Repo.objects.select_related("installation").all()
     serializer_class = RepoSerializer
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        search = self.request.query_params.get("search", "")
-        if search:
-            qs = qs.filter(full_name__icontains=search)
-        return qs
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["full_name"]
+    ordering_fields = ["full_name", "created_at"]
+    ordering = ["full_name"]
 
     @action(detail=True, methods=["patch"])
     def config(self, request, pk=None):
@@ -60,6 +61,10 @@ class RepoViewSet(viewsets.ReadOnlyModelViewSet):
 class PullRequestViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = PullRequest.objects.select_related("repo__installation").all()
     serializer_class = PullRequestSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["title", "author_login"]
+    ordering_fields = ["created_at", "github_pr_number", "status"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -70,10 +75,15 @@ class PullRequestViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ReviewViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Review.objects.select_related(
-        "pull_request__repo__installation"
-    ).prefetch_related("comments__feedback").all()
+    queryset = (
+        Review.objects.select_related("pull_request__repo__installation")
+        .prefetch_related("comments__feedback")
+        .all()
+    )
     serializer_class = ReviewSerializer
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["created_at", "status", "findings_count", "latency_ms"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -89,6 +99,9 @@ class ReviewViewSet(viewsets.ReadOnlyModelViewSet):
 class CommentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["created_at", "severity", "category"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -107,14 +120,19 @@ class CommentViewSet(viewsets.ReadOnlyModelViewSet):
 class FeedbackViewSet(viewsets.ModelViewSet):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.OrderingFilter]
+    ordering = ["-created_at"]
 
     def perform_create(self, serializer):
-        serializer.save(reactor_login=self.request.data.get("reactor_login", ""))
+        reactor_login = self.request.data.get("reactor_login", "")
+        if not reactor_login and self.request.user.is_authenticated:
+            reactor_login = self.request.user.username
+        serializer.save(reactor_login=reactor_login)
 
 
 class StatsViewSet(viewsets.ViewSet):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def list(self, request):
         repo_full_name = request.query_params.get("repo", None)

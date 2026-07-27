@@ -123,15 +123,13 @@
                         </td>
                         <td class="px-4 py-3 text-sm">
                             {% if cat.total_comments > 0 %}
-                                {% with ratio=cat.usefulness_rate %}
-                                    {% if ratio >= 70 %}
-                                        <span class="text-green-400">▲ High</span>
-                                    {% elif ratio >= 40 %}
-                                        <span class="text-amber-400">◆ Medium</span>
-                                    {% else %}
-                                        <span class="text-red-400">▼ Low</span>
-                                    {% endif %}
-                                {% endwith %}
+                                {% if cat.usefulness_rate >= 70 %}
+                                    <span class="text-green-400">▲ High</span>
+                                {% elif cat.usefulness_rate >= 40 %}
+                                    <span class="text-amber-400">◆ Medium</span>
+                                {% else %}
+                                    <span class="text-red-400">▼ Low</span>
+                                {% endif %}
                             {% else %}
                                 <span class="text-gray-600">—</span>
                             {% endif %}

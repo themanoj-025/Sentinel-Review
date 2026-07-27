@@ -6,9 +6,7 @@ from .installation import Installation
 class Repo(models.Model):
     """A GitHub repository configured for review."""
 
-    installation = models.ForeignKey(
-        Installation, on_delete=models.CASCADE, related_name="repos"
-    )
+    installation = models.ForeignKey(Installation, on_delete=models.CASCADE, related_name="repos")
     github_repo_id = models.BigIntegerField()
     full_name = models.CharField(max_length=255)
     is_private = models.BooleanField(default=False)
@@ -44,9 +42,7 @@ class Repo(models.Model):
 
     @property
     def enabled_categories(self):
-        return self.config.get("enabled_categories", [
-            "bug", "style", "security", "suggestion"
-        ])
+        return self.config.get("enabled_categories", ["bug", "style", "security", "suggestion"])
 
     @enabled_categories.setter
     def enabled_categories(self, value):

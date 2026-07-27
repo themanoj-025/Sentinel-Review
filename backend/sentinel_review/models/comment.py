@@ -17,9 +17,7 @@ class Comment(models.Model):
         WARNING = "warning", "Warning"
         NIT = "nit", "Nit"
 
-    review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name="comments"
-    )
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="comments")
     github_comment_id = models.BigIntegerField(null=True, blank=True)
     file_path = models.CharField(max_length=500)
     line_number = models.IntegerField(null=True, blank=True)
@@ -37,6 +35,8 @@ class Comment(models.Model):
             models.Index(fields=["review"]),
             models.Index(fields=["category"]),
             models.Index(fields=["severity"]),
+            models.Index(fields=["review", "category"]),
+            models.Index(fields=["review", "severity"]),
             models.Index(fields=["file_path", "line_number"]),
         ]
 

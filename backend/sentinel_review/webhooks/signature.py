@@ -23,13 +23,19 @@ def verify_signature(payload_body: bytes, signature_header: str | None) -> bool:
         signature_header: Value of the X-Hub-Signature-256 header.
 
     Returns:
-        True if the signature is valid or if verification is disabled
-        (empty secret in dev), False otherwise.
+        True if the signature is valid, False otherwise.
+        In DEBUG mode only, an unset webhook secret bypasses verification
+        for local development convenience.
     """
     webhook_secret = settings.WEBHOOK_SECRET
     if not webhook_secret:
-        logger.warning("Webhook secret not configured — signature verification disabled")
-        return True
+        if settings.DEBUG:
+            logger.warning(
+                "Webhook secret not configured — signature verification disabled (DEBUG mode only)"
+            )
+            return True
+        logger.error("Webhook secret not configured — rejecting request")
+        return False
 
     if not signature_header:
         logger.warning("Missing X-Hub-Signature-256 header")
@@ -40,7 +46,7 @@ def verify_signature(payload_body: bytes, signature_header: str | None) -> bool:
         logger.warning("Invalid signature header format")
         return False
 
-    expected_signature = signature_header[len("sha256="):]
+    expected_signature = signature_header[len("sha256=") :]
 
     # Constant-time comparison to prevent timing attacks
     computed = hmac.new(

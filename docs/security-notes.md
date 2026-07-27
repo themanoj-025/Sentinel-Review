@@ -1,6 +1,8 @@
 # Sentinel Review — Security Notes
 
-> *Last updated: 2026-07-27*
+> *Last updated: 2026-07-27 (post-remediation)*
+
+---
 
 ## Threat Model
 
@@ -20,15 +22,20 @@
 
 ```
 Internet-facing:
-  POST /webhooks/github  ← HMAC-protected, but public
-  GET/POST /api/*        ← Read-only by default (IsAuthenticatedOrReadOnly)
+  POST /webhooks/github  ← HMAC-protected, rate-limited (100/hr anon)
+  GET/POST /api/*        ← Throttled (100/hr anon, 1000/hr auth)
+  GET  /api/docs/        ← OpenAPI docs (read-only)
+  GET  /metrics          ← Prometheus metrics (respects METRICS_ENABLED)
+  GET  /health/          ← Liveness/readiness (no sensitive data)
+  GET  /health/ready/
   GET  /                 ← Dashboard (no auth in MVP)
   GET  /admin/           ← Django admin (requires auth)
 
 Internal (Docker network):
   Redis :6379            ← No auth (internal network)
-  PostgreSQL :5432       ← Password auth (sentinel:sentinel)
+  PostgreSQL :5432       ← Password auth
   Celery worker          ← Processes untrusted GitHub data
+  Flower :5555           ← Basic-auth protected (FLOWER_USER/FLOWER_PASSWORD)
 ```
 
 ---
@@ -48,10 +55,21 @@ def verify_signature(payload_body: bytes, signature_header: str | None) -> bool:
 ```
 
 - **Enforcement:** Rejected at view level before any other processing
-- **Dev bypass:** Empty `WEBHOOK_SECRET` disables verification for local development
-- **Tested:** 10 unit tests cover valid, missing, tampered, malformed, and dev-mode signatures
+- **Production enforcement:** Empty `WEBHOOK_SECRET` raises `ImproperlyConfigured` at startup
+- **Tested:** 10 unit tests + 1 E2E test cover valid, missing, tampered, malformed signatures
 
-### 2. GitHub App Authentication
+### 2. API Authentication
+
+| Endpoint | Before Remediation | After Remediation |
+|----------|-------------------|-------------------|
+| `FeedbackViewSet` | `AllowAny` (unauthenticated writes) | `IsAuthenticated` |
+| `StatsViewSet` | `AllowAny` (unauthenticated writes) | `IsAuthenticatedOrReadOnly` |
+
+- **Rate limiting:** DRF throttle classes — 100 requests/hour for anonymous, 1000/hr for authenticated
+- **Startup validation:** Missing `DJANGO_SECRET_KEY` or `WEBHOOK_SECRET` raises `ImproperlyConfigured`
+- **OpenAPI schema:** Documented at `/api/schema/` + Swagger UI at `/api/docs/`
+
+### 3. GitHub App Authentication
 
 ```
 GitHub App Private Key (loaded from env/mounted file)
@@ -63,12 +81,10 @@ GitHub App Private Key (loaded from env/mounted file)
   - NEVER committed to the repository
   - Loaded from `GITHUB_APP_PRIVATE_KEY_B64` env var OR mounted `.secrets/github-app-private-key.pem`
   - The `.secrets/` directory is gitignored
-- **JWT:** Generated per-request, short-lived (10 minutes), never stored
+- **JWT:** Short-lived (10 minutes), never stored
 - **Installation tokens:** Short-lived (1 hour), cached in memory only, never persisted to database
 
-### 3. Least-Privilege GitHub App Permissions
-
-The GitHub App requests only the minimum required permissions:
+### 4. Least-Privilege GitHub App Permissions
 
 | Permission | Access | Rationale |
 |------------|--------|-----------|
@@ -76,108 +92,93 @@ The GitHub App requests only the minimum required permissions:
 | Pull requests | Read & Write | Read PR metadata, post inline review comments |
 | Repository metadata | Read-only | Webhook delivery, repo info |
 
-**Not requested:** Administration, secrets, actions, issues, webhooks (webhook config is done manually by the installing user).
-
-### 4. Secrets Management
+### 5. Secrets Management
 
 | Secret | Storage | Source of Truth |
 |--------|---------|-----------------|
-| `DJANGO_SECRET_KEY` | Env var | `.env` (local), GitHub Actions secrets (CI) |
-| `WEBHOOK_SECRET` | Env var | `.env` (local), GitHub App config |
-| `GITHUB_APP_PRIVATE_KEY_B64` | Env var | Base64-encoded, copied manually from GitHub App setup |
+| `DJANGO_SECRET_KEY` | Env var (required) | `.env` (local), CI secrets |
+| `WEBHOOK_SECRET` | Env var (required) | `.env` (local), GitHub App config |
+| `GITHUB_APP_PRIVATE_KEY_B64` | Env var | Base64-encoded, copied manually |
 | `ANTHROPIC_API_KEY` | Env var | Anthropic Console |
 | `OPENAI_API_KEY` | Env var | OpenAI Platform |
-| Postgres password | Env var | `.env` (local), Docker Compose default for dev |
+| Postgres password | Env var | `.env` (local), Docker Compose default |
 
-**All secrets are in `.gitignore`** via the `.env` pattern. `.env.example` contains placeholder values.
-
-### 5. Database Secrets
-
-- PostgreSQL password is set via environment variable
-- Default dev password (`sentinel`) is documented as **change in production**
-- No hardcoded credentials in any source file
+**Startup enforcement:** If `DJANGO_SECRET_KEY` or `WEBHOOK_SECRET` are unset and
+`DJANGO_DEBUG` is `False`, Django will raise `ImproperlyConfigured` and refuse to start.
 
 ### 6. Log Redaction
 
-All log output passes through `sentinel_review.logging_filters.RedactingFilter`
-before it reaches the console handler. This filter redacts the following
-patterns from log messages, arguments, and exception text:
+All log output passes through `sentinel_review.logging_filters.RedactingFilter`.
+This filter redacts the following patterns:
 
-| Pattern | Example |
-|---------|---------|
-| Anthropic API keys | `sk-ant-...` |
-| OpenAI API keys | `sk-...` (20+ alphanumeric chars) |
-| RSA/DSA private keys | `-----BEGIN PRIVATE KEY-----...-----END PRIVATE KEY-----` |
-| GitHub tokens | `ghp_...`, `ghs_...`, `gho_...`, `ghu_...`, `ghb_...`, `ghv_...` |
-| Bearer tokens in headers | `Bearer eyJ...` |
-| Password/secret assignments | `PASSWORD=supersecret`, `API_KEY=abc123...` |
-| JWT tokens | `eyJ...` (three base64url segments) |
-| Long hex strings (40+ chars) | `a1b2c3d4e5f6...` (potential hashes/secrets) |
-| DB connection strings | `postgres://user:pass@host/db` |
+| Pattern | Example | Status |
+|---------|---------|--------|
+| Anthropic API keys | `sk-ant-...` | ✅ |
+| OpenAI API keys | `sk-...` (20+ chars) | ✅ |
+| RSA/DSA private keys | `-----BEGIN PRIVATE KEY-----` | ✅ |
+| GitHub tokens | `ghp_...`, `ghs_...`, `gho_...`, `ghu_...`, `ghb_...`, `ghv_...` | ✅ |
+| Bearer tokens in headers | `Bearer eyJ...` | ✅ |
+| Password/secret assignments | `PASSWORD=supersecret`, `API_KEY=abc123...` | ✅ |
+| JWT tokens | `eyJ...` (three base64url segments) | ✅ |
+| DB connection strings | `postgres://user:pass@host/db` | ✅ |
 
-**Implementation:**
-
-```python
-class RedactingFilter(logging.Filter):
-    def filter(self, record):
-        record.msg = self._redact(record.msg)
-        record.args = tuple(
-            self._redact(str(arg)) if isinstance(arg, str) else arg
-            for arg in record.args
-        )
-        if record.exc_text:
-            record.exc_text = self._redact(record.exc_text)
-        return True
-
-    @staticmethod
-    def _redact(text: str) -> str:
-        for pattern in REDACT_PATTERNS:
-            text = pattern.sub('***REDACTED***', text)
-        return text
-```
-
-The filter is registered in Django's `LOGGING` config as a handler-level filter
-on the `console` handler, so it runs on every log record regardless of logger.
-
-**Tested:** The filter is validated in CI via the planted-bug fixtures and
-manual log inspection — no secret-like strings should appear in production logs.
+**Fixed in remediation:** The previous `[a-fA-F0-9]{40,}` pattern falsely matched
+40-character git commit SHAs. This was removed to avoid false redactions.
 
 ### 7. Private Repository Opt-In
 
 - **Default behavior:** Private repositories are **skipped** during review
 - **Opt-in mechanism:** Dashboard toggle or API endpoint sets `repo.config.private_repo_opt_in = True`
-- **Enforcement:** Check is deterministic code in `review_pull_request()`, not an LLM prompt instruction
-- **Audit trail:** Each skipped review creates a Review record with `status=FAILED` and reason in `error_message`
+- **Enforcement:** Check is in `UpsertStage` of the pipeline, not an LLM prompt instruction
+- **Audit trail:** Each skipped review creates a Review record with `status=skipped`
 
 ### 8. Django Security Settings
 
-| Setting | Value | Rationale |
-|---------|-------|-----------|
-| `SECURE_SSL_REDIRECT` | Unset (dev default) | Enable in production behind reverse proxy |
+| Setting | Value | Notes |
+|---------|-------|-------|
+| `SECURE_SSL_REDIRECT` | Unset | Enable in production behind reverse proxy |
 | `SECURE_HSTS_SECONDS` | Unset | Enable in production |
 | `CSRF_COOKIE_SECURE` | Unset | Enable over HTTPS |
 | `SESSION_COOKIE_SECURE` | Unset | Enable over HTTPS |
-| `SECURE_CONTENT_TYPE_NOSNIFF` | Default | Provided by Django security middleware |
-| `SECURE_BROWSER_XSS_FILTER` | Default | Provided by Django security middleware |
+| `SECURE_CONTENT_TYPE_NOSNIFF` | Default | Django security middleware |
+| `SECURE_BROWSER_XSS_FILTER` | Default | Django security middleware |
 | `X_FRAME_OPTIONS` | `DENY` | Default Django setting |
 
 ### 9. CI/CD Security
 
-- **Semgrep scan:** `.github/workflows/ci.yml` includes a Semgrep job that scans the Python codebase for vulnerabilities on every push
-- **Planted-vulnerability fixtures:** `backend/tests/fixtures/sample_prs/` contains 6 fixture diffs with intentionally planted vulnerabilities — these serve as detection tests
-- **Dependency scanning:** Recommended (not yet implemented): Dependabot or Snyk
+- **Ruff lint:** Run on every push — catches unsafe patterns before they reach production
+- **Semgrep scan:** `.github/workflows/ci.yml` includes a pinned Semgrep job scanning the Python codebase
+- **Dependency scanning:** Recommended: Dependabot or Snyk (not yet implemented)
+
+---
+
+## Remediation Audit: Security Fixes
+
+| Issue | Severity | Fix |
+|-------|:--------:|-----|
+| `AllowAny` on FeedbackViewSet (open write) | Critical | Changed to `IsAuthenticated` |
+| `AllowAny` on StatsViewSet (open write) | High | Changed to `IsAuthenticatedOrReadOnly` |
+| Insecure fallback defaults | Critical | `ImproperlyConfigured` at startup |
+| Webhook returns True when secret unset | High | Returns `False` (rejects) |
+| No rate limiting | Medium | DRF throttle classes (100/1000/hr) |
+| Log redaction matches git SHAs | Low | Removed false-positive hex pattern |
+| No CSP | Low | Not implemented (CDN scripts need hashes) |
+| No CSRF on webhook | Informational | WAI — `@csrf_exempt` by design (HMAC is the auth mechanism) |
 
 ---
 
 ## Secure Deployment Checklist
 
-Before deploying to production:
-
-- [ ] Generate a strong `DJANGO_SECRET_KEY` (`python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`)
+- [x] Log redaction for token/secret patterns
+- [x] HMAC webhook verification (constant-time)
+- [x] API authentication on write endpoints
+- [x] Rate limiting on API/webhook endpoints
+- [x] Startup validation of required secrets
+- [x] Health check endpoints for load balancers
+- [x] Basic auth on Flower dashboard
+- [ ] Generate strong `DJANGO_SECRET_KEY` for production
 - [ ] Set `DJANGO_DEBUG=False`
 - [ ] Set `DJANGO_ALLOWED_HOSTS` to your domain(s)
-- [ ] Generate a strong `WEBHOOK_SECRET` and configure it in the GitHub App settings
-- [ ] Mount the GitHub App private key file (not env var) or use a secrets manager
 - [ ] Use HTTPS (TLS termination at reverse proxy or platform-managed)
 - [ ] Enable CSRF cookie secure flag
 - [ ] Enable session cookie secure flag
@@ -185,11 +186,7 @@ Before deploying to production:
 - [ ] Set `SECURE_HSTS_SECONDS = 31536000`
 - [ ] Change PostgreSQL password from default
 - [ ] Use a managed Redis or add Redis auth
-- [ ] Set up database backups (e.g., `pg_dump` cron job or managed DB snapshots)
-- [ ] Review GitHub App permissions == `contents: read` + `pull_requests: read/write` (no more)
-- [x] Add log redaction for token/secret patterns — implemented via `sentinel_review/logging_filters.py`
-- [ ] Enable rate limiting on `/webhooks/github` endpoint
-- [ ] Consider adding Django admin IP whitelisting or VPN access
+- [ ] Set up database backups
 
 ---
 

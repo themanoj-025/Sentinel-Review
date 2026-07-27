@@ -10,6 +10,7 @@ Covers:
 - String representations
 - Schema round-trip (create → read → update)
 """
+
 from __future__ import annotations
 
 import pytest
@@ -39,34 +40,24 @@ class TestInstallationModel:
 
     def test_unique_github_installation_id(self, db):
         """Duplicate github_installation_id should be rejected."""
-        Installation.objects.create(
-            github_installation_id=1001, account_login="owner1"
-        )
+        Installation.objects.create(github_installation_id=1001, account_login="owner1")
         with pytest.raises(IntegrityError):
-            Installation.objects.create(
-                github_installation_id=1001, account_login="owner2"
-            )
+            Installation.objects.create(github_installation_id=1001, account_login="owner2")
 
     def test_default_account_type(self, db):
         """Default account_type should be 'User'."""
-        inst = Installation.objects.create(
-            github_installation_id=2001, account_login="user"
-        )
+        inst = Installation.objects.create(github_installation_id=2001, account_login="user")
         assert inst.account_type == "User"
 
     def test_str(self, db):
         """__str__ should show installation ID and login."""
-        inst = Installation.objects.create(
-            github_installation_id=3001, account_login="org"
-        )
+        inst = Installation.objects.create(github_installation_id=3001, account_login="org")
         assert "3001" in str(inst)
         assert "org" in str(inst)
 
     def test_timestamps_auto(self, db):
         """created_at and updated_at should be set automatically."""
-        inst = Installation.objects.create(
-            github_installation_id=4001, account_login="test"
-        )
+        inst = Installation.objects.create(github_installation_id=4001, account_login="test")
         assert inst.created_at is not None
         assert inst.updated_at is not None
 
@@ -101,15 +92,11 @@ class TestRepoModel:
 
     def test_same_repo_id_different_installation(self, db, db_installation):
         """Different installations CAN have the same repo_id."""
-        inst2 = Installation.objects.create(
-            github_installation_id=2002, account_login="other"
-        )
+        inst2 = Installation.objects.create(github_installation_id=2002, account_login="other")
         repo1 = Repo.objects.create(
             installation=db_installation, github_repo_id=789, full_name="a/repo"
         )
-        repo2 = Repo.objects.create(
-            installation=inst2, github_repo_id=789, full_name="b/repo"
-        )
+        repo2 = Repo.objects.create(installation=inst2, github_repo_id=789, full_name="b/repo")
         assert repo1.id != repo2.id
 
     def test_default_config(self, db_installation: Installation, db):
@@ -212,9 +199,7 @@ class TestPullRequestModel:
 
     def test_str(self, db_repo: Repo, db):
         """__str__ should show PR number and repo."""
-        pr = PullRequest.objects.create(
-            repo=db_repo, github_pr_number=42
-        )
+        pr = PullRequest.objects.create(repo=db_repo, github_pr_number=42)
         assert "#42" in str(pr)
         assert "testowner/testrepo" in str(pr)
 
@@ -359,21 +344,15 @@ class TestSchemaRoundTrip:
     def test_full_create_read_update(self, db):
         """Create, read, and update objects across the full model chain."""
         # Create
-        inst = Installation.objects.create(
-            github_installation_id=5001, account_login="org"
-        )
+        inst = Installation.objects.create(github_installation_id=5001, account_login="org")
         repo = Repo.objects.create(
             installation=inst,
             github_repo_id=5001,
             full_name="org/repo",
             config={"enabled_categories": ["security"]},
         )
-        pr = PullRequest.objects.create(
-            repo=repo, github_pr_number=1, title="Test PR"
-        )
-        review = Review.objects.create(
-            pull_request=pr, triggered_by=Review.Trigger.OPENED
-        )
+        pr = PullRequest.objects.create(repo=repo, github_pr_number=1, title="Test PR")
+        review = Review.objects.create(pull_request=pr, triggered_by=Review.Trigger.OPENED)
         comment = Comment.objects.create(
             review=review,
             file_path="test.py",

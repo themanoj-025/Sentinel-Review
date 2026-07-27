@@ -1,9 +1,11 @@
 """
 Root conftest — sets up Django environment for all tests.
 """
+
 import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sentinel_review.settings")
+os.environ.setdefault("DJANGO_SECRET_KEY", "test-secret-key-for-testing-only-not-used-in-prod")
 os.environ.setdefault("DJANGO_DEBUG", "False")
 os.environ.setdefault("WEBHOOK_SECRET", "test-secret-key")
 os.environ.setdefault("GITHUB_APP_ID", "123456")

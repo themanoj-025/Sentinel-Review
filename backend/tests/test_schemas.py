@@ -10,6 +10,7 @@ Covers:
 - Few-shot example structure
 - System prompt existence and key instructions
 """
+
 from __future__ import annotations
 
 import json
@@ -182,18 +183,20 @@ class TestJSONParsing:
         """A valid JSON response should parse correctly."""
         import json as _json
 
-        raw = _json.dumps({
-            "findings": [
-                {
-                    "file_path": "app.py",
-                    "line_number": 2,
-                    "category": "security",
-                    "severity": "blocking",
-                    "comment": "Test finding.",
-                    "suggested_fix": None,
-                }
-            ]
-        })
+        raw = _json.dumps(
+            {
+                "findings": [
+                    {
+                        "file_path": "app.py",
+                        "line_number": 2,
+                        "category": "security",
+                        "severity": "blocking",
+                        "comment": "Test finding.",
+                        "suggested_fix": None,
+                    }
+                ]
+            }
+        )
         data = _json.loads(raw)
         output = ReviewOutput(**data)
         assert len(output.findings) == 1

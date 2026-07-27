@@ -12,6 +12,7 @@ Covers:
 - Reaction fetching
 - Error handling
 """
+
 from __future__ import annotations
 
 import pytest
@@ -87,9 +88,9 @@ class TestGitHubClientRequests:
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "tok", "expires_at": "2099-01-01T00:00:00Z"}
         )
-        respx.get(
-            f"{GITHUB_API}/repos/testowner/testrepo/contents/app.py?ref=main"
-        ).respond(200, json={"encoding": "base64", "content": content})
+        respx.get(f"{GITHUB_API}/repos/testowner/testrepo/contents/app.py?ref=main").respond(
+            200, json={"encoding": "base64", "content": content}
+        )
 
         client = GitHubClient()
         result = client.get_file_content(1001, "testowner/testrepo", "app.py", "main")
@@ -101,9 +102,9 @@ class TestGitHubClientRequests:
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "tok", "expires_at": "2099-01-01T00:00:00Z"}
         )
-        respx.get(
-            f"{GITHUB_API}/repos/testowner/testrepo/contents/missing.py?ref=main"
-        ).respond(404)
+        respx.get(f"{GITHUB_API}/repos/testowner/testrepo/contents/missing.py?ref=main").respond(
+            404
+        )
 
         client = GitHubClient()
         result = client.get_file_content(1001, "testowner/testrepo", "missing.py", "main")
@@ -119,16 +120,30 @@ class TestGitHubClientRequests:
         respx.get(f"{GITHUB_API}/repos/testowner/testrepo").respond(
             200, json={"default_branch": "main", "full_name": "testowner/testrepo"}
         )
-        # Mock CONTRIBUTING.md (not found)
-        respx.get(
-            f"{GITHUB_API}/repos/testowner/testrepo/contents/CONTRIBUTING.md?ref=main",
-            headers={"Accept": "application/vnd.github.v3+json"},
-        ).respond(404)
-        # Mock .eslintrc (not found)
-        respx.get(
-            f"{GITHUB_API}/repos/testowner/testrepo/contents/.eslintrc?ref=main",
-            headers={"Accept": "application/vnd.github.v3+json"},
-        ).respond(404)
+        # Mock all CONTRIBUTING variants (not found)
+        for variant in ["CONTRIBUTING.md", "CONTRIBUTING", "CONTRIBUTING.adoc"]:
+            respx.get(
+                f"{GITHUB_API}/repos/testowner/testrepo/contents/{variant}?ref=main",
+            ).respond(404)
+        # Mock all linter config files (not found)
+        for lf in [
+            ".eslintrc",
+            ".eslintrc.json",
+            ".eslintrc.js",
+            ".eslintrc.yaml",
+            "pyproject.toml",
+            ".flake8",
+            "setup.cfg",
+            ".pylintrc",
+            "tsconfig.json",
+            ".prettierrc",
+            ".prettierrc.json",
+            "rustfmt.toml",
+            "go.mod",
+        ]:
+            respx.get(
+                f"{GITHUB_API}/repos/testowner/testrepo/contents/{lf}?ref=main",
+            ).respond(404)
 
         client = GitHubClient()
         ctx = client.get_repo_context(1001, "testowner/testrepo")
@@ -140,9 +155,7 @@ class TestGitHubClientRequests:
     @respx.mock
     def test_post_review_success(self):
         """post_review should create a review with inline comments."""
-        comments = [
-            {"path": "app.py", "line": 2, "body": "**BLOCKING** (security)\n\nIssue here."}
-        ]
+        comments = [{"path": "app.py", "line": 2, "body": "**BLOCKING** (security)\n\nIssue here."}]
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "tok", "expires_at": "2099-01-01T00:00:00Z"}
         )
@@ -151,9 +164,9 @@ class TestGitHubClientRequests:
             "body": "Review summary",
             "comments": [{"id": 3001}],
         }
-        respx.post(
-            f"{GITHUB_API}/repos/testowner/testrepo/pulls/42/reviews"
-        ).respond(200, json=mock_review)
+        respx.post(f"{GITHUB_API}/repos/testowner/testrepo/pulls/42/reviews").respond(
+            200, json=mock_review
+        )
 
         client = GitHubClient()
         result = client.post_review(
@@ -172,9 +185,9 @@ class TestGitHubClientRequests:
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "tok", "expires_at": "2099-01-01T00:00:00Z"}
         )
-        respx.post(
-            f"{GITHUB_API}/repos/testowner/testrepo/pulls/42/reviews"
-        ).respond(200, json={"id": 5002, "body": "No issues", "comments": []})
+        respx.post(f"{GITHUB_API}/repos/testowner/testrepo/pulls/42/reviews").respond(
+            200, json={"id": 5002, "body": "No issues", "comments": []}
+        )
 
         client = GitHubClient()
         result = client.post_review(
@@ -196,9 +209,9 @@ class TestGitHubClientRequests:
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "tok", "expires_at": "2099-01-01T00:00:00Z"}
         )
-        respx.get(
-            f"{GITHUB_API}/repos/testowner/testrepo/pulls/comments/3001/reactions"
-        ).respond(200, json=reactions)
+        respx.get(f"{GITHUB_API}/repos/testowner/testrepo/pulls/comments/3001/reactions").respond(
+            200, json=reactions
+        )
 
         client = GitHubClient()
         result = client.get_comment_reactions(1001, "testowner/testrepo", 3001)
@@ -212,9 +225,9 @@ class TestGitHubClientRequests:
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "tok", "expires_at": "2099-01-01T00:00:00Z"}
         )
-        respx.get(
-            f"{GITHUB_API}/repos/testowner/testrepo/pulls/comments/9999/reactions"
-        ).respond(404)
+        respx.get(f"{GITHUB_API}/repos/testowner/testrepo/pulls/comments/9999/reactions").respond(
+            404
+        )
 
         client = GitHubClient()
         result = client.get_comment_reactions(1001, "testowner/testrepo", 9999)
@@ -229,15 +242,33 @@ class TestGitHubClientRequests:
         respx.get(f"{GITHUB_API}/repos/testowner/testrepo").respond(
             200, json={"default_branch": "main"}
         )
-        # CONTRIBUTING.md found
+        # CONTRIBUTING.md found — stops searching other variants
         import base64
 
         contrib_content = base64.b64encode(b"# Contributing\nPlease write tests.").decode()
         respx.get(
             f"{GITHUB_API}/repos/testowner/testrepo/contents/CONTRIBUTING.md?ref=main"
-        ).respond(
-            200, json={"encoding": "base64", "content": contrib_content}
-        )
+        ).respond(200, json={"encoding": "base64", "content": contrib_content})
+
+        # Mock all linter config files (not found) since code continues to check them
+        for lf in [
+            ".eslintrc",
+            ".eslintrc.json",
+            ".eslintrc.js",
+            ".eslintrc.yaml",
+            "pyproject.toml",
+            ".flake8",
+            "setup.cfg",
+            ".pylintrc",
+            "tsconfig.json",
+            ".prettierrc",
+            ".prettierrc.json",
+            "rustfmt.toml",
+            "go.mod",
+        ]:
+            respx.get(
+                f"{GITHUB_API}/repos/testowner/testrepo/contents/{lf}?ref=main",
+            ).respond(404)
 
         client = GitHubClient()
         ctx = client.get_repo_context(1001, "testowner/testrepo")

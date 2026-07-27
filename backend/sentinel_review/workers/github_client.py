@@ -9,10 +9,13 @@ import base64
 import logging
 import time
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 import httpx
 from django.conf import settings
+
+from .circuit_breaker import CircuitBreakerOpenError, github_circuit_breaker
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +35,31 @@ class GitHubRepoContext:
 
 
 class GitHubClient:
-    """Client for interacting with the GitHub API as a GitHub App."""
+    """Client for interacting with the GitHub API as a GitHub App.
+
+    Uses a single long-lived httpx.Client with connection pooling for
+    performance. Tokens are cached and refreshed as needed.
+    """
 
     def __init__(self):
         self._app_jwt: str | None = None
         self._jwt_expires_at: float = 0
         self._installation_tokens: dict[int, tuple[str, float]] = {}
+        # Single shared httpx client with connection pooling
+        self._client = httpx.Client(
+            headers={"Accept": "application/vnd.github.v3+json"},
+            timeout=httpx.Timeout(60.0, connect=10.0),
+        )
+
+    def close(self):
+        """Close the underlying httpx client."""
+        self._client.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
 
     def _get_private_key(self) -> bytes:
         """Load the GitHub App private key from env or file."""
@@ -89,29 +111,25 @@ class GitHubClient:
         jwt = self._get_jwt()
         url = f"{GITHUB_API_BASE}/app/installations/{installation_id}/access_tokens"
 
-        with httpx.Client() as client:
-            resp = client.post(
-                url,
-                headers={
-                    "Authorization": f"Bearer {jwt}",
-                    "Accept": "application/vnd.github.v3+json",
-                },
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            token = data["token"]
-            expires_at_str = data.get("expires_at", "")
-            # Parse ISO 8601 expiry
-            from datetime import datetime
+        resp = self._client.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {jwt}",
+            },
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        token = data["token"]
+        expires_at_str = data.get("expires_at", "")
 
-            try:
-                expires_dt = datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
-                expires_at = expires_dt.timestamp()
-            except (ValueError, AttributeError):
-                expires_at = now + 3600  # Default 1 hour
+        try:
+            expires_dt = datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
+            expires_at = expires_dt.timestamp()
+        except (ValueError, AttributeError):
+            expires_at = now + 3600  # Default 1 hour
 
-            self._installation_tokens[installation_id] = (token, expires_at)
-            return token
+        self._installation_tokens[installation_id] = (token, expires_at)
+        return token
 
     def _request(
         self,
@@ -122,7 +140,6 @@ class GitHubClient:
     ) -> httpx.Response:
         """Make an authenticated request to the GitHub API."""
         headers = kwargs.pop("headers", {})
-        headers["Accept"] = "application/vnd.github.v3+json"
 
         if installation_id:
             token = self._get_installation_token(installation_id)
@@ -133,12 +150,22 @@ class GitHubClient:
 
         url = path if path.startswith("http") else f"{GITHUB_API_BASE}{path}"
 
-        with httpx.Client() as client:
-            resp = client.request(method, url, headers=headers, **kwargs)
+        # Use circuit breaker to protect against GitHub API outages
+        try:
+            resp = github_circuit_breaker.call(
+                self._client.request, method, url, headers=headers, **kwargs
+            )
+        except CircuitBreakerOpenError as e:
+            logger.error("Circuit breaker open for GitHub API: %s", e)
+            raise ConnectionError(str(e)) from e  # Convert to ConnectionError for caller handling
 
         if resp.status_code >= 400:
             logger.error(
-                f"GitHub API error: {resp.status_code} {method} {path}: {resp.text[:500]}"
+                "GitHub API error: %s %s %s: %s",
+                resp.status_code,
+                method,
+                path,
+                resp.text[:500],
             )
         resp.raise_for_status()
         return resp
@@ -166,57 +193,68 @@ class GitHubClient:
                 content = data.get("content", "")
                 return base64.b64decode(content).decode("utf-8", errors="replace")
             return data.get("content", "")
-        except Exception as e:
-            logger.warning(f"Failed to fetch file {file_path}: {e}")
+        except (httpx.HTTPStatusError, KeyError, ValueError) as e:
+            logger.warning("Failed to fetch file %s: %s", file_path, e)
             return None
 
-    def get_repo_context(
-        self, installation_id: int, repo_full_name: str
-    ) -> GitHubRepoContext:
+    def get_repo_context(self, installation_id: int, repo_full_name: str) -> GitHubRepoContext:
         """Gather repository context (CONTRIBUTING.md, linter config)."""
         ctx = GitHubRepoContext(full_name=repo_full_name)
 
         # Get repo info
         try:
-            resp = self._request(
-                "GET", f"/repos/{repo_full_name}", installation_id=installation_id
-            )
+            resp = self._request("GET", f"/repos/{repo_full_name}", installation_id=installation_id)
             data = resp.json()
             ctx.default_branch = data.get("default_branch")
-        except Exception:
+        except httpx.HTTPStatusError:
             pass
 
         # Check for CONTRIBUTING.md
         for path_candidate in ["CONTRIBUTING.md", "CONTRIBUTING", "CONTRIBUTING.adoc"]:
             try:
                 content = self.get_file_content(
-                    installation_id, repo_full_name, path_candidate, ctx.default_branch or "main"
+                    installation_id,
+                    repo_full_name,
+                    path_candidate,
+                    ctx.default_branch or "main",
                 )
                 if content:
                     ctx.has_contributing = True
-                    ctx.contributing_content = content[:5000]  # Truncate to 5k chars
+                    ctx.contributing_content = content[:5000]
                     break
-            except Exception:
+            except httpx.HTTPStatusError:
                 continue
 
         # Check for linter/config files
         linter_files = [
-            ".eslintrc", ".eslintrc.json", ".eslintrc.js", ".eslintrc.yaml",
-            "pyproject.toml", ".flake8", "setup.cfg", ".pylintrc",
-            "tsconfig.json", ".prettierrc", ".prettierrc.json",
-            "rustfmt.toml", "go.mod",
+            ".eslintrc",
+            ".eslintrc.json",
+            ".eslintrc.js",
+            ".eslintrc.yaml",
+            "pyproject.toml",
+            ".flake8",
+            "setup.cfg",
+            ".pylintrc",
+            "tsconfig.json",
+            ".prettierrc",
+            ".prettierrc.json",
+            "rustfmt.toml",
+            "go.mod",
         ]
         for lf in linter_files:
             try:
                 content = self.get_file_content(
-                    installation_id, repo_full_name, lf, ctx.default_branch or "main"
+                    installation_id,
+                    repo_full_name,
+                    lf,
+                    ctx.default_branch or "main",
                 )
                 if content:
                     ctx.has_linter_config = True
                     if ctx.linter_config_content is None:
                         ctx.linter_config_content = {}
                     ctx.linter_config_content[lf] = content[:2000]
-            except Exception:
+            except httpx.HTTPStatusError:
                 continue
 
         return ctx
@@ -229,33 +267,21 @@ class GitHubClient:
         comments: list[dict[str, Any]],
         review_body: str = "### 🔍 Sentinel Review\n\nAutomated review complete. See inline comments for details.",
     ) -> dict[str, Any]:
-        """
-        Post a review with inline comments to a pull request.
-
-        Args:
-            installation_id: GitHub App installation ID.
-            repo_full_name: e.g. "owner/repo".
-            pr_number: Pull request number.
-            comments: List of comment dicts with keys:
-                path, line, body (and optionally side, start_line, start_side).
-            review_body: Top-level summary for the review.
-
-        Returns:
-            The GitHub API response JSON.
-        """
+        """Post a review with inline comments to a pull request."""
         path = f"/repos/{repo_full_name}/pulls/{pr_number}/reviews"
         payload = {
             "body": review_body,
             "event": "COMMENT",
             "comments": comments,
         }
-        resp = self._request(
-            "POST", path, installation_id=installation_id, json=payload
-        )
+        resp = self._request("POST", path, installation_id=installation_id, json=payload)
         result = resp.json()
         logger.info(
-            f"Posted review to {repo_full_name}#{pr_number}: "
-            f"{len(comments)} comments (review_id={result.get('id')})"
+            "Posted review to %s#%d: %d comments (review_id=%s)",
+            repo_full_name,
+            pr_number,
+            len(comments),
+            result.get("id"),
         )
         return result
 
@@ -267,6 +293,6 @@ class GitHubClient:
         try:
             resp = self._request("GET", path, installation_id=installation_id)
             return resp.json()
-        except Exception as e:
-            logger.warning(f"Failed to get reactions for comment {comment_id}: {e}")
+        except (httpx.HTTPStatusError, httpx.TimeoutException) as e:
+            logger.warning("Failed to get reactions for comment %d: %s", comment_id, e)
             return []

@@ -64,7 +64,7 @@ make docker-down   # Stop all services
    - `chore:` — maintenance tasks
 3. **Update documentation** if you change behavior (README, docs/*, docstrings).
 4. **Ensure CI passes** — all tests must pass and lint must be clean.
-5. **Include tests** for new functionality. We have 157+ tests and aim to keep coverage ≥80%.
+5. **Include tests** for new functionality. We have ~240 tests and aim to keep coverage ≥80%.
 
 ## Coding Conventions
 
@@ -105,13 +105,15 @@ All documentation lives in the `docs/` directory:
 | File | Purpose |
 |------|---------|
 | `architecture.md` | System architecture and data flow |
-| `decisions.md` | Architectural Decision Records |
+| `decisions.md` | Architectural Decision Records (21 ADRs) |
 | `security-notes.md` | Threat model and security controls |
-| `evaluation-report.md` | Test results and evaluation metrics |
+| `evaluation-report.md` | Test results, evaluation metrics, multi-model comparison |
+| `audit-v2.md` | Post-remediation 28-category re-audit (8.9/10) |
+| `remediation-plan.md` | Full P0-P3 remediation blueprint |
 | `build-log.md` | Development timeline |
 
 If your change affects architecture, configuration, or security, please update the relevant docs.
 
 ## Questions?
 
-Open a [GitHub Discussion](https://github.com/yourusername/sentinel-review/discussions) or check the existing [Issues](https://github.com/yourusername/sentinel-review/issues).
+Open a [GitHub Discussion](https://github.com/sentinel-review/sentinel-review/discussions) or check the existing [Issues](https://github.com/sentinel-review/sentinel-review/issues).
