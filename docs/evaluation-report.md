@@ -1,8 +1,8 @@
 # Sentinel Review — Evaluation Report
 
-> *Generated: 2026-07-27*
-> *Mode: Mock (rule-based pattern matching)*
-> *Fixtures: 6 entries, 9 known issues*
+> *Generated: 2026-07-27 18:00:33 UTC*
+> *Mode: Mock (mock)*
+> *Fixtures: 8 entries, 14 known issues*
 > *Duration: 0.0s*
 
 ---
@@ -11,38 +11,20 @@
 
 | Metric | Value |
 |--------|:-----:|
-| Precision | 100.0% |
-| Recall | 88.9% |
-| F1 Score | 0.941 |
-| True Positives | 8 |
-| False Positives | 0 |
-| False Negatives | 1 |
+| Precision | 75.0% |
+| Recall | 42.9% |
+| F1 Score | 0.545 |
+| True Positives | 6 |
+| False Positives | 2 |
+| False Negatives | 8 |
 
 ### By Category
 
 | Category | Known Issues | TP | FP | FN | Precision | Recall |
 |----------|:------------:|:--:|:--:|:--:|:---------:|:------:|
-| bug | 3 | 2 | 0 | 1 | 100% | 67% |
-| security | 6 | 6 | 0 | 0 | 100% | 100% |
-
----
-
-## Multi-Model Comparison
-
-> **Note:** These results are from **mock** mode. In mock mode, both providers use the same rule-based analyzer, so precision/recall are identical. The latency and cost figures reflect the mock pipeline overhead, not real API latency. Run with `--mode live` and valid API keys for real provider comparison.
-
-To run a live comparison:
-
-```bash
-# Requires both ANTHROPIC_API_KEY and OPENAI_API_KEY
-python scripts/run_comparison.py --mode live --output docs/evaluation-report.md
-```
-
-| Provider | Model | Precision | Recall | F1 | Avg Latency | Total Tokens | Est. Cost |
-|----------|:-----:|:---------:|:------:|:--:|:-----------:|:------------:|:---------:|
-| **Anthropic** | `claude-sonnet-4-20250514` | 100% | 89% | 0.94 | 0ms | 0 | — |
-| **Openai** | `gpt-4o` | 100% | 89% | 0.94 | 0ms | 0 | — |
-
+| bug | 4 | 1 | 1 | 3 | 50% | 25% |
+| security | 9 | 5 | 1 | 4 | 83% | 56% |
+| suggestion | 1 | 0 | 0 | 1 | — | 0% |
 
 ## Per-Fixture Breakdown
 
@@ -50,92 +32,82 @@ python scripts/run_comparison.py --mode live --output docs/evaluation-report.md
 
 | Fixture | Known Issues | TP | FP | FN | Precision | Recall | F1 |
 |---------|:------------:|:--:|:--:|:--:|:---------:|:------:|:--:|
-| sql_injection | 2 | 2 | 0 | 0 | 100% | 100% | 1.00 |
+| sql_injection | 2 | 1 | 1 | 1 | 50% | 50% | 0.50 |
 | hardcoded_secret | 3 | 3 | 0 | 0 | 100% | 100% | 1.00 |
 | unsafe_deserialization | 1 | 1 | 0 | 0 | 100% | 100% | 1.00 |
-| off_by_one | 2 | 1 | 0 | 1 | 100% | 50% | 0.67 |
+| off_by_one | 2 | 0 | 1 | 2 | — | — | — |
 | clean | 0 | 0 | 0 | 0 | — | — | — |
 | missing_test | 1 | 1 | 0 | 0 | 100% | 100% | 1.00 |
-| **Total** | **9** | **8** | **0** | **1** | **100%** | **89%** | **0.94** |
+| xss_in_react | 2 | 0 | 0 | 2 | — | — | — |
+| go_nil_pointer | 3 | 0 | 0 | 3 | — | — | — |
+| **Total** | **14** | **6** | **2** | **8** |
+| | | | | | **75%** | **43%** | **0.55** |
 
-### Fixture Details
 
 #### sql_injection
 
 **True Positives:**
-- ✅ `users.py:6` (security/blocking) — SQL injection vulnerability
-- ✅ `users.py:11` (security/blocking) — SQL injection vulnerability
+- ✅ `users.py:6` (security/blocking) — SQL injection vulnerability — user input is interpolated directly into the query
+
+**False Positives (noise):**
+- ❌ `users.py:11` (security/blocking) — SQL injection vulnerability — user input is interpolated directly into the query
+
+**False Negatives (missed):**
+- ⚠️ `users.py:10` (security) — SQL injection via string concatenation with user_id
+
 
 #### hardcoded_secret
 
 **True Positives:**
-- ✅ `config.py:2` (security/blocking) — Hardcoded API secret key
-- ✅ `config.py:3` (security/blocking) — Hardcoded password
-- ✅ `config.py:4` (security/blocking) — Hardcoded Django SECRET_KEY
+- ✅ `config.py:2` (security/blocking) — Hardcoded API secret key committed to source code.
+- ✅ `config.py:3` (security/blocking) — Hardcoded hardcoded password committed to source code.
+- ✅ `config.py:4` (security/blocking) — Hardcoded Django SECRET_KEY committed to source code.
+
 
 #### unsafe_deserialization
 
 **True Positives:**
-- ✅ `api.py:5` (security/blocking) — Unsafe `pickle.loads` on untrusted input
+- ✅ `api.py:5` (security/blocking) — Unsafe deserialization with pickle.loads on untrusted input — can lead to remote
+
 
 #### off_by_one
 
-**True Positives:**
-- ✅ `processor.py:8` (bug/blocking) — Off-by-one error
+
+**False Positives (noise):**
+- ❌ `processor.py:8` (bug/blocking) — Off-by-one error: range(1, len(items) + 1) goes one beyond the last index, causi
 
 **False Negatives (missed):**
-- ⚠️ `processor.py:9` (bug) — Related off-by-one issue on a second line
+- ⚠️ `processor.py:9` (bug) — Off-by-one error: range(1, len(items) + 1) causes IndexError on last iteration
+- ⚠️ `processor.py:10` (bug) — Potentially accessing items[i] when i is out of bounds (see off-by-one above)
+
 
 #### clean
 
 - No known issues and no findings (correct).
 
+
 #### missing_test
 
 **True Positives:**
-- ✅ `calculator.py:2` (bug/blocking) — Missing zero-division guard
+- ✅ `calculator.py:2` (bug/blocking) — Division by zero guard missing — passing b=0 will raise a ZeroDivisionError at r
 
----
 
-## Test Suite
+#### xss_in_react
 
-### Current Test Coverage
 
-| File | Tests | Area |
-|------|:-----:|------|
-| `test_signature.py` | 10 | HMAC verification |
-| `test_schemas.py` | 22 | Pydantic validation |
-| `test_github_client.py` | 11 | GitHub API client |
-| `test_llm.py` | 13 | LLM provider |
-| `test_semgrep.py` | 12 | Semgrep integration |
-| `test_webhook.py` | 9 | Webhook views |
-| `test_models.py` | 27 | Model schema + constraints |
-| `test_review_worker.py` | 21 | Full pipeline with mocks |
-| `test_feedback.py` | 5 | Feedback loop |
-| `test_cache.py` | 19 | LLM response cache |
-| `test_e2e.py` | 6 | End-to-end pipeline |
-| `test_startup.py` | 4 | Startup validation + auth |
-| `test_ignore_rules.py` | 26 | .sentinel-ignore support |
-| `test_circuit_breaker.py` | 15 | Circuit breaker |
-| `test_logging.py` | 8 | JSON logging |
-| `test_health.py` | 8 | Health endpoints |
-| `test_gha_review.py` | 18 | GHA execution mode |
-| `test_metrics.py` | 4 | Prometheus metrics |
-| **Total** | **237** | |
+**False Negatives (missed):**
+- ⚠️ `components/UserProfile.tsx:8` (security) — Cross-Site Scripting (XSS) via dangerouslySetInnerHTML with untrusted user.bio —
+- ⚠️ `components/UserProfile.tsx:11` (security) — Insecure random token generation using Math.random() — not cryptographically sec
 
-### Recent Additions (Post-Remediation)
 
-| Test | What It Covers |
-|------|---------------|
-| `test_e2e.py` | Full webhook→Celery→GitHub→LLM→database flow (6 tests) |
-| `test_cache.py` | LLM cache key gen, serialization, in-memory ops, TTL, clear (19 tests) |
-| `test_startup.py` | `ImproperlyConfigured` on missing secrets, auth rejection (4 tests) |
-| `test_ignore_rules.py` | `.sentinel-ignore` parsing, fnmatch matching, finding filtering (26 tests) |
-| `test_circuit_breaker.py` | CLOSED/OPEN/HALF_OPEN transitions, recovery, thundering herd prevention (15 tests) |
-| `test_logging.py` | JSON formatter, structured fields, env-var control (8 tests) |
-| `test_health.py` | Liveness/readiness endpoints, DB/Redis checks (8 tests) |
-| `test_gha_review.py` | GHA runner: diff, LLM, dedup, posting, error paths (18 tests) |
-| `test_metrics.py` | Prometheus metric registry, counters, histograms (4 tests) |
+#### go_nil_pointer
+
+
+**False Negatives (missed):**
+- ⚠️ `handlers/user.go:6` (security) — SQL injection via fmt.Sprintf with user-controlled id — should use parameterized
+- ⚠️ `handlers/user.go:10` (bug) — Nil pointer dereference: db.QueryRow error is silently ignored, user can be nil 
+- ⚠️ `handlers/user.go:17` (suggestion) — Potential nil pointer dereference: u.FirstName accessed without nil check on u
+
 
 ---
 
@@ -160,11 +132,27 @@ A finding is considered a **True Positive** if it matches a known issue on:
 If a finding doesn't match any known issue, it's a **False Positive**.
 If a known issue isn't matched by any finding, it's a **False Negative**.
 
-### Mode: Mock
+### Mode: Mock (mock)
 
-This evaluation was run in **mock** mode using rule-based pattern matching
-to simulate LLM output. Results may differ when using a real LLM provider
-(run with `--mode live`).
+This evaluation was run in **mock** mode.
+
+The mock provider uses rule-based pattern matching to simulate LLM output.
+This gives a deterministic baseline for the evaluation harness. Results may
+differ when using a real LLM provider (run with `--mode live`).
+
+**Mock rules implemented:**
+1. SQL injection detection (f-string + SQL keywords, string concatenation)
+2. Hardcoded secret detection (API keys, passwords, SECRET_KEY patterns)
+3. Unsafe deserialization detection (`pickle.loads`, `pickle.load`)
+4. Off-by-one index errors (`range(1, len + 1)`)
+5. Missing zero-division guard (`return a/b` without `b==0` check)
+
+### Evaluation Dataset
+
+The `data/eval_set.json` file was generated by `scripts/build_eval_set.py`:
+- 6 planted-bug fixtures from `backend/tests/fixtures/sample_prs/`
+- 9 known issues across security and bug categories
+- Includes a clean diff (0 issues) as a false-positive check
 
 ### Reproducibility
 
@@ -172,11 +160,8 @@ to simulate LLM output. Results may differ when using a real LLM provider
 # Regenerate evaluation set
 python scripts/build_eval_set.py --sources fixtures
 
-# Re-run evaluation (mock mode)
-python scripts/run_evaluation.py --output docs/evaluation-report.md --mode mock
-
-# Re-run evaluation with live LLM provider
-python scripts/run_evaluation.py --output docs/evaluation-report.md --mode live
+# Re-run evaluation
+python scripts/run_evaluation.py --output docs/evaluation-report.md
 ```
 
 ---

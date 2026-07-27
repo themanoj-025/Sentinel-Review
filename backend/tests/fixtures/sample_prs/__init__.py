@@ -149,7 +149,7 @@ CLEAN_DIFF = """diff --git a/utils.py b/utils.py
 -    return first + ' ' + last
 +def format_name(first_name, last_name):
 +    return first_name + ' ' + last_name
- """
+"""
 
 CLEAN_DIFF_KNOWN_ISSUES: list[dict[str, Any]] = []
 
@@ -171,7 +171,7 @@ MISSING_TEST_DIFF = """diff --git a/calculator.py b/calculator.py
 -
 -def add(a, b):
 -    return a + b
- """
+"""
 
 MISSING_TEST_KNOWN_ISSUES: list[dict[str, Any]] = [
     {
@@ -183,6 +183,97 @@ MISSING_TEST_KNOWN_ISSUES: list[dict[str, Any]] = [
     },
 ]
 
+# Fixture 7: JavaScript/TypeScript — XSS + Insecure Randomness
+
+JS_XSS_DIFF = """diff --git a/components/UserProfile.tsx b/components/UserProfile.tsx
+--- a/components/UserProfile.tsx
++++ b/components/UserProfile.tsx
+@@ -1,6 +1,12 @@
+ interface Props {
+   user: { name: string; bio: string };
+ }
+
+-export function UserProfile({ user }: Props) {
+-  return <div>{user.name}</div>;
++export function UserProfile({ user, token }: Props & { token: string }) {
++  const bioHtml = { __html: user.bio };
++  return (
++    <div>
++      <h1>{user.name}</h1>
++      <div dangerouslySetInnerHTML={bioHtml} />
++      <input type="hidden" value={Math.random().toString(36)} name="csrf" />
++    </div>
++  );
+ }
+"""
+
+JS_XSS_KNOWN_ISSUES: list[dict[str, Any]] = [
+    {
+        "file_path": "components/UserProfile.tsx",
+        "line_number": 8,
+        "category": "security",
+        "severity": "blocking",
+        "description": "Cross-Site Scripting (XSS) via dangerouslySetInnerHTML with untrusted user.bio — allows arbitrary HTML/JS injection",
+    },
+    {
+        "file_path": "components/UserProfile.tsx",
+        "line_number": 11,
+        "category": "security",
+        "severity": "blocking",
+        "description": "Insecure random token generation using Math.random() — not cryptographically secure; predictable CSRF token",
+    },
+]
+
+# Fixture 8: Go — Nil Pointer Dereference + SQL Injection
+
+GO_NIL_POINTER_DIFF = """diff --git a/handlers/user.go b/handlers/user.go
+--- a/handlers/user.go
++++ b/handlers/user.go
+@@ -5,9 +5,16 @@
+ func GetUser(db *sql.DB, id string) (*User, error) {
+-	row := db.QueryRow("SELECT * FROM users WHERE id = $1", id)
+-	user := &User{}
+-	err := row.Scan(&user.ID, &user.Name)
+-	if err != nil {
+-		return nil, fmt.Errorf("query failed: %w", err)
+-	}
+-	return user, nil
++	query := fmt.Sprintf("SELECT * FROM users WHERE id = '%s'", id)
++	row := db.QueryRow(query)
++	user := &User{}
++	err := row.Scan(&user.ID, &user.Name)
++	return user, nil
++}
++
++func (u *User) DisplayName() string {
++	return strings.Title(u.FirstName)
+ }
+"""
+
+GO_NIL_POINTER_KNOWN_ISSUES: list[dict[str, Any]] = [
+    {
+        "file_path": "handlers/user.go",
+        "line_number": 6,
+        "category": "security",
+        "severity": "blocking",
+        "description": "SQL injection via fmt.Sprintf with user-controlled id — should use parameterized query ($1) instead",
+    },
+    {
+        "file_path": "handlers/user.go",
+        "line_number": 10,
+        "category": "bug",
+        "severity": "blocking",
+        "description": "Nil pointer dereference: db.QueryRow error is silently ignored, user can be nil when returned",
+    },
+    {
+        "file_path": "handlers/user.go",
+        "line_number": 14,
+        "category": "suggestion",
+        "severity": "warning",
+        "description": "Potential nil pointer dereference: u.FirstName accessed without nil check on u",
+    },
+]
+
 # Master List
 
 FIXTURES: list[dict[str, Any]] = [
@@ -191,35 +282,55 @@ FIXTURES: list[dict[str, Any]] = [
         "diff": SQL_INJECTION_DIFF,
         "known_issues": SQL_INJECTION_KNOWN_ISSUES,
         "description": "SQL injection via f-string and string concatenation",
+        "language": "python",
     },
     {
         "id": "hardcoded_secret",
         "diff": HARDCODED_SECRET_DIFF,
         "known_issues": HARDCODED_SECRET_KNOWN_ISSUES,
         "description": "Hardcoded API secrets, database passwords, and secret keys",
+        "language": "python",
     },
     {
         "id": "unsafe_deserialization",
         "diff": UNSAFE_DESERIALIZATION_DIFF,
         "known_issues": UNSAFE_DESERIALIZATION_KNOWN_ISSUES,
         "description": "Unsafe pickle.loads on user-controlled data",
+        "language": "python",
     },
     {
         "id": "off_by_one",
         "diff": OFF_BY_ONE_DIFF,
         "known_issues": OFF_BY_ONE_KNOWN_ISSUES,
         "description": "Off-by-one index error and potential null pointer",
+        "language": "python",
     },
     {
         "id": "clean",
         "diff": CLEAN_DIFF,
         "known_issues": CLEAN_DIFF_KNOWN_ISSUES,
         "description": "Clean rename — should produce zero findings (false positive check)",
+        "language": "python",
     },
     {
         "id": "missing_test",
         "diff": MISSING_TEST_DIFF,
         "known_issues": MISSING_TEST_KNOWN_ISSUES,
         "description": "Missing zero-division guard in calculator function",
+        "language": "python",
+    },
+    {
+        "id": "xss_in_react",
+        "diff": JS_XSS_DIFF,
+        "known_issues": JS_XSS_KNOWN_ISSUES,
+        "description": "XSS via dangerouslySetInnerHTML and insecure Math.random CSRF token in TypeScript React",
+        "language": "typescript",
+    },
+    {
+        "id": "go_nil_pointer",
+        "diff": GO_NIL_POINTER_DIFF,
+        "known_issues": GO_NIL_POINTER_KNOWN_ISSUES,
+        "description": "SQL injection via Sprintf and nil pointer dereference in Go",
+        "language": "go",
     },
 ]
