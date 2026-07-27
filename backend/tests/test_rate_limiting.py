@@ -83,23 +83,27 @@ class TestAnonRateLimiting:
         Uses a minimal DRF APIView subclass with a throttle that has a
         hardcoded 1/second rate (bypassing DRF's api_settings cache)
         and verifies the second request gets a 429 with Retry-After.
+
+        Uses a unique IP to avoid cache conflicts with other tests.
         """
+        from django.core.cache import cache
         from django.http import HttpResponse
         from rest_framework.throttling import AnonRateThrottle
         from rest_framework.views import APIView
 
-        class _SecondThrottle(AnonRateThrottle):
+        # Clear any cache entries left by other tests that could interfere
+        cache.clear()
+
+        class _BurstThrottle(AnonRateThrottle):
             """Throttle with hardcoded rate — no settings dependency."""
             rate = "1/second"
 
             def __init__(self):
                 self.rate = "1/second"
                 self.num_requests, self.duration = self.parse_rate(self.rate)
-                self.history = []
-                self.key = None
 
         class _TestView(APIView):
-            throttle_classes = [_SecondThrottle]
+            throttle_classes = [_BurstThrottle]
             permission_classes = []
 
             def get(self, request):
@@ -109,12 +113,14 @@ class TestAnonRateLimiting:
 
         from django.test.client import RequestFactory
 
+        # Use a unique IP to isolate from other tests' cache state
+        unique_ip = "127.0.0.99"
         factory = RequestFactory()
-        req1 = factory.get("/test/")
+        req1 = factory.get("/test/", REMOTE_ADDR=unique_ip)
         req1.user = AnonymousUser()
         resp1 = view(req1)
 
-        req2 = factory.get("/test/")
+        req2 = factory.get("/test/", REMOTE_ADDR=unique_ip)
         req2.user = AnonymousUser()
         resp2 = view(req2)
 

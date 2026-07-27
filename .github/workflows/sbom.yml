@@ -1,0 +1,55 @@
+name: SBOM
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install cyclonedx-bom
+
+      - name: Generate CycloneDX SBOM
+        run: |
+          python -m cyclonedx_bom -i requirements.txt -o sbom.cyclonedx.json --format json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cyclonedx.json
+          retention-days: 90
+
+      - name: Display SBOM summary
+        run: |
+          echo "SBOM generated for ${{ github.ref }}"
+          python -c "
+          import json
+          with open('sbom.cyclonedx.json') as f:
+              sbom = json.load(f)
+          components = sbom.get('components', [])
+          print(f'Total components: {len(components)}')
+          for c in components[:10]:
+              print(f'  - {c.get(\"name\")} {c.get(\"version\", \"\")}')
+          if len(components) > 10:
+              print(f'  ... and {len(components) - 10} more')
+          "

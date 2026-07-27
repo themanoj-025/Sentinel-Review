@@ -1,0 +1,93 @@
+# Sentinel Review — Prometheus Alerting Rules
+#
+# Import these into your Prometheus configuration (e.g., in prometheus.yml
+# under rule_files:) to get alerts for common Sentinel Review issues.
+#
+# Example prometheus.yml:
+#   rule_files:
+#     - "/etc/prometheus/sentinel-review-alerts.yml"
+
+groups:
+  - name: sentinel_review
+    interval: 1m
+    rules:
+
+      # ── High Review Failure Rate ──────────────────────────────────
+      # Alert if more than 5% of reviews have failed in the last 15 minutes.
+      - alert: SentinelReviewHighFailureRate
+        expr: |
+          rate(sentinel_review_reviews_total{status="failed"}[15m])
+          /
+          rate(sentinel_review_reviews_total[15m])
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High review failure rate ({{ $value | humanizePercentage }})"
+          description: >
+            More than 5% of reviews have failed in the last 15 minutes.
+            Current rate: {{ $value | humanizePercentage }}.
+            This may indicate an issue with the LLM provider, GitHub API, or pipeline.
+
+      # ── Celery Queue Depth ──────────────────────────────────────
+      # Alert if any queue exceeds 100 pending tasks.
+      - alert: SentinelReviewQueueDepthHigh
+        expr: sentinel_review_celery_queue_depth > 100
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Celery queue depth > 100 ({{ $labels.queue }})"
+          description: >
+            Queue {{ $labels.queue }} has {{ $value }} pending tasks.
+            Consider scaling up Celery workers if this persists.
+
+      # ── LLM Error Rate ───────────────────────────────────────────
+      # Alert if LLM errors exceed 10% of total LLM calls in the last 5 minutes.
+      - alert: SentinelReviewLLMErrorRateHigh
+        expr: |
+          rate(sentinel_review_llm_errors_total[5m])
+          /
+          (rate(sentinel_review_llm_cache_hits_total[5m])
+           + rate(sentinel_review_llm_cache_misses_total[5m])
+           + rate(sentinel_review_llm_errors_total[5m]))
+          > 0.10
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "LLM error rate > 10%"
+          description: >
+            LLM provider ({{ $labels.provider }}) error rate is {{ $value | humanizePercentage }}.
+
+      # ── P95 Latency Spike ─────────────────────────────────────────
+      # Alert if p95 latency exceeds 30s (double the expected ~15s max).
+      - alert: SentinelReviewHighLatency
+        expr: histogram_quantile(0.95, sum(rate(sentinel_review_latency_ms_bucket[5m])) by (le)) > 30000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P95 review latency > 30s"
+          description: >
+            P95 review latency is {{ $value | humanizeDuration }}.
+            Expected range: 5–15s.
+
+      # ── Cache Hit Rate Drop ──────────────────────────────────────
+      # Alert if cache hit rate drops below 20% (suggesting many new/unique diffs).
+      - alert: SentinelReviewLowCacheHitRate
+        expr: |
+          rate(sentinel_review_llm_cache_hits_total[10m])
+          /
+          (rate(sentinel_review_llm_cache_hits_total[10m])
+           + rate(sentinel_review_llm_cache_misses_total[10m]))
+          < 0.20
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "LLM cache hit rate below 20% ({{ $value | humanizePercentage }})"
+          description: >
+            Cache hit rate is {{ $value | humanizePercentage }}.
+            This is expected during periods of many unique diffs.
