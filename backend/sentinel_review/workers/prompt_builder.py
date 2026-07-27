@@ -61,41 +61,52 @@ class PromptBuilder:
 
         # Add custom instructions if provided
         if custom_instructions:
-            messages.append({
-                "role": "user",
-                "content": f"Custom review instructions for this repository:\n{custom_instructions}",
-            })
-            messages.append({
-                "role": "assistant",
-                "content": "Understood. I'll follow these custom review guidelines.",
-            })
+            messages.append(
+                {
+                    "role": "user",
+                    "content": f"Custom review instructions for this repository:\n{custom_instructions}",
+                }
+            )
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": "Understood. I'll follow these custom review guidelines.",
+                }
+            )
 
         # Add repo context if available
         if repo_context:
             truncated_context = repo_context[: self.max_context_chars]
-            messages.append({
-                "role": "user",
-                "content": f"Repository context:\n{truncated_context}",
-            })
-            messages.append({
-                "role": "assistant",
-                "content": "Understood. I'll consider this context during the review.",
-            })
+            messages.append(
+                {
+                    "role": "user",
+                    "content": f"Repository context:\n{truncated_context}",
+                }
+            )
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": "Understood. I'll consider this context during the review.",
+                }
+            )
 
         # Add file contents if available
         if file_contents:
             file_blob = "\n\n".join(
-                f"### {path}\n```\n{content[:5000]}\n```"
-                for path, content in file_contents.items()
+                f"### {path}\n```\n{content[:5000]}\n```" for path, content in file_contents.items()
             )
-            messages.append({
-                "role": "user",
-                "content": f"Full file contents for context:\n{file_blob[: self.max_file_content_chars]}",
-            })
-            messages.append({
-                "role": "assistant",
-                "content": "Thanks, I have the full context of the changed files.",
-            })
+            messages.append(
+                {
+                    "role": "user",
+                    "content": f"Full file contents for context:\n{file_blob[: self.max_file_content_chars]}",
+                }
+            )
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": "Thanks, I have the full context of the changed files.",
+                }
+            )
 
         # Add few-shot examples
         for example in get_few_shot_examples():

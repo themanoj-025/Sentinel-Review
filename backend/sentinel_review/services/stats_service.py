@@ -41,7 +41,9 @@ class StatsService:
 
         if repo_full_name:
             upvotes = upvotes.filter(comment__review__pull_request__repo__full_name=repo_full_name)
-            downvotes = downvotes.filter(comment__review__pull_request__repo__full_name=repo_full_name)
+            downvotes = downvotes.filter(
+                comment__review__pull_request__repo__full_name=repo_full_name
+            )
 
         up_count = upvotes.count()
         down_count = downvotes.count()
@@ -61,14 +63,16 @@ class StatsService:
             cat_total = cat_up + cat_down
             cat_rate = round(cat_up / cat_total * 100, 1) if cat_total > 0 else 0.0
 
-            category_stats.append({
-                "category": cat_code,
-                "label": cat_label,
-                "total_comments": cat_count,
-                "upvotes": cat_up,
-                "downvotes": cat_down,
-                "usefulness_rate": cat_rate,
-            })
+            category_stats.append(
+                {
+                    "category": cat_code,
+                    "label": cat_label,
+                    "total_comments": cat_count,
+                    "upvotes": cat_up,
+                    "downvotes": cat_down,
+                    "usefulness_rate": cat_rate,
+                }
+            )
 
         return {
             "total_comments": total_comments,

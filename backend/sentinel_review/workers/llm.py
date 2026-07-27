@@ -65,7 +65,13 @@ class LLMProvider:
         a corrective follow-up message showing the validation error.
         """
         # First attempt
-        result = self._call_api(diff, repo_context, file_contents, corrective_hint=None, custom_instructions=custom_instructions)
+        result = self._call_api(
+            diff,
+            repo_context,
+            file_contents,
+            corrective_hint=None,
+            custom_instructions=custom_instructions,
+        )
         if result.validation_success:
             return result
 
@@ -75,7 +81,11 @@ class LLMProvider:
             result.error_message,
         )
         result = self._call_api(
-            diff, repo_context, file_contents, corrective_hint=result.error_message, custom_instructions=custom_instructions
+            diff,
+            repo_context,
+            file_contents,
+            corrective_hint=result.error_message,
+            custom_instructions=custom_instructions,
         )
         if result.validation_success:
             logger.info("LLM retry succeeded after corrective hint.")
@@ -84,7 +94,9 @@ class LLMProvider:
         logger.error("LLM validation failed after retry: %s", result.error_message)
         return result
 
-    def _call_api(self, diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None) -> LLMResult:
+    def _call_api(
+        self, diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None
+    ) -> LLMResult:
         """Subclasses implement this - sends the actual API request."""
         raise NotImplementedError
 
@@ -126,18 +138,26 @@ class AnthropicProvider(LLMProvider):
         self.api_key = settings.ANTHROPIC_API_KEY
         self.model = settings.ANTHROPIC_MODEL
 
-    def review_diff(self, diff, repo_context=None, file_contents=None, custom_instructions=None) -> LLMResult:
+    def review_diff(
+        self, diff, repo_context=None, file_contents=None, custom_instructions=None
+    ) -> LLMResult:
         """Review a diff with automatic retry on validation failures."""
-        return self._review_with_retry(diff, repo_context, file_contents, custom_instructions=custom_instructions)
+        return self._review_with_retry(
+            diff, repo_context, file_contents, custom_instructions=custom_instructions
+        )
 
-    def _call_api(self, diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None) -> LLMResult:
+    def _call_api(
+        self, diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None
+    ) -> LLMResult:
         if not self.api_key:
             return LLMResult(
                 error_message="Anthropic API key not configured", validation_success=False
             )
 
         prompt_builder = PromptBuilder()
-        messages = prompt_builder.build(diff, repo_context, file_contents, corrective_hint, custom_instructions)
+        messages = prompt_builder.build(
+            diff, repo_context, file_contents, corrective_hint, custom_instructions
+        )
         system_content = messages[0]["content"]
         user_assistant_messages = messages[1:]
 
@@ -207,18 +227,26 @@ class OpenAIProvider(LLMProvider):
         self.api_key = settings.OPENAI_API_KEY
         self.model = settings.OPENAI_MODEL
 
-    def review_diff(self, diff, repo_context=None, file_contents=None, custom_instructions=None) -> LLMResult:
+    def review_diff(
+        self, diff, repo_context=None, file_contents=None, custom_instructions=None
+    ) -> LLMResult:
         """Review a diff with automatic retry on validation failures."""
-        return self._review_with_retry(diff, repo_context, file_contents, custom_instructions=custom_instructions)
+        return self._review_with_retry(
+            diff, repo_context, file_contents, custom_instructions=custom_instructions
+        )
 
-    def _call_api(self, diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None) -> LLMResult:
+    def _call_api(
+        self, diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None
+    ) -> LLMResult:
         if not self.api_key:
             return LLMResult(
                 error_message="OpenAI API key not configured", validation_success=False
             )
 
         prompt_builder = PromptBuilder()
-        build_messages = prompt_builder.build(diff, repo_context, file_contents, corrective_hint, custom_instructions)
+        build_messages = prompt_builder.build(
+            diff, repo_context, file_contents, corrective_hint, custom_instructions
+        )
         openai_messages = [{"role": "system", "content": build_messages[0]["content"]}]
         for msg in build_messages[1:]:
             openai_messages.append({"role": msg["role"], "content": msg["content"]})

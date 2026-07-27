@@ -94,20 +94,28 @@ def repo_list(request: HttpRequest) -> HttpResponse:
     has_next = (offset + page_size) < total
 
     if request.headers.get("HX-Request"):
-        return render(request, "dashboard/partials/repo_table.html", {
+        return render(
+            request,
+            "dashboard/partials/repo_table.html",
+            {
+                "repos": repos_page,
+                "page": page,
+                "has_next": has_next,
+                "search": search,
+            },
+        )
+
+    return render(
+        request,
+        "dashboard/repo_list.html",
+        {
             "repos": repos_page,
             "page": page,
             "has_next": has_next,
+            "total": total,
             "search": search,
-        })
-
-    return render(request, "dashboard/repo_list.html", {
-        "repos": repos_page,
-        "page": page,
-        "has_next": has_next,
-        "total": total,
-        "search": search,
-    })
+        },
+    )
 
 
 @cache_control(private=True, max_age=15)

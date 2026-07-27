@@ -31,9 +31,9 @@ class TestAnonRateLimiting:
         throttle.num_requests, throttle.duration = throttle.parse_rate(throttle.rate)
         request = self._make_request()
         for i in range(3):
-            assert throttle.allow_request(request, None), (
-                f"Request {i+1} should be allowed within 3/minute limit"
-            )
+            assert throttle.allow_request(
+                request, None
+            ), f"Request {i+1} should be allowed within 3/minute limit"
 
     def test_request_beyond_limit_is_blocked(self):
         """The 4th request after exhausting 3/minute limit should be blocked."""
@@ -43,9 +43,9 @@ class TestAnonRateLimiting:
         request = self._make_request()
         for _ in range(3):
             throttle.allow_request(request, None)
-        assert not throttle.allow_request(request, None), (
-            "4th request should be blocked by throttle"
-        )
+        assert not throttle.allow_request(
+            request, None
+        ), "4th request should be blocked by throttle"
 
     def test_throttle_resets_after_duration(self):
         """After clearing the cache (simulating duration expiry), requests allowed again."""
@@ -60,9 +60,9 @@ class TestAnonRateLimiting:
         if throttle.key:
             cache.delete(throttle.key)
         throttle.history = []
-        assert throttle.allow_request(request, None), (
-            "After cache cleared (simulating duration expiry), throttle should allow requests"
-        )
+        assert throttle.allow_request(
+            request, None
+        ), "After cache cleared (simulating duration expiry), throttle should allow requests"
 
     def test_wait_time_returned_on_block(self):
         """When blocked, throttle.wait() should return a positive number."""
@@ -96,6 +96,7 @@ class TestAnonRateLimiting:
 
         class _BurstThrottle(AnonRateThrottle):
             """Throttle with hardcoded rate — no settings dependency."""
+
             rate = "1/second"
 
             def __init__(self):
@@ -124,12 +125,8 @@ class TestAnonRateLimiting:
         req2.user = AnonymousUser()
         resp2 = view(req2)
 
-        assert resp1.status_code == 200, (
-            f"First request should be 200, got {resp1.status_code}"
-        )
-        assert resp2.status_code == 429, (
-            f"Second request should be 429, got {resp2.status_code}"
-        )
+        assert resp1.status_code == 200, f"First request should be 200, got {resp1.status_code}"
+        assert resp2.status_code == 429, f"Second request should be 429, got {resp2.status_code}"
         # Retry-After should be a positive integer
         retry_after = resp2.headers.get("Retry-After")
         assert retry_after is not None, "429 response should include Retry-After header"

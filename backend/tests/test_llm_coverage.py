@@ -32,7 +32,9 @@ class TestLLMProviderCorrectiveRetry:
         """When _call_api returns success on first try, return immediately."""
         provider = LLMProvider()
 
-        def mock_call(diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None):
+        def mock_call(
+            diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None
+        ):
             return LLMResult(findings=[], validation_success=True)
 
         with patch.object(provider, "_call_api", mock_call):
@@ -44,7 +46,9 @@ class TestLLMProviderCorrectiveRetry:
         provider = LLMProvider()
         call_count = [0]
 
-        def mock_call(diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None):
+        def mock_call(
+            diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None
+        ):
             call_count[0] += 1
             if call_count[0] == 1:
                 return LLMResult(validation_success=False, error_message="Invalid JSON")
@@ -59,7 +63,9 @@ class TestLLMProviderCorrectiveRetry:
         """When both attempts fail, return the failed result."""
         provider = LLMProvider()
 
-        def mock_call(diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None):
+        def mock_call(
+            diff, repo_context, file_contents, corrective_hint=None, custom_instructions=None
+        ):
             return LLMResult(validation_success=False, error_message="Still failing")
 
         with patch.object(provider, "_call_api", mock_call):

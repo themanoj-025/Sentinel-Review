@@ -55,7 +55,9 @@ class GitHubClient:
     def __exit__(self, *args):
         self.close()
 
-    def _request(self, method: str, path: str, installation_id: int | None = None, **kwargs) -> httpx.Response:
+    def _request(
+        self, method: str, path: str, installation_id: int | None = None, **kwargs
+    ) -> httpx.Response:
         """Make an authenticated request using installation token or JWT."""
         if installation_id:
             token = self._token_manager.get_installation_token(
@@ -128,10 +130,19 @@ class GitHubClient:
 
         # Check for linter/config files
         linter_files = [
-            ".eslintrc", ".eslintrc.json", ".eslintrc.js", ".eslintrc.yaml",
-            "pyproject.toml", ".flake8", "setup.cfg", ".pylintrc",
-            "tsconfig.json", ".prettierrc", ".prettierrc.json",
-            "rustfmt.toml", "go.mod",
+            ".eslintrc",
+            ".eslintrc.json",
+            ".eslintrc.js",
+            ".eslintrc.yaml",
+            "pyproject.toml",
+            ".flake8",
+            "setup.cfg",
+            ".pylintrc",
+            "tsconfig.json",
+            ".prettierrc",
+            ".prettierrc.json",
+            "rustfmt.toml",
+            "go.mod",
         ]
         for lf in linter_files:
             try:

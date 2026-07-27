@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('sentinel_review', '0001_initial'),
+        ("sentinel_review", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='review',
-            name='estimated_cost_usd',
-            field=models.FloatField(blank=True, help_text='Estimated USD cost based on token count and model pricing', null=True),
+            model_name="review",
+            name="estimated_cost_usd",
+            field=models.FloatField(
+                blank=True,
+                help_text="Estimated USD cost based on token count and model pricing",
+                null=True,
+            ),
         ),
     ]

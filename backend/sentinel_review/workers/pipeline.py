@@ -362,9 +362,7 @@ class DedupeStage(PipelineStage):
                 try:
                     semgrep_result = ctx._semgrep_task.get(timeout=30, disable_sync_subtasks=False)
                     if semgrep_result:
-                        ctx.semgrep_findings = [
-                            Finding(**f) for f in semgrep_result
-                        ]
+                        ctx.semgrep_findings = [Finding(**f) for f in semgrep_result]
                         logger.info(
                             "Async Semgrep returned %d findings",
                             len(ctx.semgrep_findings),
@@ -673,14 +671,16 @@ class ReviewPipeline:
 # Source: https://docs.anthropic.com/en/docs/about-claude/pricing
 #         https://openai.com/pricing
 _MODEL_PRICING: dict[str, tuple[float, float]] = {
-    "claude-sonnet-4-20250514": (3.0, 15.0),   # input, output per 1K tokens ($)
+    "claude-sonnet-4-20250514": (3.0, 15.0),  # input, output per 1K tokens ($)
     "claude-sonnet-4": (3.0, 15.0),
     "gpt-4o": (2.5, 10.0),
     "gpt-4o-2024-08-06": (2.5, 10.0),
 }
 
 
-def estimate_cost_usd(provider: str, model: str, total_tokens: int, input_tokens: int | None = None) -> float:
+def estimate_cost_usd(
+    provider: str, model: str, total_tokens: int, input_tokens: int | None = None
+) -> float:
     """Estimate the USD cost of an LLM call based on token count and model pricing.
 
     Uses a rough 3:1 input-to-output ratio if input_tokens is not provided.

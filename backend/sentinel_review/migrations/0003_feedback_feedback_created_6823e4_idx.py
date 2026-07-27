@@ -4,14 +4,13 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('sentinel_review', '0002_review_estimated_cost_usd'),
+        ("sentinel_review", "0002_review_estimated_cost_usd"),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='feedback',
-            index=models.Index(fields=['created_at'], name='feedback_created_6823e4_idx'),
+            model_name="feedback",
+            index=models.Index(fields=["created_at"], name="feedback_created_6823e4_idx"),
         ),
     ]
