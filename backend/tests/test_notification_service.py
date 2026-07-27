@@ -15,7 +15,7 @@ from sentinel_review.services.notification_service import (
     SlackNotifier,
 )
 
-# ─── SlackNotifier Tests ────────────────────────────────────────────────
+# SlackNotifier Tests
 
 
 class TestSlackNotifier:
@@ -73,7 +73,7 @@ class TestSlackNotifier:
         notifier.close()  # Should not raise
 
 
-# ─── EmailNotifier Tests ──────────────────────────────────────────────
+# EmailNotifier Tests
 
 
 class TestEmailNotifier:
@@ -144,7 +144,7 @@ class TestEmailNotifier:
         assert result is False
 
 
-# ─── NotificationService Tests ──────────────────────────────────────────
+# NotificationService Tests
 
 
 class TestNotificationService:

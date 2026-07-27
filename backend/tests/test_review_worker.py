@@ -27,7 +27,7 @@ from sentinel_review.workers.pipeline import (
 )
 from sentinel_review.workers.review_worker import review_pull_request
 
-# ─── Unit Tests: Helper Functions ───────────────────────────────────────
+# Unit Tests: Helper Functions
 
 
 class TestParseChangedFiles:
@@ -195,7 +195,7 @@ class TestBuildContextStr:
         assert "develop" in result
 
 
-# ─── Integration Tests: review_pull_request task ────────────────────────
+# Integration Tests: review_pull_request task
 
 
 SETTINGS = override_settings(

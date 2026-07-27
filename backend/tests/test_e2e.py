@@ -80,7 +80,7 @@ def e2e_mocks():
     from sentinel_review.workers.llm import LLMResult
     from sentinel_review.workers.schemas import Finding
 
-    # ── Mock GitHub client ───────────────────────────────────────────
+    # Mock GitHub client
     mock_client = MagicMock()
     mock_client.get_diff.return_value = (
         "diff --git a/app.py b/app.py\n"
@@ -109,7 +109,7 @@ def e2e_mocks():
         "comments": [{"id": 3001}, {"id": 3002}],
     }
 
-    # ── Mock LLM provider ────────────────────────────────────────────
+    # Mock LLM provider
     mock_provider = MagicMock()
     mock_provider.review_diff.return_value = LLMResult(
         findings=[
@@ -133,7 +133,7 @@ def e2e_mocks():
         latency_ms=1500,
     )
 
-    # ── Apply patches ────────────────────────────────────────────────
+    # Apply patches
     patcher_github = patch(
         "sentinel_review.workers.pipeline.GitHubClient",
         return_value=mock_client,
@@ -167,7 +167,6 @@ class TestE2EPipeline:
     @pytest.mark.django_db(transaction=True)
     def test_full_pipeline_creates_review_and_comments(self, client, e2e_mocks, db):
         """Full pipeline: valid webhook → 202 → Review+Comment rows created."""
-        # ── Send webhook ──────────────────────────────────────────────
         payload = _build_webhook_payload()
         payload_bytes = json.dumps(payload).encode("utf-8")
         sig = _sign_payload(payload_bytes)
@@ -181,29 +180,24 @@ class TestE2EPipeline:
             HTTP_X_GITHUB_DELIVERY="e2e-test-delivery-1",
         )
 
-        # ── Assert webhook accepted ───────────────────────────────────
         assert (
             response.status_code == 202
         ), f"Expected 202 Accepted, got {response.status_code}: {response.content[:200]}"
 
-        # ── Assert Installation created ───────────────────────────────
         install = Installation.objects.filter(github_installation_id=1001).first()
         assert install is not None, "Installation should have been created"
         assert install.account_login == "testowner"
 
-        # ── Assert Repo created ───────────────────────────────────────
         repo = Repo.objects.filter(full_name="testowner/testrepo").first()
         assert repo is not None, "Repo should have been created"
         assert repo.github_repo_id == 789
         assert repo.is_private is False
 
-        # ── Assert PullRequest created ────────────────────────────────
         pr = PullRequest.objects.filter(repo=repo, github_pr_number=42).first()
         assert pr is not None, "PullRequest should have been created"
         assert pr.title == "Fix critical security issue"
         assert pr.author_login == "testuser"
 
-        # ── Assert Review created and completed ───────────────────────
         review = Review.objects.filter(pull_request=pr).first()
         assert review is not None, "Review should have been created"
         assert (
@@ -214,7 +208,6 @@ class TestE2EPipeline:
         assert review.latency_ms > 0, "Latency should be recorded"
         assert review.token_cost == 500, "Token cost should match mock"
 
-        # ── Assert Comments created with correct data ─────────────────
         comments = Comment.objects.filter(review=review).order_by("line_number")
         assert len(comments) == 2, f"Expected 2 comments, got {len(comments)}"
 
@@ -235,7 +228,6 @@ class TestE2EPipeline:
         assert c2.category == "security"
         assert c2.severity == "blocking"
 
-        # ── Assert GitHub API was called correctly ────────────────────
         mock_client = e2e_mocks["mock_client"]
         mock_client.get_diff.assert_called_once_with(1001, "testowner/testrepo", 42)
         mock_client.get_repo_context.assert_called_once_with(1001, "testowner/testrepo")
@@ -250,7 +242,6 @@ class TestE2EPipeline:
         assert "Sentinel Review Complete" in call_kwargs.get("review_body", "")
         assert "blocking" in call_kwargs.get("review_body", "")
 
-        # ── Assert LLM provider was called ────────────────────────────
         mock_provider = e2e_mocks["mock_provider"]
         mock_provider.review_diff.assert_called_once()
 

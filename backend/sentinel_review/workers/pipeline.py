@@ -40,7 +40,7 @@ def _get_notification_service():
     return NotificationService()
 
 
-# ─── Typed Context ───────────────────────────────────────────────────────
+# Typed Context
 
 
 @dataclass
@@ -88,7 +88,7 @@ class ReviewContext:
     client: GitHubClient | None = None
 
 
-# ─── Base Stage ──────────────────────────────────────────────────────────
+# Base Stage
 
 
 class PipelineStage:
@@ -99,7 +99,7 @@ class PipelineStage:
         raise NotImplementedError
 
 
-# ─── Exception ───────────────────────────────────────────────────────────
+# Exception
 
 
 class PipelineError(Exception):
@@ -110,7 +110,7 @@ class PipelineError(Exception):
         self.context = context
 
 
-# ─── Stage 1: Upsert database records ──────────────────────────────────
+# Stage 1: Upsert database records
 
 
 class UpsertStage(PipelineStage):
@@ -169,7 +169,7 @@ class UpsertStage(PipelineStage):
         return ctx
 
 
-# ─── Stage 2: Fetch diff from GitHub ─────────────────────────────────────
+# Stage 2: Fetch diff from GitHub
 
 
 class FetchDiffStage(PipelineStage):
@@ -201,7 +201,7 @@ class FetchDiffStage(PipelineStage):
         return ctx
 
 
-# ─── Stage 3: Fetch repo context ────────────────────────────────────────
+# Stage 3: Fetch repo context
 
 
 class FetchContextStage(PipelineStage):
@@ -241,7 +241,7 @@ class FetchContextStage(PipelineStage):
         return ctx
 
 
-# ─── Stage 4: Run LLM review ────────────────────────────────────────────
+# Stage 4: Run LLM review
 
 
 class LLMReviewStage(PipelineStage):
@@ -290,7 +290,7 @@ class LLMReviewStage(PipelineStage):
         return ctx
 
 
-# ─── Stage 5: Run Semgrep (optional) ─────────────────────────────────────
+# Stage 5: Run Semgrep (optional)
 
 
 class SemgrepStage(PipelineStage):
@@ -321,7 +321,7 @@ class SemgrepStage(PipelineStage):
         return ctx
 
 
-# ─── Stage 6: Deduplicate and filter findings ────────────────────────────
+# Stage 6: Deduplicate and filter findings
 
 
 class DedupeStage(PipelineStage):
@@ -372,7 +372,7 @@ class DedupeStage(PipelineStage):
         return ctx
 
 
-# ─── Stage 7: Post comments to GitHub ────────────────────────────────────
+# Stage 7: Post comments to GitHub
 
 
 class PostCommentsStage(PipelineStage):
@@ -469,7 +469,7 @@ class PostCommentsStage(PipelineStage):
         return ctx
 
 
-# ─── Pipeline Orchestrator ────────────────────────────────────────────────
+# Pipeline Orchestrator
 
 
 class ReviewPipeline:
@@ -569,7 +569,7 @@ class ReviewPipeline:
         return ctx
 
 
-# ─── Helper Functions ────────────────────────────────────────────────────
+# Helper Functions
 
 
 def _parse_changed_files(diff: str) -> list[str]:

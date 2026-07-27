@@ -25,12 +25,12 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# ─── Constants ──────────────────────────────────────────────────────────
+# Constants
 
 _IGNORE_FILENAME = ".sentinel-ignore"
 
 
-# ─── Pattern Parsing ────────────────────────────────────────────────────
+# Pattern Parsing
 
 
 def parse_ignore_file(content: str) -> list[str]:
@@ -80,7 +80,7 @@ def _find_inline_comment(line: str) -> int:
     return -1
 
 
-# ─── Pattern Matching ──────────────────────────────────────────────────
+# Pattern Matching
 
 
 def is_ignored(file_path: str, patterns: Sequence[str]) -> bool:
@@ -117,7 +117,7 @@ def is_ignored(file_path: str, patterns: Sequence[str]) -> bool:
     return False
 
 
-# ─── Finding Filtering ──────────────────────────────────────────────────
+# Finding Filtering
 
 
 def filter_ignored_findings(

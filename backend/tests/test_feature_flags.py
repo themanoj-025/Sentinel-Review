@@ -127,7 +127,7 @@ class TestFilterFindings:
         },
     ]
 
-    # ── disable_style_nits ──────────────────────────────────────────────
+    # disable_style_nits
 
     def test_disable_style_nits_filters_style_findings(self):
         """Setting disable_style_nits should remove style-category findings."""
@@ -145,7 +145,7 @@ class TestFilterFindings:
         assert "style" in categories
         assert len(result) == 7
 
-    # ── security_only_review ────────────────────────────────────────────
+    # security_only_review
 
     def test_security_only_review_keeps_only_security(self):
         """security_only_review should only keep security-category findings."""
@@ -155,7 +155,7 @@ class TestFilterFindings:
         assert categories == {"security"}
         assert len(result) == 2  # Security 1 + Hardcoded secret
 
-    # ── max_comments_per_file ───────────────────────────────────────────
+    # max_comments_per_file
 
     def test_max_comments_per_file_limits_per_file(self):
         """Setting max_comments_per_file should cap comments per file path."""
@@ -184,7 +184,7 @@ class TestFilterFindings:
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
         assert len(result) == len(self.SAMPLE_FINDINGS)
 
-    # ── max_comments (total limit) ───────────────────────────────────────
+    # max_comments (total limit)
 
     def test_max_comments_total_limit(self):
         """max_comments should cap total findings across all files."""
@@ -198,7 +198,7 @@ class TestFilterFindings:
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
         assert len(result) == len(self.SAMPLE_FINDINGS)
 
-    # ── Combination scenarios ───────────────────────────────────────────
+    # Combination scenarios
 
     def test_disable_style_nits_and_max_comments_per_file(self):
         """Both flags should apply together — style first, then per-file limit."""

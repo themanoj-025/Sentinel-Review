@@ -42,7 +42,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("build_eval_set")
 
-# ─── Paths ────────────────────────────────────────────────────────────────
+# Paths
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
@@ -57,7 +57,7 @@ FIXTURES_PATH = (
     / "__init__.py"
 )
 
-# ─── Configuration ────────────────────────────────────────────────────────
+# Configuration
 
 # Repos to sample for live PR data — diverse, permissively-licensed, Python-heavy.
 # Selected to avoid overfitting to one project's code style.
@@ -91,9 +91,7 @@ GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 GITHUB_API = "https://api.github.com"
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Helper utilities
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _ensure_dir(path: Path) -> Path:
@@ -246,9 +244,7 @@ def _load_cached_evaluation_results(cache_path: str) -> dict:
         return pickle.load(f)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Source 1: Microsoft CodeReviewer (Zenodo)
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _discover_zenodo_files() -> list[dict[str, str]]:
@@ -429,9 +425,7 @@ def build_codereviewer_dataset(max_entries: int = 5000) -> list[dict[str, Any]]:
     return all_entries
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Source 2: Live GitHub PRs
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _fetch_merged_prs(repo: str, max_results: int = 10) -> list[dict[str, Any]]:
@@ -574,9 +568,7 @@ def build_github_dataset(max_prs: int = 50) -> list[dict[str, Any]]:
     return all_entries
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Source 3: Synthetic planted-bug fixtures
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def build_fixture_dataset() -> list[dict[str, Any]]:
@@ -619,9 +611,7 @@ def build_fixture_dataset() -> list[dict[str, Any]]:
     return entries
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Combined output
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def build_eval_set(
@@ -733,7 +723,7 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    # ── Dependency check ──────────────────────────────────────────────
+    # Dependency check
     missing_deps: list[str] = []
     try:
         import httpx  # noqa: F401
@@ -769,7 +759,7 @@ def main() -> None:
 
         return
 
-    # ── Build ─────────────────────────────────────────────────────────
+    # Build
     logger.info("Building evaluation dataset...")
     logger.info("Sources: %s", args.sources or "all three")
     logger.info("")

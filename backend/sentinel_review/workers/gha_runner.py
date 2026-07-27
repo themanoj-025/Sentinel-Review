@@ -26,7 +26,7 @@ from sentinel_review.workers.schemas import SYSTEM_PROMPT, ReviewOutput, get_few
 
 logger = logging.getLogger(__name__)
 
-# ─── Constants ────────────────────────────────────────────────────────
+# Constants
 
 _GITHUB_API_BASE = "https://api.github.com"
 _REPORT_DIR = Path("/tmp/sentinel-review-reports")
@@ -42,7 +42,7 @@ def _setup_logging() -> None:
     )
 
 
-# ─── GitHub API Client (uses GITHUB_TOKEN) ────────────────────────────
+# GitHub API Client (uses GITHUB_TOKEN)
 
 
 class GHAClient:
@@ -87,7 +87,7 @@ class GHAClient:
         return resp.json()
 
 
-# ─── Diff & File Reading ──────────────────────────────────────────────
+# Diff & File Reading
 
 
 def get_diff() -> str:
@@ -165,7 +165,7 @@ def parse_changed_files(diff: str) -> list[str]:
     return files
 
 
-# ─── LLM Integration (standalone, no Django) ──────────────────────────
+# LLM Integration (standalone, no Django)
 
 
 def _call_anthropic(diff: str, file_contents: dict[str, str], api_key: str) -> dict[str, Any]:
@@ -288,7 +288,7 @@ def parse_findings(raw_output: str) -> list[dict[str, Any]]:
     ]
 
 
-# ─── Deduplication ────────────────────────────────────────────────────
+# Deduplication
 
 
 def deduplicate(findings: list[dict]) -> list[dict]:
@@ -326,7 +326,7 @@ def build_review_body(findings: list[dict], total_comments: int) -> str:
     ) % (total_comments, blocking, warnings, nits, cat_rows)
 
 
-# ─── Report Output ────────────────────────────────────────────────────
+# Report Output
 
 
 def save_report(report: dict[str, Any], repo: str, pr_number: int) -> Path:
@@ -339,7 +339,7 @@ def save_report(report: dict[str, Any], repo: str, pr_number: int) -> Path:
     return report_path
 
 
-# ─── Main Entry Point ─────────────────────────────────────────────────
+# Main Entry Point
 
 
 def run(repo: str, event: dict[str, Any]) -> int:

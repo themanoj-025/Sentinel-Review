@@ -61,13 +61,13 @@ from run_evaluation import (  # type: ignore[import-untyped]  # noqa: E402
     _mock_review_diff,
 )
 
-# ─── Paths ────────────────────────────────────────────────────────────────
+# Paths
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 EVAL_SET_PATH = PROJECT_ROOT / "data" / "eval_set.json"
 REPORT_PATH = PROJECT_ROOT / "docs" / "evaluation-report.md"
 
-# ─── Provider Configuration ──────────────────────────────────────────────
+# Provider Configuration
 
 PROVIDERS = [
     ("anthropic", os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")),
@@ -103,9 +103,7 @@ class ProviderResult:
     total_tokens: int = 0
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Cost Estimation
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _estimate_cost(provider: str, model: str, total_tokens: int) -> float | None:
@@ -125,9 +123,7 @@ def _estimate_cost(provider: str, model: str, total_tokens: int) -> float | None
     return (input_tokens / 1000 * rates["input"]) + (output_tokens / 1000 * rates["output"])
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Output
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _generate_comparison_table(results: list[ProviderResult]) -> str:
@@ -170,9 +166,7 @@ def _generate_comparison_table(results: list[ProviderResult]) -> str:
     return "\n".join(lines)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Main
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def run_comparison(mode: str = "mock") -> tuple[list[ProviderResult], dict]:

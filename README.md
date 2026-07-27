@@ -790,7 +790,7 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more informa
     <em>"The senior engineer who never gets tired."</em>
   </p>
   <p>
-    Built with ❤️ using <strong>Django</strong>, <strong>Celery</strong>, and <strong>Claude</strong>
+    Built with <strong>Django</strong>, <strong>Celery</strong>, and <strong>Anthropic Claude</strong>
   </p>
   <p>
     <a href="https://github.com/sentinel-review/sentinel-review/issues">🐛 Report Bug</a>

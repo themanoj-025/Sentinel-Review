@@ -37,7 +37,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-# ─── Flag definitions with defaults ─────────────────────────────────────
+# Flag definitions with defaults
 
 
 class FeatureFlags:

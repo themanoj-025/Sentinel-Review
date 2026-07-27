@@ -34,7 +34,7 @@ import httpx
 logger = logging.getLogger(__name__)
 
 
-# ─── Slack Notifier ────────────────────────────────────────────────────
+# Slack Notifier
 
 
 class SlackNotifier:
@@ -66,7 +66,7 @@ class SlackNotifier:
         self._client.close()
 
 
-# ─── Email Notifier ─────────────────────────────────────────────────────
+# Email Notifier
 
 
 class EmailNotifier:
@@ -121,7 +121,7 @@ class EmailNotifier:
             return False
 
 
-# ─── Notification Service ────────────────────────────────────────────────
+# Notification Service
 
 
 class NotificationService:

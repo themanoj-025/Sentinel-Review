@@ -9,7 +9,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from prometheus_client import REGISTRY, Counter, Gauge, Histogram, generate_latest
 
-# ─── Metrics Definitions ─────────────────────────────────────────────────
+# Metrics Definitions
 
 # Review latency histogram (ms)
 review_latency = Histogram(

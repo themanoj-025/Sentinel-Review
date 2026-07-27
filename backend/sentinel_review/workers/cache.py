@@ -19,7 +19,7 @@ from sentinel_review.workers.schemas import Finding
 
 logger = logging.getLogger(__name__)
 
-# ─── Configuration ──────────────────────────────────────────────────────
+# Configuration
 
 _CACHE_TTL = 3600  # 1 hour default
 _DEFAULT_MAX_ENTRIES = 5000
@@ -33,7 +33,7 @@ _in_memory_store: dict[str, str] = {}
 _in_memory_expiry: dict[str, float] = {}
 
 
-# ─── Key generation ─────────────────────────────────────────────────────
+# Key generation
 
 
 def _make_key(diff: str, repo_context: str = "") -> str:
@@ -43,7 +43,7 @@ def _make_key(diff: str, repo_context: str = "") -> str:
     return f"{_CACHE_PREFIX}{digest}"
 
 
-# ─── Serialization ──────────────────────────────────────────────────────
+# Serialization
 
 
 def _serialize(result: LLMResult) -> str:
@@ -81,7 +81,7 @@ def _deserialize(raw: str) -> LLMResult | None:
         return None
 
 
-# ─── Redis backend ──────────────────────────────────────────────────────
+# Redis backend
 
 
 def _get_redis_client():
@@ -109,7 +109,7 @@ def _get_redis_client():
         return None
 
 
-# ─── Cache API ──────────────────────────────────────────────────────────
+# Cache API
 
 
 def cache_get(diff: str, repo_context: str = "") -> LLMResult | None:

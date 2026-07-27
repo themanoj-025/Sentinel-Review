@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
-# ─── Fixture 1: SQL Injection ────────────────────────────────────────────
+# Fixture 1: SQL Injection
 
 SQL_INJECTION_DIFF = """diff --git a/users.py b/users.py
 --- a/users.py
@@ -43,7 +43,7 @@ SQL_INJECTION_KNOWN_ISSUES: list[dict[str, Any]] = [
     },
 ]
 
-# ─── Fixture 2: Hardcoded Secret ─────────────────────────────────────────
+# Fixture 2: Hardcoded Secret
 
 HARDCODED_SECRET_DIFF = """diff --git a/config.py b/config.py
 --- a/config.py
@@ -79,7 +79,7 @@ HARDCODED_SECRET_KNOWN_ISSUES: list[dict[str, Any]] = [
     },
 ]
 
-# ─── Fixture 3: Unsafe Deserialization ──────────────────────────────────
+# Fixture 3: Unsafe Deserialization
 
 UNSAFE_DESERIALIZATION_DIFF = """diff --git a/api.py b/api.py
 --- a/api.py
@@ -105,7 +105,7 @@ UNSAFE_DESERIALIZATION_KNOWN_ISSUES: list[dict[str, Any]] = [
     },
 ]
 
-# ─── Fixture 4: Off-by-One / Null-Pointer Bug ────────────────────────────
+# Fixture 4: Off-by-One / Null-Pointer Bug
 
 OFF_BY_ONE_DIFF = """diff --git a/processor.py b/processor.py
 --- a/processor.py
@@ -139,7 +139,7 @@ OFF_BY_ONE_KNOWN_ISSUES: list[dict[str, Any]] = [
     },
 ]
 
-# ─── Fixture 5: Clean Diff (No Issues) ───────────────────────────────────
+# Fixture 5: Clean Diff (No Issues)
 
 CLEAN_DIFF = """diff --git a/utils.py b/utils.py
 --- a/utils.py
@@ -153,7 +153,7 @@ CLEAN_DIFF = """diff --git a/utils.py b/utils.py
 
 CLEAN_DIFF_KNOWN_ISSUES: list[dict[str, Any]] = []
 
-# ─── Fixture 6: Missing Test / Logic Error ──────────────────────────────
+# Fixture 6: Missing Test / Logic Error
 
 MISSING_TEST_DIFF = """diff --git a/calculator.py b/calculator.py
 --- a/calculator.py
@@ -183,7 +183,7 @@ MISSING_TEST_KNOWN_ISSUES: list[dict[str, Any]] = [
     },
 ]
 
-# ─── Master List ─────────────────────────────────────────────────────────
+# Master List
 
 FIXTURES: list[dict[str, Any]] = [
     {

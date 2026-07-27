@@ -50,13 +50,13 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    # ── Checkout the PR code (required for diff and file contents) ────
+    # Checkout the PR code (required for diff and file contents)
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0  # Full history needed for accurate git diff against base SHA
 
-    # ── Set up Python ────────────────────────────────────────────────
+    # Set up Python
     - name: Set up Python 3.12
       uses: actions/setup-python@v5
       with:
@@ -64,7 +64,7 @@ runs:
         cache: 'pip'
         cache-dependency-path: backend/requirements.txt
 
-    # ── Install dependencies ──────────────────────────────────────────
+    # Install dependencies
     - name: Install dependencies
       shell: bash
       run: |
@@ -77,7 +77,7 @@ runs:
           pip install --quiet openai
         fi
 
-    # ── Run the review ───────────────────────────────────────────────
+    # Run the review
     - name: Run Sentinel Review
       id: run-review
       shell: bash
@@ -93,7 +93,7 @@ runs:
         python ${{ github.action_path }}/../../../scripts/gha_review.py
         echo "report-path=/tmp/sentinel-review-reports" >> $GITHUB_OUTPUT
 
-    # ── Upload report as artifact ────────────────────────────────────
+    # Upload report as artifact
     - name: Upload review report
       uses: actions/upload-artifact@v4
       if: always()

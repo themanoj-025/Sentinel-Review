@@ -29,7 +29,7 @@ app = "sentinel-review"
 primary_region = "iad"
 kill_signal = "SIGTERM"
 
-# ── Web Service ──────────────────────────────────────────────────────
+# Web Service
 [http_service]
   internal_port = 8000
   force_https = true
@@ -56,8 +56,7 @@ kill_signal = "SIGTERM"
   cpus = 1
   memory_mb = 512
 
-# ── Background Worker ────────────────────────────────────────────────
-# Runs as a separate machine within the same Fly app
+# Background Worker — runs as a separate machine within the same Fly app
 [[processes]]
   name = "worker"
   cmd = "celery -A sentinel_review worker -l info -Q reviews,feedback,default -c 2 --without-gossip --without-mingle --without-heartbeat"
@@ -68,7 +67,7 @@ kill_signal = "SIGTERM"
   cpus = 1
   memory_mb = 256
 
-# ── Required secrets (set via `fly secrets set`) ─────────────────────
+# Required secrets (set via `fly secrets set`)
 # DJANGO_SECRET_KEY        — Django cryptographic signing key
 # DATABASE_URL             — PostgreSQL connection string
 # CELERY_BROKER_URL        — Redis connection string (Upstash or Fly Redis)
@@ -78,7 +77,7 @@ kill_signal = "SIGTERM"
 # GITHUB_APP_PRIVATE_KEY_B64 — Base64-encoded private key PEM
 # ANTHROPIC_API_KEY        — Anthropic API key (if using Claude)
 
-# ── Machine-level mounts (for .secrets volume) ───────────────────────
+# Machine-level mounts (for .secrets volume)
 # If using a PEM file instead of base64 env var, mount it:
 #   fly volumes create sentinel_secrets --size 1 --region iad
 # Then uncomment the [[mounts]] section and copy the .pem file.

@@ -14,7 +14,7 @@ import pytest
 from django.test.utils import override_settings
 from sentinel_review.workers.schemas import Finding, ReviewOutput
 
-# ─── Sample Data ────────────────────────────────────────────────────────
+# Sample Data
 
 SAMPLE_DIFF = """diff --git a/app.py b/app.py
 index abc123..def456 100644
@@ -75,7 +75,7 @@ index 111aaa..222bbb 100644
 """
 
 
-# ─── Fixtures ───────────────────────────────────────────────────────────
+# Fixtures
 
 
 @pytest.fixture
@@ -131,7 +131,7 @@ def webhook_payload() -> dict[str, Any]:
     }
 
 
-# ─── Database Fixtures (lazy imports to avoid AppRegistryNotReady) ──────
+# Database Fixtures
 
 
 def _get_installation_model():

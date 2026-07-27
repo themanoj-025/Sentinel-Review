@@ -12,7 +12,7 @@ from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ── Security ──────────────────────────────────────────────────────────
+# Security
 
 _AUTO_GENERATED_KEY = get_random_secret_key()
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", _AUTO_GENERATED_KEY)
@@ -33,7 +33,7 @@ if not DEBUG:
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
-# ── Applications ──────────────────────────────────────────────────────
+# Applications
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -96,7 +96,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "sentinel_review.wsgi.application"
 
-# ── Database ──────────────────────────────────────────────────────────
+# Database
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///{}".format(BASE_DIR / "db.sqlite3"))
 DATABASES = {
@@ -118,7 +118,7 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# ── Static files ──────────────────────────────────────────────────────
+# Static files
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -126,12 +126,12 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ── CORS ──────────────────────────────────────────────────────────────
+# CORS
 
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",") if not DEBUG else []
 
-# ── REST Framework ────────────────────────────────────────────────────
+# REST Framework
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -157,7 +157,7 @@ REST_FRAMEWORK = {
     },
 }
 
-# ── drf-spectacular (OpenAPI) ─────────────────────────────────────────
+# drf-spectacular (OpenAPI)
 try:
     import drf_spectacular  # noqa: F401
 
@@ -171,7 +171,7 @@ try:
 except ImportError:
     SPECTACULAR_SETTINGS = {}
 
-# ── Celery ────────────────────────────────────────────────────────────
+# Celery
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
@@ -184,7 +184,7 @@ CELERY_TASK_TIME_LIMIT = 300
 CELERY_TASK_SOFT_TIME_LIMIT = 240
 CELERY_RESULT_EXPIRES = 3600 * 24
 
-# ── GitHub App ────────────────────────────────────────────────────────
+# GitHub App
 
 GITHUB_APP_ID = os.environ.get("GITHUB_APP_ID", "")
 GITHUB_APP_CLIENT_ID = os.environ.get("GITHUB_APP_CLIENT_ID", "")
@@ -193,7 +193,7 @@ GITHUB_APP_PRIVATE_KEY_B64 = os.environ.get("GITHUB_APP_PRIVATE_KEY_B64", "")
 
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET", "")
 
-# ── LLM Provider ──────────────────────────────────────────────────────
+# LLM Provider
 
 LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "anthropic")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
@@ -201,11 +201,11 @@ ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
 
-# ── Monitoring ────────────────────────────────────────────────────────
+# Monitoring
 
 METRICS_ENABLED = os.environ.get("METRICS_ENABLED", "False").lower() in ("true", "1")
 
-# ── Sentry ────────────────────────────────────────────────────────────
+# Sentry
 
 SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
 if SENTRY_DSN:
@@ -228,7 +228,7 @@ if SENTRY_DSN:
     except ImportError:
         pass
 
-# ── Logging ───────────────────────────────────────────────────────────
+# Logging
 
 # Log level from env, falling back to DEBUG-conditional default
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "DEBUG" if DEBUG else "INFO")

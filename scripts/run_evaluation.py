@@ -39,13 +39,13 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-# ─── Paths ────────────────────────────────────────────────────────────────
+# Paths
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 EVAL_SET_PATH = PROJECT_ROOT / "data" / "eval_set.json"
 REPORT_PATH = PROJECT_ROOT / "docs" / "evaluation-report.md"
 
-# ─── Data Structures ─────────────────────────────────────────────────────
+# Data Structures
 
 
 class MatchResult(Enum):
@@ -82,9 +82,7 @@ class EvalEntry:
     latency_ms: int = 0
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Mock LLM Provider — rule-based analyzer for offline evaluation
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _mock_review_diff(diff: str) -> list[Finding]:
@@ -128,7 +126,7 @@ def _mock_review_diff(diff: str) -> list[Finding]:
         elif not line.startswith("+"):
             current_line_num += 1
 
-    # ── Rule 1: SQL Injection ─────────────────────────────────────────
+    # SQL Injection detection
     sql_keywords = ["select", "insert", "update", "delete", "exec", "execute"]
     for line_num, content in added_lines:
         lower = content.lower().strip()
@@ -155,7 +153,7 @@ def _mock_review_diff(diff: str) -> list[Finding]:
                 )
                 findings.append(finding)
 
-    # ── Rule 2: Hardcoded Secrets ─────────────────────────────────────
+    # Hardcoded Secret detection
     secret_patterns = [
         (r"(?i)(api[_-]?secret|api[_-]?key)\s*=\s*['\"](sk-|ghp_)", "API secret key"),
         (r"(?i)(password|passwd)\s*=\s*['\"][^'\"]{6,}['\"]", "hardcoded password"),
@@ -179,7 +177,7 @@ def _mock_review_diff(diff: str) -> list[Finding]:
                         suggested_fix="Load secrets from environment variables or a secrets manager.",
                     ))
 
-    # ── Rule 3: Unsafe Deserialization ────────────────────────────────
+    # Unsafe Deserialization detection
     for line_num, content in added_lines:
         if "pickle.load" in content:
             if not any(f.line_number == line_num and "pickle" in f.comment for f in findings):
@@ -198,7 +196,7 @@ def _mock_review_diff(diff: str) -> list[Finding]:
                     ),
                 ))
 
-    # ── Rule 4: Off-by-One / Index Errors ─────────────────────────────
+    # Off-by-One / Index Error detection
     for line_num, content in added_lines:
         # range(1, len(items) + 1)  ← off by one (should be just len(items))
         if re.search(r"range\s*\(\s*1\s*,\s*len\s*\(.*?\)\s*\+\s*1\s*\)", content):
@@ -229,7 +227,7 @@ def _mock_review_diff(diff: str) -> list[Finding]:
                     ),
                 ))
 
-    # ── Rule 5: Missing Zero Division Guard ───────────────────────────
+    # Missing Zero Division Guard detection
     for line_num, content in added_lines:
         if re.search(r"return\s+.+/", content) and "if b == 0" not in content:
             if not any(f.line_number == line_num and "zero-division" in f.comment for f in findings):
@@ -256,9 +254,7 @@ def _infer_file_path(diff_lines: list[str]) -> str:
     return "unknown.py"
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Live LLM Provider (optional — requires API key)
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _live_review_diff(
@@ -348,9 +344,7 @@ def _live_review_diff(
         return _mock_review_diff(diff)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Matching Logic
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _finding_matches_known(finding: Finding, known: dict[str, Any]) -> bool:
@@ -418,9 +412,7 @@ def _compute_metrics(
     return true_positives, false_positives, false_negatives
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Output & Report Generation
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _format_results_table(
@@ -658,9 +650,7 @@ python scripts/run_evaluation.py --output docs/evaluation-report.md
     return report
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Main
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def main() -> None:
@@ -708,7 +698,7 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    # ── Load evaluation set ──────────────────────────────────────────
+    # Load evaluation set
     eval_path = Path(args.eval_set)
     if not eval_path.exists():
         print(f"Error: Evaluation set not found at {eval_path}")
@@ -728,7 +718,7 @@ def main() -> None:
 
     mode_label = f"Mock ({args.mode})" if args.mode == "mock" else f"Live ({args.provider}/{args.model or 'default'})"
 
-    # ── Run evaluation ───────────────────────────────────────────────
+    # Run evaluation
     entries: list[EvalEntry] = []
     start_time = time.time()
 
@@ -787,7 +777,7 @@ def main() -> None:
 
     elapsed = time.time() - start_time
 
-    # ── Print results ────────────────────────────────────────────────
+    # Print results
     print(f"\n{'=' * 50}")
     print("RESULTS SUMMARY")
     print(f"{'=' * 50}")
@@ -824,7 +814,7 @@ def main() -> None:
     print(f"  Duration:       {elapsed:.1f}s")
     print()
 
-    # ── Write report ─────────────────────────────────────────────────
+    # Write report
     output_path = Path(args.output) if args.output else None
     if output_path is None:
         env_path = os.environ.get("EVAL_REPORT_PATH", "")

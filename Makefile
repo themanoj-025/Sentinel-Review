@@ -1,6 +1,5 @@
-# ── Sentinel Review — Makefile ──────────────────────────────────────────
-# Common development commands. Run `make <target>` from the project root.
-# ──────────────────────────────────────────────────────────────────────────
+# Sentinel Review Makefile — Common development commands.
+# Run `make <target>` from the project root.
 
 .PHONY: help install test lint format docker-up docker-down docker-build clean
 
@@ -10,7 +9,7 @@ help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-# ── Python ──────────────────────────────────────────────────────────────
+# Python
 
 install: ## Install Python dependencies
 	pip install -r requirements.txt
@@ -35,7 +34,7 @@ format: ## Format code with ruff
 
 check: lint test ## Run lint + tests (CI pipeline)
 
-# ── Docker ──────────────────────────────────────────────────────────────
+# Docker
 
 docker-up: ## Start all services
 	docker compose up --build -d
@@ -52,7 +51,7 @@ docker-build: build Docker images
 docker-clean: remove all containers, volumes, and images
 	docker compose down -v --rmi all
 
-# ── Django ──────────────────────────────────────────────────────────────
+# Django
 
 migrate: run database migrations
 	cd backend && python manage.py migrate
@@ -69,7 +68,7 @@ admin: create Django superuser
 collectstatic: collect static files
 	cd backend && python manage.py collectstatic --noinput
 
-# ── Cleanup ─────────────────────────────────────────────────────────────
+# Cleanup
 
 clean: remove Python cache artifacts
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
