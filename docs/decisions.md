@@ -342,3 +342,21 @@ sentinel_review/
 - `llm_errors` — counter of LLM failures
 - `llm_cache_hits` / `llm_cache_misses` — cache effectiveness
 - `token_cost` — cumulative token usage and estimated cost
+
+---
+
+## Manual Step: Live LLM Evaluation
+
+**Context:** The evaluation harness (`scripts/run_evaluation.py`) defaults to a rule-based mock provider. It must be run with real API keys to produce accurate precision/recall/F1 numbers in `docs/evaluation-report.md`.
+
+**How to run:**
+```bash
+# Requires real Anthropic + OpenAI API keys (set in .env or environment)
+python scripts/run_evaluation.py --mode live --provider anthropic --output docs/evaluation-report.md
+python scripts/run_evaluation.py --mode live --provider openai --output docs/evaluation-report.md
+
+# For side-by-side comparison:
+python scripts/run_comparison.py --mode live --output docs/evaluation-report.md
+```
+
+**Note:** This step incurs API usage costs (~$2-5 per full run depending on model and eval set size). The mock mode results in the current report are illustrative only and should be replaced with live numbers before publishing evaluation claims.
