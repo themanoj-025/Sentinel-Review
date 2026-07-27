@@ -10,7 +10,7 @@
 | Metric | Pre-Remediation | Post-Remediation | Δ |
 |--------|:---------------:|:----------------:|:-:|
 | **Overall Score** | **5.7/10** | **9.0/10** | **+3.3** |
-| Test Count | 157 | 299 | +142 |
+| Test Count | 157 | 345 | +188 |
 | Lint Errors | ~15 | 0 | Cleared |
 | P0 Issues | 7 open | 7 resolved | +7 |
 | P1 Issues | 10 open | 10 resolved | +10 |

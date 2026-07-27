@@ -15,10 +15,8 @@
   <p>
     <a href="https://github.com/sentinel-review/sentinel-review/actions/workflows/ci.yml">
       <img src="https://img.shields.io/github/actions/workflow/status/sentinel-review/sentinel-review/ci.yml?branch=main&label=CI&logo=github&style=flat-square" alt="CI Status"/>
-    </a>
-    <a href="#">
-      <img src="https://img.shields.io/badge/tests-237%20passing-brightgreen?style=flat-square&logo=pytest" alt="Tests"/>
-    </a>
+    </a><a href="#">
+      <img src="https://img.shields.io/badge/tests-345%20passing-brightgreen?style=flat-square&logo=pytest" alt="Tests"/></a>
     <a href="#">
       <img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python" alt="Python"/>
     </a>
@@ -30,13 +28,8 @@
     </a>
     <a href="https://www.docker.com/">
       <img src="https://img.shields.io/badge/docker-compose-2496ED?style=flat-square&logo=docker" alt="Docker"/>
-    </a>
-    <a href="#">
-      <img src="https://img.shields.io/badge/audit-5.7%E2%9E%A18.9-blue?style=flat-square" alt="Audit Score"/>
-    </a>
-    <a href="#">
-      <img src="https://img.shields.io/badge/coverage-88%25-green?style=flat-square" alt="Coverage"/>
-    </a>
+    </a><a href="#">
+      <img src="https://img.shields.io/badge/audit-5.7%E2%9E%A19.0-blue?style=flat-square" alt="Audit Score"/></a>
   </p>
 
   <!-- Links -->
@@ -409,7 +402,7 @@ jobs:
 | **Validation** | Pydantic v2 | Strict schema — malformed output never reaches GitHub |
 | **Static analysis** | Semgrep | Deterministic security signal, merged with LLM |
 | **GitHub API** | PyJWT + httpx | JWT auth → installation tokens, inline comments |
-| **Testing** | pytest + pytest-django + respx | ~240 tests, mocked HTTP/LLM at every boundary |
+| **Testing** | pytest + pytest-django + respx | 345 tests, mocked HTTP/LLM at every boundary |
 | **CI/CD** | GitHub Actions | Ruff lint → pytest (PostgreSQL) → Docker build → Semgrep scan |
 | **Infrastructure** | Docker + docker-compose | Single-command local dev, 5 services |
 
@@ -444,7 +437,7 @@ sentinel-review/
 │   │   ├── test_startup.py      # 4 startup/auth tests
 │   │   ├── test_signature.py    # 10 HMAC tests
 │   │   ├── test_schemas.py      # 22 Pydantic tests
-│   │   └── ...                  # 18 test files total (~240 tests)
+│   │   └── ...                  # 22 test files total (345 tests)
 │   ├── conftest.py
 │   ├── manage.py
 │   └── pytest.ini
@@ -452,7 +445,7 @@ sentinel-review/
 │   ├── workflows/ci.yml         # 5-job CI pipeline (path-filtered)
 │   └── actions/sentinel-review/ # GHA composite action
 ├── docs/
-│   ├── audit-v2.md              # Re-scored 28-category audit (8.9/10)
+│   ├── audit-v2.md              # Re-scored 28-category audit (9.0/10)
 │   ├── architecture.md
 │   ├── decisions.md             # 21 ADRs
 │   ├── remediation-plan.md      # Full remediation blueprint
@@ -548,9 +541,9 @@ We executed a three-stage remediation plan spanning **31 items** across 4 priori
 
 | Metric | Before | After | Δ |
 |:-------|:------:|:-----:|:-:|
-| **Audit Score** | 5.7/10 | **8.9/10** | +3.2 |
-| **Tests** | 157 | **~240** | +83 |
-| **Test Files** | 10 | **18** | +8 |
+| **Audit Score** | 5.7/10 | **9.0/10** | +3.3 |
+| **Tests** | 157 | **345** | +188 |
+| **Test Files** | 10 | **22** | +12 |
 | **Lint Errors** | ~15 | **0** | Cleared |
 | **Security Issues** | 4 open | 0 | All resolved |
 | **E2E Tests** | 0 | **6** | Pipeline validated end-to-end |
@@ -633,7 +626,7 @@ See [`docs/demo/README.md`](docs/demo/README.md) for the full walkthrough.
 ```bash
 cd backend
 
-# Run all ~240 tests
+# Run all 345 tests
 pytest -v
 
 # With coverage
@@ -672,7 +665,7 @@ ruff check . --fix
 ```
 ┌──────────┐    ┌──────────────────────┐    ┌──────────────┐    ┌───────────┐
 │ Ruff Lint │──▶│ pytest (PostgreSQL)  │──▶│ Docker Build │──▶│ Semgrep   │
-│ (3s)      │    │ (8s, ~240 tests)     │    │ (30s)        │    │ Scan (5s) │
+│ (3s)      │    │ (8s, 345 tests)       │    │ (30s)        │    │ Scan (5s) │
 └──────────┘    └──────────────────────┘    └──────────────┘    └───────────┘
                                                       │
                                                       ▼
@@ -746,7 +739,7 @@ jobs:
 - [x] Log redaction for secrets in logs
 - [x] Self-review demo with planted CWE-502 vulnerability
 - [x] Deployment configs (Render.com + Fly.io)
-- [x] **Production audit + 31-item remediation (score: 5.7 → 8.9)**
+- [x] **Production audit + 31-item remediation (score: 5.7 → 9.0)**
 - [x] **Staged pipeline architecture (7 named stages)**
 - [x] **LLM response cache (SHA256 diff-hash)**
 - [x] **Health checks, rate limiting, auth controls, circuit breaker**
