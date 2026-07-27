@@ -11,6 +11,7 @@ from django.db.models.functions import TruncDate
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.views.decorators.cache import cache_control
 
 from sentinel_review.models.comment import Comment
 from sentinel_review.models.installation import Installation
@@ -22,6 +23,7 @@ from sentinel_review.workers.feedback_worker import compute_usefulness_rate
 logger = logging.getLogger(__name__)
 
 
+@cache_control(private=True, max_age=30)
 def dashboard_home(request: HttpRequest) -> HttpResponse:
     """Dashboard home page with overview stats."""
     total_installations = Installation.objects.count()
@@ -65,6 +67,7 @@ def dashboard_home(request: HttpRequest) -> HttpResponse:
     return render(request, "dashboard/home.html", context)
 
 
+@cache_control(private=True, max_age=30)
 def repo_list(request: HttpRequest) -> HttpResponse:
     """List all configured repositories."""
     repos = (
@@ -87,6 +90,7 @@ def repo_list(request: HttpRequest) -> HttpResponse:
     return render(request, "dashboard/repo_list.html", {"repos": repos})
 
 
+@cache_control(private=True, max_age=15)
 def repo_detail(request: HttpRequest, repo_id: int) -> HttpResponse:
     """Show repository details, settings, and review history."""
     repo = get_object_or_404(
@@ -142,6 +146,7 @@ def repo_detail(request: HttpRequest, repo_id: int) -> HttpResponse:
     return render(request, "dashboard/repo_detail.html", context)
 
 
+@cache_control(private=True, max_age=30)
 def review_detail(request: HttpRequest, review_id: int) -> HttpResponse:
     """Show details of a single review run."""
     review = get_object_or_404(
@@ -165,6 +170,7 @@ def review_detail(request: HttpRequest, review_id: int) -> HttpResponse:
     return render(request, "dashboard/review_detail.html", context)
 
 
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
 def stats_overview(request: HttpRequest) -> HttpResponse:
     """Full stats and metrics page with Chart.js visualizations."""
     usefulness = compute_usefulness_rate()

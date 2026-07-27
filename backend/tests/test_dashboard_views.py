@@ -30,6 +30,15 @@ class TestDashboardHome:
         assert response.status_code == 200
 
     @pytest.mark.django_db
+    def test_cache_control_header(self):
+        factory = RequestFactory()
+        request = factory.get("/")
+        response = dashboard_home(request)
+        assert response.has_header("Cache-Control"), "Missing Cache-Control header"
+        assert "private" in response["Cache-Control"], "Expected private cache directive"
+        assert "max-age=30" in response["Cache-Control"], "Expected max-age=30"
+
+    @pytest.mark.django_db
     def test_context_has_reviews(self):
         factory = RequestFactory()
         request = factory.get("/")
@@ -172,6 +181,15 @@ class TestStatsOverview:
         request = factory.get("/stats/")
         response = stats_overview(request)
         assert response.status_code == 200
+
+    @pytest.mark.django_db
+    def test_cache_control_nocache(self, seeded_db):
+        factory = RequestFactory()
+        request = factory.get("/stats/")
+        response = stats_overview(request)
+        assert response.has_header("Cache-Control"), "Missing Cache-Control header"
+        assert "no-store" in response["Cache-Control"], "Expected no-store on stats page"
+        assert "no-cache" in response["Cache-Control"], "Expected no-cache on stats page"
 
     @pytest.mark.django_db
     def test_context_has_json_data(self, seeded_db):

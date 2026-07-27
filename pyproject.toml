@@ -30,6 +30,26 @@ filterwarnings = [
     "ignore::UserWarning",
 ]
 
+[tool.mypy]
+python_version = "3.12"
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "sentinel_review.settings",
+    "sentinel_review.workers.gha_runner",
+    "sentinel_review.workers.llm",
+    "sentinel_review.workers.cache",
+    "sentinel_review.workers.github_client",
+    "sentinel_review.workers.pipeline",
+    "sentinel_review.api.health",
+    "sentinel_review.migrations.*",
+]
+ignore_errors = true
+
 [tool.coverage.run]
 source = ["backend/sentinel_review"]
 omit = [

@@ -9,6 +9,7 @@ respx>=0.21,<1.0
 
 # Linting
 ruff>=0.6,<0.7
+mypy>=1.13,<2.0
 
 # Dev tools
 django-extensions>=3.2,<4.0

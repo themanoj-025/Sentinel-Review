@@ -16,7 +16,7 @@
     <a href="https://github.com/sentinel-review/sentinel-review/actions/workflows/ci.yml">
       <img src="https://img.shields.io/github/actions/workflow/status/sentinel-review/sentinel-review/ci.yml?branch=main&label=CI&logo=github&style=flat-square" alt="CI Status"/>
     </a><a href="#">
-      <img src="https://img.shields.io/badge/tests-345%20passing-brightgreen?style=flat-square&logo=pytest" alt="Tests"/></a>
+      <img src="https://img.shields.io/badge/tests-349%20passing-brightgreen?style=flat-square&logo=pytest" alt="Tests"/></a>
     <a href="#">
       <img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python" alt="Python"/>
     </a>
@@ -402,7 +402,7 @@ jobs:
 | **Validation** | Pydantic v2 | Strict schema — malformed output never reaches GitHub |
 | **Static analysis** | Semgrep | Deterministic security signal, merged with LLM |
 | **GitHub API** | PyJWT + httpx | JWT auth → installation tokens, inline comments |
-| **Testing** | pytest + pytest-django + respx | 345 tests, mocked HTTP/LLM at every boundary |
+| **Testing** | pytest + pytest-django + respx + mypy | 349 tests, mocked HTTP/LLM at every boundary |
 | **CI/CD** | GitHub Actions | Ruff lint → pytest (PostgreSQL) → Docker build → Semgrep scan |
 | **Infrastructure** | Docker + docker-compose | Single-command local dev, 5 services |
 
@@ -437,18 +437,16 @@ sentinel-review/
 │   │   ├── test_startup.py      # 4 startup/auth tests
 │   │   ├── test_signature.py    # 10 HMAC tests
 │   │   ├── test_schemas.py      # 22 Pydantic tests
-│   │   └── ...                  # 22 test files total (345 tests)
+│   │   └── ...                  # 22 test files total (349 tests)
 │   ├── conftest.py
 │   ├── manage.py
 │   └── pytest.ini
 ├── .github/
-│   ├── workflows/ci.yml         # 5-job CI pipeline (path-filtered)
+│   ├── workflows/ci.yml         # 6-job CI pipeline: lint → mypy → test → docker → semgrep → compose
 │   └── actions/sentinel-review/ # GHA composite action
 ├── docs/
-│   ├── audit-v2.md              # Re-scored 28-category audit (9.0/10)
 │   ├── architecture.md
 │   ├── decisions.md             # 21 ADRs
-│   ├── remediation-plan.md      # Full remediation blueprint
 │   ├── security-notes.md
 │   ├── evaluation-report.md     # Multi-model comparison
 │   └── demo/                    # Self-review demo
@@ -542,7 +540,7 @@ We executed a three-stage remediation plan spanning **31 items** across 4 priori
 | Metric | Before | After | Δ |
 |:-------|:------:|:-----:|:-:|
 | **Audit Score** | 5.7/10 | **9.0/10** | +3.3 |
-| **Tests** | 157 | **345** | +188 |
+| **Tests** | 157 | **349** | +192 |
 | **Test Files** | 10 | **22** | +12 |
 | **Lint Errors** | ~15 | **0** | Cleared |
 | **Security Issues** | 4 open | 0 | All resolved |
@@ -626,7 +624,7 @@ See [`docs/demo/README.md`](docs/demo/README.md) for the full walkthrough.
 ```bash
 cd backend
 
-# Run all 345 tests
+# Run all 349 tests
 pytest -v
 
 # With coverage
@@ -645,6 +643,9 @@ pytest tests/test_cache.py -v
 # Lint with Ruff
 ruff check .
 
+# Type-check with mypy (strict mode)
+mypy sentinel_review/
+
 # Auto-fix issues
 ruff check . --fix
 ```
@@ -660,25 +661,27 @@ ruff check . --fix
 
 ## 🔄 Testing & CI
 
-### CI Pipeline (5 Jobs)
+### CI Pipeline (6 Jobs)
 
 ```
 ┌──────────┐    ┌──────────────────────┐    ┌──────────────┐    ┌───────────┐
-│ Ruff Lint │──▶│ pytest (PostgreSQL)  │──▶│ Docker Build │──▶│ Semgrep   │
-│ (3s)      │    │ (8s, 345 tests)       │    │ (30s)        │    │ Scan (5s) │
-└──────────┘    └──────────────────────┘    └──────────────┘    └───────────┘
-                                                      │
-                                                      ▼
-                                               ┌──────────────┐
-                                               │ docker-compose│
-                                               │ Up + Health   │
-                                               │ Check (30s)   │
-                                               └──────────────┘
+│ Ruff Lint │──▶│ Type Check (mypy)   │──▶│ pytest (PG)   │──▶│ Docker    │
+│ (3s)      │    │ (10s)               │    │ (10s, 349     │    │ Build     │
+└──────────┘    └──────────────────────┘    │  tests)       │    │ (30s)     │
+                                            └──────┬───────┘    └─────┬─────┘
+                                                   │                  │
+                                                   ▼                  ▼
+                                            ┌──────────────┐   ┌──────────────┐
+                                            │ Semgrep Scan │   │ docker-      │
+                                            │ (5s)         │   │ compose      │
+                                            └──────────────┘   │ Check (30s)  │
+                                                                └──────────────┘
 ```
 
 **CI features:**
 - Path-filtered triggers (only relevant jobs on docs-only PRs)
 - Ruff linting with strict rules
+- mypy type checking
 - Full test suite against PostgreSQL (not SQLite)
 - Docker image build verification
 - Semgrep security scan (pinned SHA, not `@v1`)
