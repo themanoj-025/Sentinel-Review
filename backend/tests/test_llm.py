@@ -49,14 +49,18 @@ class TestLLMProviderBase:
             provider.review_diff(diff="test")
 
     def test_build_prompt_without_context(self):
-        """_build_prompt should create a minimal prompt without context."""
-        messages = LLMProvider._build_prompt(diff="diff --git a/a.py b/a.py")
+        """PromptBuilder should create a minimal prompt without context."""
+        from sentinel_review.workers.prompt_builder import PromptBuilder
+
+        messages = PromptBuilder().build(diff="diff --git a/a.py b/a.py")
         assert len(messages) >= 2  # system + at least one user message
         assert messages[0]["role"] == "system"
 
     def test_build_prompt_with_repo_context(self):
-        """_build_prompt should include repo context when provided."""
-        messages = LLMProvider._build_prompt(
+        """PromptBuilder should include repo context when provided."""
+        from sentinel_review.workers.prompt_builder import PromptBuilder
+
+        messages = PromptBuilder().build(
             diff="diff --git a/a.py b/a.py",
             repo_context="Default branch: main\nCONTRIBUTING.md:\nPlease write tests.",
         )
@@ -65,8 +69,10 @@ class TestLLMProviderBase:
         assert "assistant" in roles
 
     def test_build_prompt_with_file_contents(self):
-        """_build_prompt should include full file contents when provided."""
-        messages = LLMProvider._build_prompt(
+        """PromptBuilder should include full file contents when provided."""
+        from sentinel_review.workers.prompt_builder import PromptBuilder
+
+        messages = PromptBuilder().build(
             diff="diff --git a/a.py b/a.py",
             file_contents={"app.py": "def foo():\n    pass"},
         )

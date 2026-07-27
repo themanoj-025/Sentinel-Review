@@ -16,7 +16,7 @@
     <a href="https://github.com/sentinel-review/sentinel-review/actions/workflows/ci.yml">
       <img src="https://img.shields.io/github/actions/workflow/status/sentinel-review/sentinel-review/ci.yml?branch=main&label=CI&logo=github&style=flat-square" alt="CI Status"/>
     </a><a href="#">
-      <img src="https://img.shields.io/badge/tests-349%20passing-brightgreen?style=flat-square&logo=pytest" alt="Tests"/></a>
+      <img src="https://img.shields.io/badge/tests-352%20passing-brightgreen?style=flat-square&logo=pytest" alt="Tests"/></a>
     <a href="#">
       <img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python" alt="Python"/>
     </a>
@@ -402,7 +402,7 @@ jobs:
 | **Validation** | Pydantic v2 | Strict schema — malformed output never reaches GitHub |
 | **Static analysis** | Semgrep | Deterministic security signal, merged with LLM |
 | **GitHub API** | PyJWT + httpx | JWT auth → installation tokens, inline comments |
-| **Testing** | pytest + pytest-django + respx + mypy | 349 tests, mocked HTTP/LLM at every boundary |
+| **Testing** | pytest + pytest-django + respx + mypy | 352 tests, 91% coverage, mocked HTTP/LLM at every boundary |
 | **CI/CD** | GitHub Actions | Ruff lint → pytest (PostgreSQL) → Docker build → Semgrep scan |
 | **Infrastructure** | Docker + docker-compose | Single-command local dev, 5 services |
 
@@ -437,7 +437,7 @@ sentinel-review/
 │   │   ├── test_startup.py      # 4 startup/auth tests
 │   │   ├── test_signature.py    # 10 HMAC tests
 │   │   ├── test_schemas.py      # 22 Pydantic tests
-│   │   └── ...                  # 22 test files total (349 tests)
+│   │   └── ...                  # 22 test files total (352 tests)
 │   ├── conftest.py
 │   ├── manage.py
 │   └── pytest.ini
@@ -445,10 +445,13 @@ sentinel-review/
 │   ├── workflows/ci.yml         # 6-job CI pipeline: lint → mypy → test → docker → semgrep → compose
 │   └── actions/sentinel-review/ # GHA composite action
 ├── docs/
+│   ├── index.md                 # mkdocs home page
 │   ├── architecture.md
-│   ├── decisions.md             # 21 ADRs
+│   ├── decisions.md             # 22 ADRs
+│   ├── limitations.md           # Known limitations
 │   ├── security-notes.md
 │   ├── evaluation-report.md     # Multi-model comparison
+│   ├── grafana/                 # Grafana dashboard + alerts
 │   └── demo/                    # Self-review demo
 ├── scripts/
 │   ├── run_evaluation.py        # Evaluation runner
@@ -540,8 +543,9 @@ We executed a three-stage remediation plan spanning **31 items** across 4 priori
 | Metric | Before | After | Δ |
 |:-------|:------:|:-----:|:-:|
 | **Audit Score** | 5.7/10 | **9.0/10** | +3.3 |
-| **Tests** | 157 | **349** | +192 |
+| **Tests** | 157 | **352** | +195 |
 | **Test Files** | 10 | **22** | +12 |
+| **Coverage** | — | **91%** | — |
 | **Lint Errors** | ~15 | **0** | Cleared |
 | **Security Issues** | 4 open | 0 | All resolved |
 | **E2E Tests** | 0 | **6** | Pipeline validated end-to-end |
@@ -624,10 +628,10 @@ See [`docs/demo/README.md`](docs/demo/README.md) for the full walkthrough.
 ```bash
 cd backend
 
-# Run all 349 tests
+# Run all 352 tests
 pytest -v
 
-# With coverage
+# With coverage (currently 91%)
 pytest --cov=. --cov-report=term-missing
 
 # Faster — skip database migrations
@@ -666,7 +670,7 @@ ruff check . --fix
 ```
 ┌──────────┐    ┌──────────────────────┐    ┌──────────────┐    ┌───────────┐
 │ Ruff Lint │──▶│ Type Check (mypy)   │──▶│ pytest (PG)   │──▶│ Docker    │
-│ (3s)      │    │ (10s)               │    │ (10s, 349     │    │ Build     │
+│ (3s)      │    │ (10s)               │    │ (10s, 352     │    │ Build     │
 └──────────┘    └──────────────────────┘    │  tests)       │    │ (30s)     │
                                             └──────┬───────┘    └─────┬─────┘
                                                    │                  │

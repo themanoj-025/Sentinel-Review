@@ -62,6 +62,6 @@ Dashboard: [http://localhost:8000](http://localhost:8000)
 
 ## Stats
 
-- **Tests:** 349 passing
+- **Tests:** 352 passing, 91% coverage
 - **Python:** 3.12, Django 5.1
 - **License:** MIT
