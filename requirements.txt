@@ -1,0 +1,55 @@
+# Core
+django>=5.1,<5.2
+djangorestframework>=3.15,<3.16
+django-cors-headers>=4.4,<5.0
+
+# Database
+dj-database-url>=2.2,<3.0
+psycopg[binary]>=3.2,<4.0
+
+# Background tasks
+celery[redis]>=5.4,<6.0
+redis>=5.1,<6.0
+
+# GitHub integration
+PyJWT>=2.9,<3.0
+httpx>=0.27,<0.28
+httpx-sse>=0.4,<0.5
+
+# LLM
+anthropic>=0.39,<1.0
+openai>=1.40,<2.0
+
+# Structured output
+pydantic>=2.9,<3.0
+
+# Semgrep (optional, used for independent signal)
+# semgrep>=1.85,<2.0
+
+# Monitoring
+prometheus-client>=0.20,<0.21
+
+# Testing
+pytest>=8.3,<9.0
+pytest-django>=4.9,<5.0
+pytest-cov>=5.0,<6.0
+pytest-asyncio>=0.24,<1.0
+respx>=0.21,<1.0
+responses>=0.25,<1.0
+
+# Linting
+ruff>=0.6,<0.7
+
+# Utilities
+python-dotenv>=1.0,<2.0
+whitenoise>=6.7,<7.0
+gunicorn>=23.0,<24.0
+python-dateutil>=2.9,<3.0
+
+# Data acquisition (evaluation set builder)
+httpx>=0.27,<0.28
+# datasets>=3.0,<4.0  # Optional: for Hugging Face datasets integration
+
+# Dev
+django-extensions>=3.2,<4.0
+ipython>=8.27,<9.0

@@ -1,0 +1,128 @@
+# ── Python ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.manifest
+*.spec
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+.venv/
+virtualenv/
+
+# ── Django ──────────────────────────────────────────────────────────
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+*.pot
+*.mo
+
+# ── Environment & Secrets ──────────────────────────────────────────
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+.env.test
+.secrets/
+*.pem
+*.key
+
+# ── IDE & Editors ───────────────────────────────────────────────────
+.idea/
+.vscode/
+.vscode/settings.json
+.vscode/launch.json
+*.swp
+*.swo
+*.swn
+*~
+*.orig
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+Icon
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ── Docker ──────────────────────────────────────────────────────────
+docker-data/
+docker-compose.override.yml
+
+# ── Data (large, gitignored) ────────────────────────────────────────
+data/codereviewer/
+data/*.json
+!data/.gitkeep
+
+# ── Celery ──────────────────────────────────────────────────────────
+celerybeat-schedule*
+celerybeat.pid
+
+# ── Coverage & Reports ──────────────────────────────────────────────
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+.coverage.lcov
+*.cover
+coverage/
+.cache/
+coverage-html/
+test-results/
+reports/
+
+# ── Pytest ──────────────────────────────────────────────────────────
+.pytest_cache/
+.pytest_cache/
+test-results/
+__pycache__/
+
+# ── Static / Node (if any) ──────────────────────────────────────────
+node_modules/
+package-lock.json
+yarn.lock
+*.js.map
+assets/webpack/
+
+# ── OS ──────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+Icon
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ── MyPy & Type Checking ──────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# ── Sphinx / Docs builds ───────────────────────────────────────────
+docs/_build/
+docs/_static/
+docs/build/
+
+# ── Profiling ──────────────────────────────────────────────────────
+*.prof
+*.pstats

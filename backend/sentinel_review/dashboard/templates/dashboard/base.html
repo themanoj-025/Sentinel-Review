@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sentinel Review{% endblock %}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/alpinejs@3.14.3" defer integrity="sha384-FaTt/NLFN5pEj78WmJSLETKwbxSc1PrQ13ZJmS9MhMyCmL6O1JpFpJ3rJ2d6K8F" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" integrity="sha384-6c2RwHoiZGRc5rSOKGMK8Bq6b0OVRN2C5QFp2qZz5H8XXPKB5W1F6T0DQQrx6rT" crossorigin="anonymous"></script>
+    <style>
+        /* Minimal custom CSS — using utility classes via Tailwind CDN */
+        [x-cloak] { display: none !important; }
+        .severity-blocking { @apply border-l-4 border-red-500 bg-red-950/30; }
+        .severity-warning { @apply border-l-4 border-amber-500 bg-amber-950/30; }
+        .severity-nit { @apply border-l-4 border-sky-500 bg-sky-950/30; }
+        .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+        .badge-blocking { @apply badge bg-red-900/50 text-red-300; }
+        .badge-warning { @apply badge bg-amber-900/50 text-amber-300; }
+        .badge-nit { @apply badge bg-sky-900/50 text-sky-300; }
+        .badge-bug { @apply badge bg-red-900/50 text-red-300; }
+        .badge-security { @apply badge bg-purple-900/50 text-purple-300; }
+        .badge-style { @apply badge bg-emerald-900/50 text-emerald-300; }
+        .badge-suggestion { @apply badge bg-blue-900/50 text-blue-300; }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sentinel: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                            950: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full bg-gray-950 text-gray-100">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="border-b border-gray-800 bg-gray-900/80 backdrop-blur-sm">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="flex h-16 items-center justify-between">
+                    <div class="flex items-center space-x-8">
+                        <a href="{% url 'dashboard-home' %}" class="flex items-center space-x-2">
+                            <span class="text-2xl">🛡️</span>
+                            <span class="text-xl font-bold text-white">Sentinel Review</span>
+                        </a>
+                        <div class="hidden md:flex space-x-1">
+                            <a href="{% url 'dashboard-home' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Dashboard</a>
+                            <a href="{% url 'repo-list' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Repositories</a>
+                            <a href="{% url 'stats-overview' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Analytics</a>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-500">v1.0.0</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main>
+            <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

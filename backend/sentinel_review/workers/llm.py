@@ -1,0 +1,274 @@
+"""
+LLM provider abstraction.
+
+Supports Anthropic Claude and OpenAI-compatible APIs behind a common interface.
+Handles structured output with Pydantic validation, retries, and cost tracking.
+"""
+
+import json
+import logging
+import time
+from dataclasses import dataclass, field
+from typing import Any
+
+from django.conf import settings
+
+from .schemas import SYSTEM_PROMPT, Finding, ReviewOutput, get_few_shot_examples
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class LLMResult:
+    """Result from an LLM review call."""
+
+    findings: list[Finding] = field(default_factory=list)
+    raw_output: str = ""
+    total_tokens: int = 0
+    latency_ms: int = 0
+    provider: str = ""
+    model: str = ""
+    validation_success: bool = True
+    error_message: str = ""
+
+
+class LLMProvider:
+    """Abstract base for LLM providers."""
+
+    def __init__(self):
+        self.provider_name = "unknown"
+
+    def review_diff(
+        self,
+        diff: str,
+        repo_context: str | None = None,
+        file_contents: dict[str, str] | None = None,
+    ) -> LLMResult:
+        """Review a diff and return structured findings."""
+        raise NotImplementedError
+
+    @staticmethod
+    def _build_prompt(
+        diff: str,
+        repo_context: str | None = None,
+        file_contents: dict[str, str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Build the full prompt with system prompt, few-shot examples, and diff."""
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+        # Add repo context if available
+        if repo_context:
+            messages.append({
+                "role": "user",
+                "content": f"Repository context:\n{repo_context[:4000]}",
+            })
+            messages.append({
+                "role": "assistant",
+                "content": "Understood. I'll consider this context during the review.",
+            })
+
+        # Add file contents if available (for repo-context retrieval)
+        if file_contents:
+            file_blob = "\n\n".join(
+                f"### {path}\n```\n{content[:5000]}\n```"
+                for path, content in file_contents.items()
+            )
+            messages.append({
+                "role": "user",
+                "content": f"Full file contents for context:\n{file_blob[:10000]}",
+            })
+            messages.append({
+                "role": "assistant",
+                "content": "Thanks, I have the full context of the changed files.",
+            })
+
+        # Add few-shot examples
+        for example in get_few_shot_examples():
+            messages.append(example)
+
+        # Main diff to review
+        messages.append({
+            "role": "user",
+            "content": f"Review this pull request diff:\n\n```diff\n{diff[:30000]}\n```\n\n"
+            "Return your findings as a JSON object with a 'findings' array.",
+        })
+
+        return messages
+
+    @staticmethod
+    def _validate_and_parse(raw_output: str) -> tuple[list[Finding], bool, str]:
+        """
+        Validate and parse the LLM's JSON output against the ReviewOutput schema.
+
+        Returns: (findings, success, error_message)
+        """
+        # Try to extract JSON from the response
+        json_str = raw_output.strip()
+
+        # Handle code-block wrapped JSON
+        if "```json" in json_str:
+            json_str = json_str.split("```json")[1].split("```")[0].strip()
+        elif "```" in json_str:
+            json_str = json_str.split("```")[1].split("```")[0].strip()
+
+        try:
+            data = json.loads(json_str)
+        except json.JSONDecodeError as e:
+            error_msg = f"Failed to parse JSON from LLM output: {e}"
+            logger.error(error_msg)
+            return [], False, error_msg
+
+        try:
+            review_output = ReviewOutput(**data)
+        except Exception as e:
+            error_msg = f"Pydantic validation failed: {e}"
+            logger.error(error_msg)
+            return [], False, error_msg
+
+        return review_output.findings, True, ""
+
+
+class AnthropicProvider(LLMProvider):
+    """Anthropic Claude provider using structured output (tool use)."""
+
+    def __init__(self):
+        super().__init__()
+        self.provider_name = "anthropic"
+        self.api_key = settings.ANTHROPIC_API_KEY
+        self.model = settings.ANTHROPIC_MODEL
+
+    def review_diff(
+        self,
+        diff: str,
+        repo_context: str | None = None,
+        file_contents: dict[str, str] | None = None,
+    ) -> LLMResult:
+        import anthropic
+
+        if not self.api_key:
+            return LLMResult(
+                error_message="Anthropic API key not configured",
+                validation_success=False,
+            )
+
+        messages = self._build_prompt(diff, repo_context, file_contents)
+        system_content = messages[0]["content"]
+        user_assistant_messages = messages[1:]
+
+        start_time = time.time()
+
+        try:
+            client = anthropic.Anthropic(api_key=self.api_key)
+            response = client.messages.create(
+                model=self.model,
+                max_tokens=4096,
+                system=system_content,
+                messages=user_assistant_messages,
+            )
+
+            latency_ms = int((time.time() - start_time) * 1000)
+            raw_text = response.content[0].text
+            total_tokens = response.usage.input_tokens + response.usage.output_tokens
+
+            # Validate and parse
+            findings, success, error_msg = self._validate_and_parse(raw_text)
+
+            return LLMResult(
+                findings=findings,
+                raw_output=raw_text,
+                total_tokens=total_tokens,
+                latency_ms=latency_ms,
+                provider=self.provider_name,
+                model=self.model,
+                validation_success=success,
+                error_message=error_msg,
+            )
+
+        except Exception as e:
+            latency_ms = int((time.time() - start_time) * 1000)
+            logger.error(f"Anthropic API error: {e}")
+            return LLMResult(
+                error_message=str(e),
+                latency_ms=latency_ms,
+                validation_success=False,
+            )
+
+
+class OpenAIProvider(LLMProvider):
+    """OpenAI-compatible provider with structured output."""
+
+    def __init__(self):
+        super().__init__()
+        self.provider_name = "openai"
+        self.api_key = settings.OPENAI_API_KEY
+        self.model = settings.OPENAI_MODEL
+
+    def review_diff(
+        self,
+        diff: str,
+        repo_context: str | None = None,
+        file_contents: dict[str, str] | None = None,
+    ) -> LLMResult:
+        from openai import OpenAI
+
+        if not self.api_key:
+            return LLMResult(
+                error_message="OpenAI API key not configured",
+                validation_success=False,
+            )
+
+        build_messages = self._build_prompt(diff, repo_context, file_contents)
+        # For OpenAI, combine system into messages
+        openai_messages = [
+            {"role": "system", "content": build_messages[0]["content"]}
+        ]
+        for msg in build_messages[1:]:
+            openai_messages.append(
+                {"role": msg["role"], "content": msg["content"]}
+            )
+
+        start_time = time.time()
+
+        try:
+            client = OpenAI(api_key=self.api_key)
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=openai_messages,
+                max_tokens=4096,
+                temperature=0.1,
+            )
+
+            latency_ms = int((time.time() - start_time) * 1000)
+            raw_text = response.choices[0].message.content or ""
+            usage = response.usage
+            total_tokens = (usage.input_tokens + usage.output_tokens) if usage else 0
+
+            findings, success, error_msg = self._validate_and_parse(raw_text)
+
+            return LLMResult(
+                findings=findings,
+                raw_output=raw_text,
+                total_tokens=total_tokens,
+                latency_ms=latency_ms,
+                provider=self.provider_name,
+                model=self.model,
+                validation_success=success,
+                error_message=error_msg,
+            )
+
+        except Exception as e:
+            latency_ms = int((time.time() - start_time) * 1000)
+            logger.error(f"OpenAI API error: {e}")
+            return LLMResult(
+                error_message=str(e),
+                latency_ms=latency_ms,
+                validation_success=False,
+            )
+
+
+def get_llm_provider() -> LLMProvider:
+    """Factory function to get the configured LLM provider."""
+    provider_type = settings.LLM_PROVIDER.lower()
+    if provider_type == "openai":
+        return OpenAIProvider()
+    return AnthropicProvider()

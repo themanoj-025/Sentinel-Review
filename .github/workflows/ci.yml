@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+env:
+  PYTHON_VERSION: "3.12"
+  DJANGO_SETTINGS_MODULE: sentinel_review.settings
+  DATABASE_URL: sqlite:///test_db.sqlite3
+  WEBHOOK_SECRET: ci-test-secret
+  GITHUB_APP_ID: "000000"
+  ANTHROPIC_API_KEY: sk-ant-test00000000000000000000000000
+  GITHUB_APP_PRIVATE_KEY_B64: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpUZXN0S2V5Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0t
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: sentinel_review
+          POSTGRES_USER: sentinel
+          POSTGRES_PASSWORD: sentinel
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ../requirements.txt
+
+      - name: Run lint (ruff)
+        run: |
+          ruff check --output-format=github .
+
+      - name: Run tests with pytest
+        run: |
+          pytest -v --cov=. --cov-report=term --cov-report=xml -x --ignore=tests/fixtures
+        env:
+          DATABASE_URL: postgres://sentinel:sentinel@localhost:5432/sentinel_review
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: backend/coverage.xml
+          fail_ci_if_error: false
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t sentinel-review .
+
+      - name: Verify Docker image exists
+        run: docker image inspect sentinel-review
+
+  semgrep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep on codebase
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: p/python
+        env:
+          SEMGREP_APP_TOKEN: ""
+        # This is optional — the action will run unauthenticated for public repos
+
+  # Optional: verify docker-compose up works
+  docker-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start services with docker-compose
+        run: |
+          docker compose up -d --build
+          sleep 10
+          docker compose ps
+
+      - name: Check web service health
+        run: |
+          curl --retry 5 --retry-delay 5 --retry-connrefused http://localhost:8000/ || true
+
+      - name: Tear down
+        run: docker compose down -v

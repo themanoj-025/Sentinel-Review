@@ -1,0 +1,56 @@
+{% if repos %}
+<div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-800">
+        <thead>
+            <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-4 py-3">Repository</th>
+                <th class="px-4 py-3">Installation</th>
+                <th class="px-4 py-3">Reviews</th>
+                <th class="px-4 py-3">Comments</th>
+                <th class="px-4 py-3">Private</th>
+                <th class="px-4 py-3">Categories</th>
+                <th class="px-4 py-3">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800">
+            {% for repo in repos %}
+            <tr class="hover:bg-gray-800/50 transition-colors">
+                <td class="px-4 py-3">
+                    <a href="{% url 'repo-detail' repo.id %}" class="text-sentinel-400 hover:text-sentinel-300 font-medium">
+                        {{ repo.full_name }}
+                    </a>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-400">{{ repo.installation.account_login }}</td>
+                <td class="px-4 py-3 text-sm text-gray-300">{{ repo.review_count }}</td>
+                <td class="px-4 py-3 text-sm text-gray-300">{{ repo.comment_count }}</td>
+                <td class="px-4 py-3">
+                    {% if repo.is_private %}
+                    <span class="badge bg-amber-900/50 text-amber-300">Private</span>
+                    {% else %}
+                    <span class="badge bg-emerald-900/50 text-emerald-300">Public</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3">
+                    <div class="flex flex-wrap gap-1">
+                        {% for cat in repo.enabled_categories %}
+                        <span class="badge badge-{{ cat }}">{{ cat }}</span>
+                        {% endfor %}
+                    </div>
+                </td>
+                <td class="px-4 py-3">
+                    <a href="{% url 'repo-detail' repo.id %}" class="text-sm text-sentinel-400 hover:text-sentinel-300">
+                        Configure →
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="text-center py-12">
+    <span class="text-4xl">📦</span>
+    <p class="mt-4 text-gray-400">No repositories configured yet.</p>
+    <p class="mt-2 text-sm text-gray-500">Repositories appear here once the GitHub App processes its first webhook.</p>
+</div>
+{% endif %}
