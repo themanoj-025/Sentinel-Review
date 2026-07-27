@@ -100,7 +100,7 @@ We use:
 
 ## Documentation
 
-All documentation lives in the `docs/` directory:
+Key documentation lives in the `docs/` directory:
 
 | File | Purpose |
 |------|---------|
@@ -108,9 +108,6 @@ All documentation lives in the `docs/` directory:
 | `decisions.md` | Architectural Decision Records (21 ADRs) |
 | `security-notes.md` | Threat model and security controls |
 | `evaluation-report.md` | Test results, evaluation metrics, multi-model comparison |
-| `audit-v2.md` | Post-remediation 28-category re-audit (8.9/10) |
-| `remediation-plan.md` | Full P0-P3 remediation blueprint |
-| `build-log.md` | Development timeline |
 
 If your change affects architecture, configuration, or security, please update the relevant docs.
 

@@ -123,10 +123,9 @@ def run_load_test(
     return results
 
 
-def _print_report(results: list[dict[str, Any]], concurrent: int, total: int, elapsed: float) -> None:
+def _print_report(results: list[dict[str, Any]], concurrent: int, total: int, elapsed: float, webhook_url: str) -> None:
     """Print a formatted report of load test results."""
     statuses = [r["status"] for r in results]
-    elapsed_ms = [r["elapsed_ms"] for r in results]
     errors = [r for r in results if r["error"]]
     successes = [r for r in results if not r["error"]]
 
@@ -135,7 +134,7 @@ def _print_report(results: list[dict[str, Any]], concurrent: int, total: int, el
     print("  Sentinel Review — Webhook Load Test Report")
     print("=" * 60)
     print(f"  Date:         {datetime.now().isoformat()}")
-    print(f"  URL:          {url}")
+    print(f"  URL:          {webhook_url}")
     print(f"  Concurrent:   {concurrent}")
     print(f"  Total:        {total}")
     print(f"  Duration:     {elapsed:.2f}s")
@@ -260,7 +259,7 @@ def main() -> int:
     results = run_load_test(args.url, secret, args.concurrent, args.total, args.timeout)
     elapsed = time.monotonic() - start
 
-    _print_report(results, args.concurrent, args.total, elapsed)
+    _print_report(results, args.concurrent, args.total, elapsed, args.url)
     return 0
 
 

@@ -40,7 +40,6 @@ import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 # Add backend/ to path so we can import from sentinel_review if needed for live mode
 _BACKEND_DIR = Path(__file__).resolve().parent.parent / "backend"
@@ -201,7 +200,6 @@ def run_comparison(mode: str = "mock") -> tuple[list[ProviderResult], dict]:
         provider_total_tp = 0
         provider_total_fp = 0
         provider_total_fn = 0
-        provider_total_tokens = 0
         provider_total_latency = 0
 
         for i, entry in enumerate(entries):

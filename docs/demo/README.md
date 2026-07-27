@@ -270,7 +270,7 @@ open http://localhost:8000/stats/      # Usefulness metrics
 ### The Context
 
 After the original pickle-load demo, the entire Sentinel Review codebase underwent
-a **31-item production remediation** (see [docs/audit-v2.md](../audit-v2.md)).
+a **31-item production remediation** covering security, architecture, and monitoring.
 The changes touched 48 files, added 2,119 lines, and included:
 - Refactoring the 250-line `review_pull_request` monolith into a 7-stage pipeline
 - Adding circuit breakers, LLM caching, health checks, and structured logging
