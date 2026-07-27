@@ -4,45 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Sentinel Review{% endblock %}</title>
-    <script
-        src="https://unpkg.com/htmx.org@1.9.12"
-        integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
-        crossorigin="anonymous"
-        onerror="console.error('HTMX failed to load — dynamic updates disabled')"></script>
-    <script
-        src="https://unpkg.com/alpinejs@3.14.3"
-        defer
-        integrity="sha384-FaTt/NLFN5pEj78WmJSLETKwbxSc1PrQ13ZJmS9MhMyCmL6O1JpFpJ3rJ2d6K8F"
-        crossorigin="anonymous"
-        onerror="document.getElementById('alpine-fallback')?.classList.remove('hidden')"></script>
-    <script
-        src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"
-        integrity="sha384-6c2RwHoiZGRc5rSOKGMK8Bq6b0OVRN2C5QFp2qZz5H8XXPKB5W1F6T0DQQrx6rT"
-        crossorigin="anonymous"
-        onerror="window.chartJsLoaded = false"></script>
-    <style>
-        /* Custom CSS (Tailwind utility replacement — no CDN needed) */
-        [x-cloak] { display: none !important; }
-        .severity-blocking { border-left: 4px solid #ef4444; background-color: rgba(127, 29, 29, 0.3); }
-        .severity-warning { border-left: 4px solid #f59e0b; background-color: rgba(120, 53, 15, 0.3); }
-        .severity-nit { border-left: 4px solid #0ea5e9; background-color: rgba(12, 74, 110, 0.3); }
-        .badge { display: inline-flex; align-items: center; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
-        .badge-blocking { background-color: rgba(127, 29, 29, 0.5); color: #fca5a5; }
-        .badge-warning { background-color: rgba(120, 53, 15, 0.5); color: #fde68a; }
-        .badge-nit { background-color: rgba(12, 74, 110, 0.5); color: #bae6fd; }
-        .badge-bug { background-color: rgba(127, 29, 29, 0.5); color: #fca5a5; }
-        .badge-security { background-color: rgba(88, 28, 135, 0.5); color: #d8b4fe; }
-        .badge-style { background-color: rgba(6, 78, 59, 0.5); color: #6ee7b7; }
-        .badge-suggestion { background-color: rgba(30, 64, 175, 0.5); color: #93c5fd; }
-        /* HTMX loading indicator */
-        .htmx-indicator { opacity: 0; transition: opacity 200ms ease-in; }
-        .htmx-request .htmx-indicator { opacity: 1; }
-        .htmx-request.htmx-indicator { opacity: 1; }
-    </style>
+
+    <!-- Compiled Tailwind CSS (purged, ~17KB) -->
     <link rel="stylesheet" href="/static/css/output.css">
+
+    <!-- Bundled HTMX + Alpine.js (~60KB, minified) -->
+    <script src="/static/js/bundle.js" defer></script>
+
+    <!-- Alpine.js loading fallback -->
     <script>
-        window.chartJsLoaded = true;
-        // Alpine.js fallback
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof Alpine === 'undefined') {
                 document.getElementById('alpine-fallback')?.classList.remove('hidden');
@@ -50,21 +20,26 @@
         });
     </script>
 </head>
-<body class="h-full bg-gray-950 text-gray-100">
+<body class="h-full bg-gray-950 text-gray-100" role="document">
     <div class="min-h-full">
+        <!-- Skip-to-content link (accessibility) -->
+        <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-sentinel-600 focus:text-white focus:rounded-lg focus:outline-none">
+            Skip to main content
+        </a>
+
         <!-- Navigation -->
-        <nav class="border-b border-gray-800 bg-gray-900/80 backdrop-blur-sm">
+        <nav class="border-b border-gray-800 bg-gray-900/80 backdrop-blur-sm" aria-label="Main navigation">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center justify-between">
                     <div class="flex items-center space-x-8">
-                        <a href="{% url 'dashboard-home' %}" class="flex items-center space-x-2">
-                            <span class="text-2xl">🛡️</span>
+                        <a href="{% url 'dashboard-home' %}" class="flex items-center space-x-2" aria-label="Sentinel Review Dashboard Home">
+                            <span class="text-2xl" aria-hidden="true">🛡️</span>
                             <span class="text-xl font-bold text-white">Sentinel Review</span>
                         </a>
-                        <div class="hidden md:flex space-x-1">
-                            <a href="{% url 'dashboard-home' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Dashboard</a>
-                            <a href="{% url 'repo-list' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Repositories</a>
-                            <a href="{% url 'stats-overview' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Analytics</a>
+                        <div class="hidden md:flex space-x-1" role="menubar">
+                            <a href="{% url 'dashboard-home' %}" role="menuitem" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-sentinel-500">Dashboard</a>
+                            <a href="{% url 'repo-list' %}" role="menuitem" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-sentinel-500">Repositories</a>
+                            <a href="{% url 'stats-overview' %}" role="menuitem" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-sentinel-500">Analytics</a>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
@@ -75,17 +50,17 @@
         </nav>
 
         <!-- Alpine.js fallback warning (hidden by default) -->
-        <div id="alpine-fallback" class="hidden bg-amber-900/50 border-b border-amber-700 px-4 py-2 text-amber-200 text-sm text-center">
+        <div id="alpine-fallback" class="hidden bg-amber-900/50 border-b border-amber-700 px-4 py-2 text-amber-200 text-sm text-center" role="alert">
             ⚠️ Interactive features are unavailable — Alpine.js failed to load. Try refreshing the page.
         </div>
 
-        <!-- Loading indicator for HTMX requests (shown during any hx-* request) -->
-        <div id="global-loading" class="htmx-indicator fixed top-0 left-0 right-0 z-50">
+        <!-- Global loading indicator for HTMX requests -->
+        <div id="global-loading" class="htmx-indicator fixed top-0 left-0 right-0 z-50" aria-hidden="true">
             <div class="h-1 bg-sentinel-600 animate-pulse"></div>
         </div>
 
         <!-- Main Content -->
-        <main>
+        <main id="main-content" tabindex="-1">
             <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 {% block content %}{% endblock %}
             </div>

@@ -1,0 +1,19 @@
+{
+  "name": "sentinel-review-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./static/css/output.css --minify",
+    "build:js": "node esbuild.config.mjs",
+    "build": "npm run build:css && npm run build:js",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./static/css/output.css --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "tailwindcss": "^3.4.0"
+  },
+  "dependencies": {
+    "alpinejs": "^3.15.12",
+    "htmx.org": "^2.0.10"
+  }
+}

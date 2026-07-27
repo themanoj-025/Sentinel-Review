@@ -112,19 +112,19 @@
     <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold text-white">Recent Reviews</h2>
-            <a href="{% url 'repo-list' %}" class="text-sm text-sentinel-400 hover:text-sentinel-300 transition-colors">View all repos →</a>
+            <a href="{% url 'repo-list' %}" class="text-sm text-sentinel-400 hover:text-sentinel-300 transition-colors focus:outline-none focus:ring-2 focus:ring-sentinel-500 rounded">View all repos →</a>
         </div>
         {% if recent_reviews %}
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" role="region" aria-label="Recent reviews table">
             <table class="min-w-full divide-y divide-gray-800">
                 <thead>
                     <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <th class="px-4 py-3">Repository</th>
-                        <th class="px-4 py-3">PR #</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3">Findings</th>
-                        <th class="px-4 py-3">Latency</th>
-                        <th class="px-4 py-3">When</th>
+                        <th class="px-4 py-3" scope="col">Repository</th>
+                        <th class="px-4 py-3" scope="col">PR #</th>
+                        <th class="px-4 py-3" scope="col">Status</th>
+                        <th class="px-4 py-3" scope="col">Findings</th>
+                        <th class="px-4 py-3" scope="col">Latency</th>
+                        <th class="px-4 py-3" scope="col">When</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-800">
@@ -132,7 +132,7 @@
                     <tr class="hover:bg-gray-800/50 transition-colors">
                         <td class="px-4 py-3 text-sm text-gray-300">{{ rev.pull_request.repo.full_name }}</td>
                         <td class="px-4 py-3">
-                            <a href="{% url 'review-detail' rev.id %}" class="text-sentinel-400 hover:text-sentinel-300">
+                            <a href="{% url 'review-detail' rev.id %}" class="text-sentinel-400 hover:text-sentinel-300 focus:outline-none focus:ring-2 focus:ring-sentinel-500 rounded">
                                 #{{ rev.pull_request.github_pr_number }}
                             </a>
                         </td>
@@ -156,7 +156,7 @@
         </div>
         {% else %}
         <div class="text-center py-12">
-            <span class="text-4xl">🔍</span>
+            <span class="text-4xl" aria-hidden="true">🔍</span>
             <p class="mt-4 text-gray-400">No reviews yet. Install the GitHub App and open a PR to get started!</p>
         </div>
         {% endif %}

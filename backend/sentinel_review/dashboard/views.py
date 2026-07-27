@@ -69,7 +69,11 @@ def dashboard_home(request: HttpRequest) -> HttpResponse:
 
 @cache_control(private=True, max_age=30)
 def repo_list(request: HttpRequest) -> HttpResponse:
-    """List all configured repositories."""
+    """List all configured repositories with pagination."""
+    page_size = 20
+    page = int(request.GET.get("page", 1))
+    offset = (page - 1) * page_size
+
     repos = (
         Repo.objects.select_related("installation")
         .annotate(
@@ -84,10 +88,25 @@ def repo_list(request: HttpRequest) -> HttpResponse:
     if search:
         repos = repos.filter(full_name__icontains=search)
 
-    if request.headers.get("HX-Request"):
-        return render(request, "dashboard/partials/repo_table.html", {"repos": repos})
+    total = repos.count()
+    repos_page = repos[offset : offset + page_size]
+    has_next = (offset + page_size) < total
 
-    return render(request, "dashboard/repo_list.html", {"repos": repos})
+    if request.headers.get("HX-Request"):
+        return render(request, "dashboard/partials/repo_table.html", {
+            "repos": repos_page,
+            "page": page,
+            "has_next": has_next,
+            "search": search,
+        })
+
+    return render(request, "dashboard/repo_list.html", {
+        "repos": repos_page,
+        "page": page,
+        "has_next": has_next,
+        "total": total,
+        "search": search,
+    })
 
 
 @cache_control(private=True, max_age=15)
