@@ -12,6 +12,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from celery import shared_task
+
 from .schemas import Finding
 
 logger = logging.getLogger(__name__)
@@ -150,6 +152,19 @@ def _parse_semgrep_output(
         findings.append(finding)
 
     return findings
+
+
+@shared_task(bind=True, max_retries=1, default_retry_delay=5, queue="default", acks_late=True)
+def run_semgrep_async(self, file_contents: dict[str, str]) -> list[dict]:
+    """
+    Run Semgrep asynchronously in a Celery task (4.5).
+
+    Returns serialized findings as dicts (Finding is not JSON-serializable).
+    If Semgrep is not installed or times out, returns empty list.
+    """
+    logger.info("Async Semgrep: processing %d files", len(file_contents))
+    findings = run_semgrep(file_contents)
+    return [f.model_dump() for f in findings]
 
 
 def merge_with_llm_findings(

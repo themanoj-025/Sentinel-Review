@@ -25,6 +25,9 @@ class Review(models.Model):
     token_cost = models.IntegerField(
         null=True, blank=True, help_text="Total tokens used across all LLM calls"
     )
+    estimated_cost_usd = models.FloatField(
+        null=True, blank=True, help_text="Estimated USD cost based on token count and model pricing"
+    )
     findings_count = models.IntegerField(default=0)
     error_message = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)

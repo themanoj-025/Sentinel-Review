@@ -28,6 +28,7 @@ from sentinel_review.models.review import Review
 from .cache import cache_get, cache_set
 from .github_client import GitHubClient, GitHubRepoContext
 from .llm import LLMResult, get_llm_provider
+from .schemas import Finding
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +87,9 @@ class ReviewContext:
 
     # GitHub client (shared across stages)
     client: GitHubClient | None = None
+
+    # Async Semgrep task reference (populated by SemgrepStage)
+    _semgrep_task: Any | None = None
 
 
 # Base Stage
@@ -256,6 +260,11 @@ class LLMReviewStage(PipelineStage):
         try:
             repo_context_str = _build_context_str(ctx.repo_ctx) if ctx.repo_ctx else ""
 
+            # Extract custom instructions from repo config (4.1)
+            custom_instructions = None
+            if ctx.repo_obj and ctx.repo_obj.config:
+                custom_instructions = ctx.repo_obj.config.get("custom_instructions")
+
             # Check cache first
             cached = cache_get(ctx.diff, repo_context_str)
             if cached is not None:
@@ -277,6 +286,7 @@ class LLMReviewStage(PipelineStage):
                 diff=ctx.diff,
                 repo_context=repo_context_str,
                 file_contents=ctx.file_contents,
+                custom_instructions=custom_instructions,
             )
             ctx.llm_findings = ctx.llm_result.findings
 
@@ -294,7 +304,12 @@ class LLMReviewStage(PipelineStage):
 
 
 class SemgrepStage(PipelineStage):
-    """Run Semgrep static analysis and merge with LLM findings."""
+    """Run Semgrep static analysis — dispatched asynchronously (4.5).
+
+    Dispatches Semgrep to a separate Celery task that runs in parallel
+    with the LLM call. The DedupeStage merges results after both complete.
+    If Semgrep is disabled or fails, continues with LLM-only findings.
+    """
 
     def execute(self, ctx: ReviewContext) -> ReviewContext:
         # Check feature flag: disable_semgrep
@@ -309,14 +324,22 @@ class SemgrepStage(PipelineStage):
                 )
                 return ctx
 
-        try:
-            from .semgrep_integration import run_semgrep
+        if not ctx.file_contents:
+            return ctx
 
-            ctx.semgrep_findings = run_semgrep(ctx.file_contents)
-            if ctx.semgrep_findings:
-                logger.info("Semgrep found %d additional findings", len(ctx.semgrep_findings))
-        except (FileNotFoundError, TimeoutError) as e:
-            logger.warning("Semgrep integration error (non-fatal): %s", e)
+        try:
+            from .semgrep_integration import run_semgrep_async
+
+            # Dispatch Semgrep to a Celery task — runs in parallel with LLM
+            task = run_semgrep_async.delay(ctx.file_contents)
+            ctx._semgrep_task = task
+            logger.info(
+                "Dispatched async Semgrep for %s (task_id=%s)",
+                ctx.repo_full_name,
+                task.id,
+            )
+        except Exception as e:
+            logger.warning("Failed to dispatch async Semgrep (non-fatal): %s", e)
 
         return ctx
 
@@ -334,6 +357,24 @@ class DedupeStage(PipelineStage):
 
     def execute(self, ctx: ReviewContext) -> ReviewContext:
         try:
+            # Retrieve async Semgrep results if a task was dispatched (4.5)
+            if ctx._semgrep_task is not None:
+                try:
+                    semgrep_result = ctx._semgrep_task.get(timeout=30, disable_sync_subtasks=False)
+                    if semgrep_result:
+                        ctx.semgrep_findings = [
+                            Finding(**f) for f in semgrep_result
+                        ]
+                        logger.info(
+                            "Async Semgrep returned %d findings",
+                            len(ctx.semgrep_findings),
+                        )
+                    else:
+                        ctx.semgrep_findings = []
+                except Exception as e:
+                    logger.warning("Async Semgrep timed out or failed (non-fatal): %s", e)
+                    ctx.semgrep_findings = []
+
             from .semgrep_integration import merge_with_llm_findings
 
             merged = merge_with_llm_findings(ctx.llm_findings, ctx.semgrep_findings)
@@ -419,6 +460,9 @@ class PostCommentsStage(PipelineStage):
                     review_body=_build_review_body(ctx.merged_findings, len(github_comments)),
                 )
 
+                # Post a PR-level summary comment (4.4)
+                self._post_summary_comment(ctx, client, len(github_comments))
+
                 # Store GitHub comment IDs
                 for i, gh_comment in enumerate(review_result.get("comments", [])):
                     if i < len(ctx.merged_findings):
@@ -468,6 +512,58 @@ class PostCommentsStage(PipelineStage):
 
         return ctx
 
+    def _post_summary_comment(
+        self,
+        ctx: ReviewContext,
+        client: GitHubClient,
+        inline_count: int,
+    ) -> None:
+        """Post a top-level PR summary comment alongside inline comments (4.4)."""
+        blocking = sum(1 for f in ctx.merged_findings if f.get("severity") == "blocking")
+        warnings = sum(1 for f in ctx.merged_findings if f.get("severity") == "warning")
+        nits = sum(1 for f in ctx.merged_findings if f.get("severity") == "nit")
+        categories = sorted(set(f.get("category", "unknown") for f in ctx.merged_findings))
+        cat_rows = "\n".join(
+            "| %s | %d |" % (cat, sum(1 for f in ctx.merged_findings if f.get("category") == cat))
+            for cat in categories
+        )
+
+        summary_body = (
+            f"### 🛡️ Sentinel Review — Summary\n\n"
+            f"Found **{inline_count}** issue(s) "
+            f"({blocking} blocking, {warnings} warnings, {nits} nits)\n\n"
+            f"| Category | Count |\n|----------|------|\n{cat_rows}\n\n"
+        )
+
+        if blocking > 0:
+            summary_body += (
+                "🔴 **Action required:** %d blocking issue(s) found. "
+                "These should be resolved before merging.\n\n"
+            ) % blocking
+
+        if inline_count > 0:
+            summary_body += (
+                "📝 See inline comments on the diff for exact locations and suggested fixes.\n\n"
+            )
+
+        if ctx.llm_result:
+            summary_body += (
+                f"*Model:* `{ctx.llm_result.provider}/{ctx.llm_result.model}` | "
+                f"*Tokens:* {ctx.llm_result.total_tokens} | "
+                f"*Latency:* {ctx.elapsed_ms}ms"
+            )
+
+        try:
+            client._request(
+                "POST",
+                f"/repos/{ctx.repo_full_name}/issues/{ctx.pr_number}/comments",
+                installation_id=ctx.installation_id,
+                json={"body": summary_body},
+            )
+            logger.info("Posted summary comment to %s#%d", ctx.repo_full_name, ctx.pr_number)
+        except Exception as e:
+            logger.warning("Failed to post summary comment (non-fatal): %s", e)
+
 
 # Pipeline Orchestrator
 
@@ -512,6 +608,13 @@ class ReviewPipeline:
             ctx.review_obj.latency_ms = ctx.elapsed_ms
             ctx.review_obj.token_cost = ctx.llm_result.total_tokens if ctx.llm_result else 0
             ctx.review_obj.findings_count = len(ctx.posted_comments)
+            # Estimate USD cost from token count and model pricing (4.3)
+            if ctx.llm_result:
+                ctx.review_obj.estimated_cost_usd = estimate_cost_usd(
+                    ctx.llm_result.provider,
+                    ctx.llm_result.model,
+                    ctx.llm_result.total_tokens,
+                )
             ctx.review_obj.save()
 
             # Record metrics
@@ -564,6 +667,39 @@ class ReviewPipeline:
             )
 
         return ctx
+
+
+# Approximate per-model pricing per 1K tokens (USD) — updated 2026-07
+# Source: https://docs.anthropic.com/en/docs/about-claude/pricing
+#         https://openai.com/pricing
+_MODEL_PRICING: dict[str, tuple[float, float]] = {
+    "claude-sonnet-4-20250514": (3.0, 15.0),   # input, output per 1K tokens ($)
+    "claude-sonnet-4": (3.0, 15.0),
+    "gpt-4o": (2.5, 10.0),
+    "gpt-4o-2024-08-06": (2.5, 10.0),
+}
+
+
+def estimate_cost_usd(provider: str, model: str, total_tokens: int, input_tokens: int | None = None) -> float:
+    """Estimate the USD cost of an LLM call based on token count and model pricing.
+
+    Uses a rough 3:1 input-to-output ratio if input_tokens is not provided.
+    """
+    pricing = _MODEL_PRICING.get(model)
+    if not pricing:
+        # Fallback: assume 50/50 split at a conservative $5/$15 per 1K
+        return round((total_tokens / 1000) * 5.0, 2)
+
+    input_price, output_price = pricing
+    if input_tokens:
+        output_tokens = total_tokens - input_tokens
+    else:
+        # Assume roughly 3:1 input:output ratio
+        input_tokens = int(total_tokens * 0.75)
+        output_tokens = total_tokens - input_tokens
+
+    cost = (input_tokens / 1000 * input_price) + (output_tokens / 1000 * output_price)
+    return round(cost, 4)
 
 
 # Helper Functions
