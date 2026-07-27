@@ -345,6 +345,46 @@ sentinel_review/
 
 ---
 
+## ADR-22: Database Schema Decisions (5.6 Follow-up)
+
+**Status:** Accepted (2026-07-27)
+
+**Context:** The Phase 5 audit identified five database schema decisions requiring explicit documentation.
+
+### 1. `Comment.updated_at` — Not Added
+
+**Decision:** Do not add an `updated_at` field to `Comment`.
+
+**Rationale:** Comments are immutable once posted — they are created by the review pipeline and never edited. Adding an `updated_at` field would add database overhead with no functional benefit. If comment editing is added in the future, the field can be added then.
+
+### 2. Trigram/GIN Index on `Comment.content` — Deferred
+
+**Decision:** Do not add a trigram/GIN index on `Comment.content` speculatively.
+
+**Rationale:** A trigram index is only useful if full-text search across comments becomes a real dashboard feature. Adding it now would be a dead index — it would slow writes with no query benefit. When the search feature is built, the index should be added as part of that feature.
+
+### 3. `Feedback.created_at` Index — Added
+
+**Decision:** Add a database index on `Feedback.created_at`.
+
+**Rationale:** Date-range analytics queries (e.g., "show feedback volume over time") scan by `created_at`. Without an index, these queries require a full table scan. Migration `0003` adds this index.
+
+### 4. `Installation.account_login` — Not Unique
+
+**Decision:** Do not add a uniqueness constraint on `Installation.account_login`.
+
+**Rationale:** A single GitHub user or organization can install the same GitHub App multiple times — once on a personal account and once on each organization they belong to. Each installation gets a different `github_installation_id`. The `github_installation_id` field is already unique, which is the correct constraint. Multiple installations can share the same `account_login`.
+
+### 5. Installation Cascade Deletion — Documented
+
+**Decision:** No schema change. Document the existing behavior.
+
+**Current behavior:** When an `Installation` record is deleted (e.g., the GitHub App is uninstalled), the cascade (`on_delete=models.CASCADE`) deletes all child Repos → PRs → Reviews → Comments → Feedback.
+
+**Rationale:** This is intentional — when an installation is removed, all associated data should be cleaned up. Adding a soft-delete or confirmation step adds complexity that isn't justified for the current use case. If the project gains multi-installation support with data retention requirements, a soft-delete pattern should be implemented at that point.
+
+---
+
 ## Manual Step: Live LLM Evaluation
 
 **Context:** The evaluation harness (`scripts/run_evaluation.py`) defaults to a rule-based mock provider. It must be run with real API keys to produce accurate precision/recall/F1 numbers in `docs/evaluation-report.md`.

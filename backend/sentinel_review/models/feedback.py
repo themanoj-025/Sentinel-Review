@@ -23,6 +23,7 @@ class Feedback(models.Model):
         indexes = [
             models.Index(fields=["comment"]),
             models.Index(fields=["reaction"]),
+            models.Index(fields=["created_at"]),
             models.Index(fields=["comment", "reaction"]),
         ]
         constraints = [

@@ -7,7 +7,6 @@ to allow fixture injection (seeded_db).
 from __future__ import annotations
 
 import pytest
-from django.conf import settings
 from django.http import Http404
 from django.test import RequestFactory
 from sentinel_review.dashboard.views import (
@@ -82,10 +81,6 @@ class TestRepoDetail:
     """repo_detail — repo config panel, PR list, recent reviews, stats."""
 
     @pytest.mark.django_db
-    @pytest.mark.skipif(
-        "sqlite" in settings.DATABASES["default"]["ENGINE"],
-        reason="SQLite does not support Avg on datetime fields used in repo_detail",
-    )
     def test_returns_200(self, seeded_db):
         repo, *_ = seeded_db
         factory = RequestFactory()

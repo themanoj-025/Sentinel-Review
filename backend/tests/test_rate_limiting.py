@@ -76,3 +76,59 @@ class TestAnonRateLimiting:
         wait_time = throttle.wait()
         assert wait_time is not None, "Wait time should be returned when throttled"
         assert wait_time > 0, "Wait time should be positive when throttled"
+
+    def test_429_response_has_retry_after_header(self):
+        """When API returns 429, the Retry-After header should be present.
+
+        Uses a minimal DRF APIView subclass with a throttle that has a
+        hardcoded 1/second rate (bypassing DRF's api_settings cache)
+        and verifies the second request gets a 429 with Retry-After.
+        """
+        from django.http import HttpResponse
+        from rest_framework.throttling import AnonRateThrottle
+        from rest_framework.views import APIView
+
+        class _SecondThrottle(AnonRateThrottle):
+            """Throttle with hardcoded rate — no settings dependency."""
+            rate = "1/second"
+
+            def __init__(self):
+                self.rate = "1/second"
+                self.num_requests, self.duration = self.parse_rate(self.rate)
+                self.history = []
+                self.key = None
+
+        class _TestView(APIView):
+            throttle_classes = [_SecondThrottle]
+            permission_classes = []
+
+            def get(self, request):
+                return HttpResponse("ok")
+
+        view = _TestView.as_view()
+
+        from django.test.client import RequestFactory
+
+        factory = RequestFactory()
+        req1 = factory.get("/test/")
+        req1.user = AnonymousUser()
+        resp1 = view(req1)
+
+        req2 = factory.get("/test/")
+        req2.user = AnonymousUser()
+        resp2 = view(req2)
+
+        assert resp1.status_code == 200, (
+            f"First request should be 200, got {resp1.status_code}"
+        )
+        assert resp2.status_code == 429, (
+            f"Second request should be 429, got {resp2.status_code}"
+        )
+        # Retry-After should be a positive integer
+        retry_after = resp2.headers.get("Retry-After")
+        assert retry_after is not None, "429 response should include Retry-After header"
+        try:
+            seconds = int(retry_after)
+            assert seconds > 0, f"Retry-After should be positive, got {seconds}"
+        except (ValueError, TypeError):
+            pytest.fail(f"Retry-After should be an integer, got {retry_after!r}")

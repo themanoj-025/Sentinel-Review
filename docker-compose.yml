@@ -29,11 +29,29 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    # Note: collectstatic is handled by the Docker build. If running outside
+    # Docker (python manage.py runserver), run collectstatic manually first.
     command: >
       sh -c "python manage.py migrate --noinput &&
-             python manage.py collectstatic --noinput &&
              gunicorn sentinel_review.wsgi:application --bind 0.0.0.0:8000 --workers 4 --threads 2 --timeout 60 --access-logfile -"
     environment:
+      # ╔══════════════════════════════════════════════════════════════╗
+      # ║  ⚠️  ROTATE BEFORE PRODUCTION DEPLOYMENT                 ║
+      # ║                                                             ║
+      # ║  The default values below (change-me, change-me-in-        ║
+      # ║  production) are INSECURE and must be rotated before any   ║
+      # ║  real deployment. Generate secrets using:                   ║
+      # ║                                                             ║
+      # ║  DJANGO_SECRET_KEY:                                          ║
+      # ║    python -c "import secrets; print(secrets.token_urlsafe(64))"  ║
+      # ║                                                             ║
+      # ║  WEBHOOK_SECRET:                                             ║
+      # ║    python -c "import secrets; print(secrets.token_hex(32))"      ║
+      # ║                                                             ║
+      # ║  FLOWER_USER / FLOWER_PASSWORD: set unique, strong values   ║
+      # ║                                                             ║
+      # ║  Set all secrets via .env file (gitignored) or CI secrets   ║
+      # ╚══════════════════════════════════════════════════════════════╝
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,web}

@@ -6,6 +6,7 @@ import json
 import logging
 from datetime import timedelta
 
+from django.db import models
 from django.db.models import Avg, Count, Q
 from django.db.models.functions import TruncDate
 from django.http import HttpRequest, HttpResponse
@@ -141,7 +142,7 @@ def repo_detail(request: HttpRequest, repo_id: int) -> HttpResponse:
         PullRequest.objects.filter(repo=repo)
         .annotate(
             review_count=Count("reviews"),
-            last_reviewed_at=Avg("reviews__created_at"),
+            last_reviewed_at=models.Max("reviews__created_at"),
         )
         .order_by("-created_at")[:20]
     )
