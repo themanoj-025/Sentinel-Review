@@ -9,7 +9,6 @@ import json
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any
 
 from django.conf import settings
 from pydantic import ValidationError
@@ -17,7 +16,8 @@ from pydantic import ValidationError
 from sentinel_review.api.metrics import llm_errors, token_cost
 
 from .circuit_breaker import CircuitBreakerOpenError, llm_circuit_breaker
-from .schemas import SYSTEM_PROMPT, Finding, ReviewOutput, get_few_shot_examples
+from .prompt_builder import PromptBuilder
+from .schemas import Finding, ReviewOutput
 
 logger = logging.getLogger(__name__)
 
@@ -87,86 +87,6 @@ class LLMProvider:
         raise NotImplementedError
 
     @staticmethod
-    def _build_prompt(
-        diff: str,
-        repo_context: str | None = None,
-        file_contents: dict[str, str] | None = None,
-        corrective_hint: str | None = None,
-    ) -> list[dict[str, Any]]:
-        """Build the full prompt with system prompt, few-shot examples, and diff."""
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-
-        # Add corrective hint if this is a retry
-        if corrective_hint:
-            messages.append(
-                {
-                    "role": "user",
-                    "content": (
-                        "Note: Your previous response failed validation with this error:\n"
-                        f"{corrective_hint}\n\n"
-                        "Please return ONLY valid JSON matching the required schema. "
-                        "Double-check your JSON syntax before responding."
-                    ),
-                }
-            )
-            messages.append(
-                {
-                    "role": "assistant",
-                    "content": "I understand. I will ensure my response is valid JSON matching the required schema.",
-                }
-            )
-
-        # Add repo context if available
-        if repo_context:
-            messages.append(
-                {
-                    "role": "user",
-                    "content": f"Repository context:\n{repo_context[:4000]}",
-                }
-            )
-            messages.append(
-                {
-                    "role": "assistant",
-                    "content": "Understood. I'll consider this context during the review.",
-                }
-            )
-
-        # Add file contents if available
-        if file_contents:
-            file_blob = "\n\n".join(
-                f"### {path}\n```\n{content[:5000]}\n```" for path, content in file_contents.items()
-            )
-            messages.append(
-                {
-                    "role": "user",
-                    "content": f"Full file contents for context:\n{file_blob[:10000]}",
-                }
-            )
-            messages.append(
-                {
-                    "role": "assistant",
-                    "content": "Thanks, I have the full context of the changed files.",
-                }
-            )
-
-        # Add few-shot examples
-        for example in get_few_shot_examples():
-            messages.append(example)
-
-        # Main diff to review
-        messages.append(
-            {
-                "role": "user",
-                "content": (
-                    f"Review this pull request diff:\n\n```diff\n{diff[:30000]}\n```\n\n"
-                    "Return your findings as a JSON object with a 'findings' array."
-                ),
-            }
-        )
-
-        return messages
-
-    @staticmethod
     def _validate_and_parse(raw_output: str) -> tuple[list[Finding], bool, str]:
         """Validate and parse the LLM's JSON output against the ReviewOutput schema.
 
@@ -214,7 +134,8 @@ class AnthropicProvider(LLMProvider):
                 error_message="Anthropic API key not configured", validation_success=False
             )
 
-        messages = self._build_prompt(diff, repo_context, file_contents, corrective_hint)
+        prompt_builder = PromptBuilder()
+        messages = prompt_builder.build(diff, repo_context, file_contents, corrective_hint)
         system_content = messages[0]["content"]
         user_assistant_messages = messages[1:]
 
@@ -294,7 +215,8 @@ class OpenAIProvider(LLMProvider):
                 error_message="OpenAI API key not configured", validation_success=False
             )
 
-        build_messages = self._build_prompt(diff, repo_context, file_contents, corrective_hint)
+        prompt_builder = PromptBuilder()
+        build_messages = prompt_builder.build(diff, repo_context, file_contents, corrective_hint)
         openai_messages = [{"role": "system", "content": build_messages[0]["content"]}]
         for msg in build_messages[1:]:
             openai_messages.append({"role": msg["role"], "content": msg["content"]})

@@ -27,11 +27,11 @@ def _mock_jwt(monkeypatch):
     """Mock JWT generation to avoid needing a real RSA key."""
     monkeypatch.setattr("django.conf.settings.GITHUB_APP_ID", "123456")
     monkeypatch.setattr(
-        "sentinel_review.workers.github_client.GitHubClient._generate_jwt",
+        "sentinel_review.workers.token_manager.TokenManager.generate_jwt",
         lambda self: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.fake-jwt",
     )
     monkeypatch.setattr(
-        "sentinel_review.workers.github_client.GitHubClient._get_private_key",
+        "sentinel_review.workers.token_manager.TokenManager.get_private_key",
         lambda self: b"fake-key",
     )
 

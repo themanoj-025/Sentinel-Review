@@ -498,46 +498,11 @@ class ReviewPipeline:
             try:
                 ctx = stage.execute(ctx)
             except PipelineError as e:
-                ctx.errors.append(str(e))
-                # Mark review as failed if it was created
-                if ctx.review_obj:
-                    ctx.review_obj.status = Review.Status.FAILED
-                    ctx.review_obj.error_message = str(e)
-                    ctx.review_obj.save()
-                logger.error("Pipeline stage %s failed: %s", stage.__class__.__name__, e)
-
-                # Notify on pipeline failure
-                notifier = _get_notification_service()
-                if notifier.is_enabled:
-                    notifier.notify_failure(
-                        repo_full_name=ctx.repo_full_name,
-                        pr_number=ctx.pr_number,
-                        error_message=str(e),
-                        stage_name=stage.__class__.__name__,
-                    )
-
+                ctx = self._handle_stage_failure(ctx, stage, e)
                 return ctx
-
             except Exception as e:
-                # Safety net for unexpected errors
                 error_msg = f"Unexpected error in {stage.__class__.__name__}: {e}"
-                ctx.errors.append(error_msg)
-                if ctx.review_obj:
-                    ctx.review_obj.status = Review.Status.FAILED
-                    ctx.review_obj.error_message = error_msg
-                    ctx.review_obj.save()
-                logger.error(error_msg)
-
-                # Notify on pipeline failure
-                notifier = _get_notification_service()
-                if notifier.is_enabled:
-                    notifier.notify_failure(
-                        repo_full_name=ctx.repo_full_name,
-                        pr_number=ctx.pr_number,
-                        error_message=error_msg,
-                        stage_name=stage.__class__.__name__,
-                    )
-
+                ctx = self._handle_stage_failure(ctx, stage, e, error_msg)
                 return ctx
 
         # Finalize review record
@@ -565,6 +530,38 @@ class ReviewPipeline:
             reviews_total.labels(status="failed").inc()
         elif ctx.skip_reason:
             reviews_total.labels(status="skipped").inc()
+
+        return ctx
+
+    def _handle_stage_failure(
+        self,
+        ctx: ReviewContext,
+        stage: PipelineStage,
+        error: Exception,
+        error_msg: str | None = None,
+    ) -> ReviewContext:
+        """Handle a pipeline stage failure — mark review as failed, log, and notify."""
+        if error_msg is None:
+            error_msg = str(error)
+        ctx.errors.append(error_msg)
+
+        # Mark review as failed if it was created
+        if ctx.review_obj:
+            ctx.review_obj.status = Review.Status.FAILED
+            ctx.review_obj.error_message = error_msg
+            ctx.review_obj.save()
+
+        logger.error("Pipeline stage %s failed: %s", stage.__class__.__name__, error_msg)
+
+        # Notify on pipeline failure
+        notifier = _get_notification_service()
+        if notifier.is_enabled:
+            notifier.notify_failure(
+                repo_full_name=ctx.repo_full_name,
+                pr_number=ctx.pr_number,
+                error_message=error_msg,
+                stage_name=stage.__class__.__name__,
+            )
 
         return ctx
 

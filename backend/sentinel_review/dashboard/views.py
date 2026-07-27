@@ -18,7 +18,7 @@ from sentinel_review.models.installation import Installation
 from sentinel_review.models.pull_request import PullRequest
 from sentinel_review.models.repo import Repo
 from sentinel_review.models.review import Review
-from sentinel_review.workers.feedback_worker import compute_usefulness_rate
+from sentinel_review.services.stats_service import StatsService
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def dashboard_home(request: HttpRequest) -> HttpResponse:
     total_prs = PullRequest.objects.count()
 
     # Usefulness rate
-    usefulness = compute_usefulness_rate()
+    usefulness = StatsService.get_usefulness_rate()
 
     # Recent reviews
     recent_reviews = Review.objects.select_related("pull_request__repo").order_by("-created_at")[
@@ -134,7 +134,7 @@ def repo_detail(request: HttpRequest, repo_id: int) -> HttpResponse:
     )
 
     # Stats for this repo
-    stats = compute_usefulness_rate(repo.full_name)
+    stats = StatsService.get_usefulness_rate(repo.full_name)
 
     context = {
         "repo": repo,
@@ -173,7 +173,7 @@ def review_detail(request: HttpRequest, review_id: int) -> HttpResponse:
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 def stats_overview(request: HttpRequest) -> HttpResponse:
     """Full stats and metrics page with Chart.js visualizations."""
-    usefulness = compute_usefulness_rate()
+    usefulness = StatsService.get_usefulness_rate()
 
     # Per-repo stats
     repo_stats = Repo.objects.annotate(

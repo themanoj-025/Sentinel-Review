@@ -1,21 +1,20 @@
 """
-GitHub API client.
+GitHub API client — thin facade.
 
-Handles JWT generation for GitHub App authentication,
-installation token exchange, diff fetching, and comment posting.
+Composes TokenManager (JWT/installation token caching) and
+HTTPTransport (httpx connection pool + circuit breaker) into
+a unified interface for GitHub API operations.
 """
 
 import base64
 import logging
-import time
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Any
 
 import httpx
-from django.conf import settings
 
-from .circuit_breaker import CircuitBreakerOpenError, github_circuit_breaker
+from .http_transport import HTTPTransport
+from .token_manager import TokenManager
 
 logger = logging.getLogger(__name__)
 
@@ -37,23 +36,18 @@ class GitHubRepoContext:
 class GitHubClient:
     """Client for interacting with the GitHub API as a GitHub App.
 
-    Uses a single long-lived httpx.Client with connection pooling for
-    performance. Tokens are cached and refreshed as needed.
+    Thin facade that delegates auth to TokenManager and HTTP transport
+    to HTTPTransport. Uses a single long-lived httpx.Client with connection
+    pooling for performance.
     """
 
     def __init__(self):
-        self._app_jwt: str | None = None
-        self._jwt_expires_at: float = 0
-        self._installation_tokens: dict[int, tuple[str, float]] = {}
-        # Single shared httpx client with connection pooling
-        self._client = httpx.Client(
-            headers={"Accept": "application/vnd.github.v3+json"},
-            timeout=httpx.Timeout(60.0, connect=10.0),
-        )
+        self._token_manager = TokenManager()
+        self._transport = HTTPTransport()
 
     def close(self):
         """Close the underlying httpx client."""
-        self._client.close()
+        self._transport.close()
 
     def __enter__(self):
         return self
@@ -61,114 +55,21 @@ class GitHubClient:
     def __exit__(self, *args):
         self.close()
 
-    def _get_private_key(self) -> bytes:
-        """Load the GitHub App private key from env or file."""
-        b64_key = settings.GITHUB_APP_PRIVATE_KEY_B64
-        if b64_key:
-            return base64.b64decode(b64_key)
-
-        # Fall back to file path
-        key_path = getattr(settings, "GITHUB_APP_PRIVATE_KEY_PATH", None)
-        if key_path:
-            with open(key_path, "rb") as f:
-                return f.read()
-
-        raise ValueError(
-            "GitHub App private key not configured. "
-            "Set GITHUB_APP_PRIVATE_KEY_B64 or mount the key file."
-        )
-
-    def _generate_jwt(self) -> str:
-        """Generate a JWT for GitHub App authentication."""
-        import jwt as pyjwt
-
-        now = int(time.time())
-        payload = {
-            "iat": now - 60,  # issued 60s ago to avoid clock drift
-            "exp": now + 600,  # expires in 10 minutes
-            "iss": settings.GITHUB_APP_ID,
-        }
-        key = self._get_private_key()
-        token = pyjwt.encode(payload, key, algorithm="RS256")
-        self._app_jwt = token
-        self._jwt_expires_at = now + 600
-        return token
-
-    def _get_jwt(self) -> str:
-        """Get a valid JWT, generating a new one if expired."""
-        if not self._app_jwt or time.time() >= self._jwt_expires_at:
-            return self._generate_jwt()
-        return self._app_jwt
-
-    def _get_installation_token(self, installation_id: int) -> str:
-        """Get or refresh an installation access token."""
-        now = time.time()
-        if installation_id in self._installation_tokens:
-            token, expires_at = self._installation_tokens[installation_id]
-            if now < expires_at - 60:  # Refresh if within 60 seconds of expiry
-                return token
-
-        jwt = self._get_jwt()
-        url = f"{GITHUB_API_BASE}/app/installations/{installation_id}/access_tokens"
-
-        resp = self._client.post(
-            url,
-            headers={
-                "Authorization": f"Bearer {jwt}",
-            },
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        token = data["token"]
-        expires_at_str = data.get("expires_at", "")
-
-        try:
-            expires_dt = datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
-            expires_at = expires_dt.timestamp()
-        except (ValueError, AttributeError):
-            expires_at = now + 3600  # Default 1 hour
-
-        self._installation_tokens[installation_id] = (token, expires_at)
-        return token
-
-    def _request(
-        self,
-        method: str,
-        path: str,
-        installation_id: int | None = None,
-        **kwargs,
-    ) -> httpx.Response:
-        """Make an authenticated request to the GitHub API."""
-        headers = kwargs.pop("headers", {})
-
+    def _request(self, method: str, path: str, installation_id: int | None = None, **kwargs) -> httpx.Response:
+        """Make an authenticated request using installation token or JWT."""
         if installation_id:
-            token = self._get_installation_token(installation_id)
-            headers["Authorization"] = f"Bearer {token}"
+            token = self._token_manager.get_installation_token(
+                installation_id,
+                # Use the raw httpx client for token exchange to avoid
+                # HTTPTransport's Authorization header injection overwriting the JWT
+                lambda url, headers: self._transport._client.request(
+                    "POST", url, headers=headers
+                ).json(),
+            )
         else:
-            jwt = self._get_jwt()
-            headers["Authorization"] = f"Bearer {jwt}"
+            token = self._token_manager.get_jwt()
 
-        url = path if path.startswith("http") else f"{GITHUB_API_BASE}{path}"
-
-        # Use circuit breaker to protect against GitHub API outages
-        try:
-            resp = github_circuit_breaker.call(
-                self._client.request, method, url, headers=headers, **kwargs
-            )
-        except CircuitBreakerOpenError as e:
-            logger.error("Circuit breaker open for GitHub API: %s", e)
-            raise ConnectionError(str(e)) from e  # Convert to ConnectionError for caller handling
-
-        if resp.status_code >= 400:
-            logger.error(
-                "GitHub API error: %s %s %s: %s",
-                resp.status_code,
-                method,
-                path,
-                resp.text[:500],
-            )
-        resp.raise_for_status()
-        return resp
+        return self._transport.request(method, path, token, **kwargs)
 
     def get_diff(self, installation_id: int, repo_full_name: str, pr_number: int) -> str:
         """Fetch the diff of a pull request."""
@@ -227,19 +128,10 @@ class GitHubClient:
 
         # Check for linter/config files
         linter_files = [
-            ".eslintrc",
-            ".eslintrc.json",
-            ".eslintrc.js",
-            ".eslintrc.yaml",
-            "pyproject.toml",
-            ".flake8",
-            "setup.cfg",
-            ".pylintrc",
-            "tsconfig.json",
-            ".prettierrc",
-            ".prettierrc.json",
-            "rustfmt.toml",
-            "go.mod",
+            ".eslintrc", ".eslintrc.json", ".eslintrc.js", ".eslintrc.yaml",
+            "pyproject.toml", ".flake8", "setup.cfg", ".pylintrc",
+            "tsconfig.json", ".prettierrc", ".prettierrc.json",
+            "rustfmt.toml", "go.mod",
         ]
         for lf in linter_files:
             try:

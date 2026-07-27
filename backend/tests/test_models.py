@@ -21,7 +21,7 @@ from sentinel_review.models.installation import Installation
 from sentinel_review.models.pull_request import PullRequest
 from sentinel_review.models.repo import Repo
 from sentinel_review.models.review import Review
-from sentinel_review.workers.feedback_worker import compute_usefulness_rate
+from sentinel_review.services.stats_service import StatsService
 
 
 class TestInstallationModel:
@@ -390,7 +390,7 @@ class TestSchemaRoundTrip:
 
 
 class TestUsefulnessRate:
-    """Tests for compute_usefulness_rate."""
+    """Tests for StatsService.get_usefulness_rate."""
 
     def test_no_feedback(self, db_review: Review, db):
         """With no feedback, rate should be 0 and counts zero."""
@@ -402,14 +402,14 @@ class TestUsefulnessRate:
             severity=Comment.Severity.WARNING,
             content="Test",
         )
-        result = compute_usefulness_rate()
+        result = StatsService.get_usefulness_rate()
         assert result["overall_usefulness_rate"] == 0.0
         assert result["total_comments"] == 1
         assert result["total_feedback_votes"] == 0
 
     def test_with_feedback(self, db_feedback: list[Feedback], db):
         """With feedback, rate should be computed correctly."""
-        result = compute_usefulness_rate()
+        result = StatsService.get_usefulness_rate()
         # 2 upvotes + 1 downvote = 3 total, rate = 2/3 * 100 = 66.7
         assert result["total_feedback_votes"] == 3
         assert result["upvotes"] == 2
@@ -418,19 +418,19 @@ class TestUsefulnessRate:
 
     def test_per_repo_filter(self, db_feedback: list[Feedback], db, db_repo: Repo):
         """Filtering by repo should only count that repo's data."""
-        result = compute_usefulness_rate("testowner/testrepo")
+        result = StatsService.get_usefulness_rate("testowner/testrepo")
         assert result["total_comments"] == 2
         assert result["total_feedback_votes"] == 3
 
     def test_per_repo_nonexistent(self, db):
         """A non-existent repo should return zeros."""
-        result = compute_usefulness_rate("nonexistent/repo")
+        result = StatsService.get_usefulness_rate("nonexistent/repo")
         assert result["total_comments"] == 0
         assert result["total_feedback_votes"] == 0
 
     def test_category_breakdown(self, db_feedback: list[Feedback], db):
         """Category breakdown should be returned correctly."""
-        result = compute_usefulness_rate()
+        result = StatsService.get_usefulness_rate()
         categories = result["categories"]
         assert len(categories) == 4  # bug, style, security, suggestion
         security_cat = [c for c in categories if c["category"] == "security"][0]

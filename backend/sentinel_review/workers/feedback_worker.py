@@ -35,13 +35,13 @@ def process_reaction(
     Polls GitHub for reactions on the given comment and stores
     👍/👎 as Feedback entries.
     """
-    logger.info(f"Processing reactions for comment {comment_id} on {repo_full_name}")
+    logger.info("Processing reactions for comment %s on %s", comment_id, repo_full_name)
 
     try:
         # Find the comment in our database
         comment = Comment.objects.get(github_comment_id=comment_id)
     except Comment.DoesNotExist:
-        logger.warning(f"Comment {comment_id} not found in database — skipping feedback")
+        logger.warning("Comment %s not found in database — skipping feedback", comment_id)
         return {"status": "skipped", "reason": "comment_not_found"}
 
     # Fetch reactions from GitHub (requires installation ID)
@@ -56,7 +56,7 @@ def process_reaction(
         client = GitHubClient()
         reactions = client.get_comment_reactions(installation_id, repo_full_name, comment_id)
     except Exception as e:
-        logger.error(f"Failed to fetch reactions: {e}")
+        logger.error("Failed to fetch reactions: %s", e)
         return {"status": "error", "error": str(e)}
 
     # Process reactions
@@ -84,78 +84,12 @@ def process_reaction(
         if created:
             created_count += 1
 
-    logger.info(f"Processed {created_count} new reactions for comment {comment_id}")
+    logger.info("Processed %d new reactions for comment %s", created_count, comment_id)
     return {"status": "completed", "new_feedback_count": created_count}
 
 
 def compute_usefulness_rate(repo_full_name: str | None = None) -> dict:
-    """
-    Compute the usefulness rate of review comments.
+    """Backward-compatible wrapper around StatsService.get_usefulness_rate."""
+    from sentinel_review.services.stats_service import StatsService
 
-    Args:
-        repo_full_name: Optional repo filter.
-
-    Returns:
-        Dict with overall stats and per-category breakdown.
-    """
-
-    from sentinel_review.models.comment import Comment
-    from sentinel_review.models.feedback import Feedback
-
-    comments = Comment.objects.all()
-    if repo_full_name:
-        comments = comments.filter(review__pull_request__repo__full_name=repo_full_name)
-
-    total_comments = comments.count()
-    commented_on = comments.filter(feedback__isnull=False).distinct().count()
-
-    # Get feedback counts
-    upvotes = Feedback.objects.filter(
-        reaction=Feedback.Reaction.THUMBS_UP,
-    )
-    downvotes = Feedback.objects.filter(
-        reaction=Feedback.Reaction.THUMBS_DOWN,
-    )
-
-    if repo_full_name:
-        upvotes = upvotes.filter(comment__review__pull_request__repo__full_name=repo_full_name)
-        downvotes = downvotes.filter(comment__review__pull_request__repo__full_name=repo_full_name)
-
-    up_count = upvotes.count()
-    down_count = downvotes.count()
-    total_feedback = up_count + down_count
-
-    usefulness_rate = 0.0
-    if total_feedback > 0:
-        usefulness_rate = round(up_count / total_feedback * 100, 1)
-
-    # Per-category breakdown
-    category_stats = []
-    for cat_code, cat_label in Comment.Category.choices:
-        cat_comments = comments.filter(category=cat_code)
-        cat_count = cat_comments.count()
-        cat_up = upvotes.filter(comment__category=cat_code).count()
-        cat_down = downvotes.filter(comment__category=cat_code).count()
-        cat_total = cat_up + cat_down
-        cat_rate = round(cat_up / cat_total * 100, 1) if cat_total > 0 else 0.0
-
-        category_stats.append(
-            {
-                "category": cat_code,
-                "label": cat_label,
-                "total_comments": cat_count,
-                "upvotes": cat_up,
-                "downvotes": cat_down,
-                "usefulness_rate": cat_rate,
-            }
-        )
-
-    return {
-        "total_comments": total_comments,
-        "comments_with_feedback": commented_on,
-        "total_feedback_votes": total_feedback,
-        "upvotes": up_count,
-        "downvotes": down_count,
-        "overall_usefulness_rate": usefulness_rate,
-        "categories": category_stats,
-    }
+    return StatsService.get_usefulness_rate(repo_full_name)

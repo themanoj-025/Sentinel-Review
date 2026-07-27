@@ -81,7 +81,7 @@ def run_semgrep(
             )
 
             if result.returncode not in (0, 1):  # 1 means findings found
-                logger.error(f"Semgrep error: {result.stderr[:500]}")
+                logger.error("Semgrep error: %s", result.stderr[:500])
                 return []
 
             return _parse_semgrep_output(result.stdout, file_map)
@@ -93,7 +93,7 @@ def run_semgrep(
         logger.warning("Semgrep timed out — skipping")
         return []
     except Exception as e:
-        logger.error(f"Semgrep execution error: {e}")
+        logger.error("Semgrep execution error: %s", e)
         return []
 
 

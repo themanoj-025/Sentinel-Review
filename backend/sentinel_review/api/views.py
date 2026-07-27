@@ -9,7 +9,7 @@ from sentinel_review.models.installation import Installation
 from sentinel_review.models.pull_request import PullRequest
 from sentinel_review.models.repo import Repo
 from sentinel_review.models.review import Review
-from sentinel_review.workers.feedback_worker import compute_usefulness_rate
+from sentinel_review.services.stats_service import StatsService
 
 from .serializers import (
     CommentSerializer,
@@ -136,5 +136,5 @@ class StatsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         repo_full_name = request.query_params.get("repo", None)
-        data = compute_usefulness_rate(repo_full_name)
+        data = StatsService.get_usefulness_rate(repo_full_name)
         return Response(data)
