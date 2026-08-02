@@ -114,8 +114,7 @@ def run_load_test(
     with httpx.Client() as client:
         with ThreadPoolExecutor(max_workers=concurrent) as executor:
             futures = [
-                executor.submit(_send_request, client, url, secret, timeout)
-                for _ in range(total)
+                executor.submit(_send_request, client, url, secret, timeout) for _ in range(total)
             ]
             for future in as_completed(futures):
                 results.append(future.result())
@@ -123,7 +122,9 @@ def run_load_test(
     return results
 
 
-def _print_report(results: list[dict[str, Any]], concurrent: int, total: int, elapsed: float, webhook_url: str) -> None:
+def _print_report(
+    results: list[dict[str, Any]], concurrent: int, total: int, elapsed: float, webhook_url: str
+) -> None:
     """Print a formatted report of load test results."""
     statuses = [r["status"] for r in results]
     errors = [r for r in results if r["error"]]
@@ -147,7 +148,13 @@ def _print_report(results: list[dict[str, Any]], concurrent: int, total: int, el
 
     print("  ── Status Codes ──")
     for code, count in sorted(status_counts.items()):
-        label = {200: "OK (duplicate)", 202: "Accepted", 401: "Unauthorized", 429: "Rate Limited", 0: "Error"}.get(code, str(code))
+        label = {
+            200: "OK (duplicate)",
+            202: "Accepted",
+            401: "Unauthorized",
+            429: "Rate Limited",
+            0: "Error",
+        }.get(code, str(code))
         print(f"    {code} ({label}): {count} ({count / total * 100:.1f}%)")
 
     if errors:

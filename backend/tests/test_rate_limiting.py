@@ -33,7 +33,7 @@ class TestAnonRateLimiting:
         for i in range(3):
             assert throttle.allow_request(
                 request, None
-            ), f"Request {i+1} should be allowed within 3/minute limit"
+            ), f"Request {i + 1} should be allowed within 3/minute limit"
 
     def test_request_beyond_limit_is_blocked(self):
         """The 4th request after exhausting 3/minute limit should be blocked."""

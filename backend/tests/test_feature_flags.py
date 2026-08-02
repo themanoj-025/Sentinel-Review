@@ -264,7 +264,7 @@ class TestFilterFindings:
     def test_multiple_files_with_max_comments_per_file(self):
         """More complex scenario: many files each with multiple comments."""
         findings = [
-            {"file_path": f"src/{chr(97+i)}.py", "category": "bug", "comment": f"Bug {i}"}
+            {"file_path": f"src/{chr(97 + i)}.py", "category": "bug", "comment": f"Bug {i}"}
             for i in range(10)
             for _ in range(3)  # 3 per file, 10 files = 30 findings
         ]

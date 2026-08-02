@@ -88,6 +88,7 @@ _MODEL_COST_PER_1K_TOKENS: dict[str, dict[str, float]] = {
 @dataclass
 class ProviderResult:
     """Results of running one provider against one fixture."""
+
     fixture_id: str
     provider: str
     model: str
@@ -246,11 +247,25 @@ def run_comparison(mode: str = "mock") -> tuple[list[ProviderResult], dict]:
             provider_total_fn += fn_count
             provider_total_latency += latency
 
-            print(f"  {len(findings)} findings, {tp_count}TP/{fp_count}FP/{fn_count}FN ({latency}ms)")
+            print(
+                f"  {len(findings)} findings, {tp_count}TP/{fp_count}FP/{fn_count}FN ({latency}ms)"
+            )
 
-        grand_prec = provider_total_tp / (provider_total_tp + provider_total_fp) if (provider_total_tp + provider_total_fp) > 0 else 0.0
-        grand_rec = provider_total_tp / (provider_total_tp + provider_total_fn) if (provider_total_tp + provider_total_fn) > 0 else 0.0
-        grand_f1 = 2 * grand_prec * grand_rec / (grand_prec + grand_rec) if (grand_prec + grand_rec) > 0 else 0.0
+        grand_prec = (
+            provider_total_tp / (provider_total_tp + provider_total_fp)
+            if (provider_total_tp + provider_total_fp) > 0
+            else 0.0
+        )
+        grand_rec = (
+            provider_total_tp / (provider_total_tp + provider_total_fn)
+            if (provider_total_tp + provider_total_fn) > 0
+            else 0.0
+        )
+        grand_f1 = (
+            2 * grand_prec * grand_rec / (grand_prec + grand_rec)
+            if (grand_prec + grand_rec) > 0
+            else 0.0
+        )
 
         grand_totals[provider_name] = {
             "tp": provider_total_tp,
@@ -327,15 +342,21 @@ def main() -> int:
         epilog=__doc__,
     )
     parser.add_argument(
-        "--mode", choices=["mock", "live"], default="mock",
+        "--mode",
+        choices=["mock", "live"],
+        default="mock",
         help="Evaluation mode (default: mock — no API keys needed)",
     )
     parser.add_argument(
-        "--output", type=str, default=None,
+        "--output",
+        type=str,
+        default=None,
         help="Write comparison table to docs/evaluation-report.md",
     )
     parser.add_argument(
-        "-v", "--verbose", action="store_true",
+        "-v",
+        "--verbose",
+        action="store_true",
         help="Show per-fixture details for both providers",
     )
     args = parser.parse_args()
@@ -353,8 +374,10 @@ def main() -> int:
         print("PER-FIXTURE DETAILS")
         print(f"{'=' * 60}")
         for r in results:
-            print(f"\n  {r.provider.title()} — {r.fixture_id}: {len(r.findings)} findings "
-                  f"({len(r.true_positives)}TP/{len(r.false_positives)}FP/{len(r.false_negatives)}FN)")
+            print(
+                f"\n  {r.provider.title()} — {r.fixture_id}: {len(r.findings)} findings "
+                f"({len(r.true_positives)}TP/{len(r.false_positives)}FP/{len(r.false_negatives)}FN)"
+            )
             if r.true_positives:
                 for tp in r.true_positives:
                     f = tp["finding"]

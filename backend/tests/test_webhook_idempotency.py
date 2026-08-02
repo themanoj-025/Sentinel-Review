@@ -95,10 +95,9 @@ class TestWebhookIdempotency:
             assert resp2.status_code in (200, 202)
             count_after_second = Review.objects.count()
 
-            assert count_after_second == count_after_first, (
-                f"Expected {count_after_first} review(s) after duplicate, "
-                f"got {count_after_second}"
-            )
+            assert (
+                count_after_second == count_after_first
+            ), f"Expected {count_after_first} review(s) after duplicate, got {count_after_second}"
 
     def test_different_delivery_creates_new_review(self):
         """Different X-GitHub-Delivery IDs for the same PR → both enqueue reviews."""

@@ -48,14 +48,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 CACHEDIR = DATA_DIR / "codereviewer"
 EVAL_SET_PATH = DATA_DIR / "eval_set.json"
-FIXTURES_PATH = (
-    PROJECT_ROOT
-    / "backend"
-    / "tests"
-    / "fixtures"
-    / "sample_prs"
-    / "__init__.py"
-)
+FIXTURES_PATH = PROJECT_ROOT / "backend" / "tests" / "fixtures" / "sample_prs" / "__init__.py"
 
 # Configuration
 
@@ -81,10 +74,10 @@ ZENODO_BASE = f"https://zenodo.org/records/{ZENODO_RECORD_ID}"
 # These are the task-specific dataset zip files.
 # We check which ones actually exist and skip missing ones gracefully.
 CODEREVIEWER_FILES = [
-    "codereviewer-dqe-full.zip",       # Diff Quality Estimation
-    "codereviewer-cg-full.zip",        # Comment Generation
-    "codereviewer-cr-full.zip",        # Code Refinement
-    "codereviewer-ncs-full.zip",       # Next Code Statement
+    "codereviewer-dqe-full.zip",  # Diff Quality Estimation
+    "codereviewer-cg-full.zip",  # Comment Generation
+    "codereviewer-cr-full.zip",  # Code Refinement
+    "codereviewer-ncs-full.zip",  # Next Code Statement
 ]
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
@@ -138,7 +131,9 @@ def _download_file(url: str, dest: Path, chunk_size: int = 8192) -> None:
                         downloaded += len(chunk)
                         if total:
                             pct = downloaded * 100 // total
-                            sys.stdout.write(f"\r  {downloaded / 1024:.0f}K / {total / 1024:.0f}K ({pct}%)")
+                            sys.stdout.write(
+                                f"\r  {downloaded / 1024:.0f}K / {total / 1024:.0f}K ({pct}%)"
+                            )
                             sys.stdout.flush()
                 sys.stdout.write("\n")
                 dest_path.rename(dest)
@@ -184,9 +179,7 @@ def _github_api_get(path: str, params: dict | None = None) -> dict[str, Any] | l
             return resp.json()
 
 
-def _github_api_get_diff(
-    repo_full_name: str, pr_number: int
-) -> str | None:
+def _github_api_get_diff(repo_full_name: str, pr_number: int) -> str | None:
     """Fetch the raw diff for a PR."""
     import httpx
 
@@ -260,11 +253,13 @@ def _discover_zenodo_files() -> list[dict[str, str]]:
         record = resp.json()
         files = []
         for f in record.get("files", []):
-            files.append({
-                "name": f["key"],
-                "url": f["links"]["self"],
-                "size": f["size"],
-            })
+            files.append(
+                {
+                    "name": f["key"],
+                    "url": f["links"]["self"],
+                    "size": f["size"],
+                }
+            )
         logger.info("Discovered %d files in Zenodo record %s", len(files), ZENODO_RECORD_ID)
         return files
     except Exception as exc:
@@ -297,9 +292,7 @@ def _download_codereviewer_archive(file_info: dict[str, str], dest_dir: Path) ->
         return None
 
 
-def _parse_codereviewer_entry(
-    entry: dict[str, Any], source_name: str
-) -> dict[str, Any] | None:
+def _parse_codereviewer_entry(entry: dict[str, Any], source_name: str) -> dict[str, Any] | None:
     """Convert a CodeReviewer JSONL entry to eval_set format.
 
     The CodeReviewer dataset has varying schemas per task. We normalize
@@ -333,7 +326,9 @@ def _extract_codereviewer_entries(zip_path: Path) -> list[dict[str, Any]]:
 
     try:
         with zipfile.ZipFile(zip_path, "r") as zf:
-            jsonl_files = [n for n in zf.namelist() if n.endswith(".jsonl") or n.endswith(".jsonl.gz")]
+            jsonl_files = [
+                n for n in zf.namelist() if n.endswith(".jsonl") or n.endswith(".jsonl.gz")
+            ]
             if not jsonl_files:
                 # Some archives use nested directories
                 for name in zf.namelist():
@@ -438,7 +433,9 @@ def _fetch_merged_prs(repo: str, max_results: int = 10) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
 
     try:
-        data = _github_api_get("/search/issues", params={"q": query, "per_page": min(max_results, 100), "page": 1})
+        data = _github_api_get(
+            "/search/issues", params={"q": query, "per_page": min(max_results, 100), "page": 1}
+        )
         items = data.get("items", []) if isinstance(data, dict) else []
         for item in items[:max_results]:
             pr_num = item["number"]
@@ -474,9 +471,25 @@ def _fetch_pr_issue_comments(repo: str, pr_number: int) -> list[dict[str, Any]]:
 def _has_meaningful_review(comments: list[dict[str, Any]]) -> bool:
     """Check if a PR has review comments that suggest meaningful human review."""
     meaningful_keywords = [
-        "should", "bug", "fix", "issue", "error", "vulnerable", "security",
-        "incorrect", "wrong", "missing", "need", "must", "don't", "doesn't",
-        "problem", "better to", "consider", "please", "suggest",
+        "should",
+        "bug",
+        "fix",
+        "issue",
+        "error",
+        "vulnerable",
+        "security",
+        "incorrect",
+        "wrong",
+        "missing",
+        "need",
+        "must",
+        "don't",
+        "doesn't",
+        "problem",
+        "better to",
+        "consider",
+        "please",
+        "suggest",
     ]
     for c in comments:
         body = (c.get("body") or "").lower()
@@ -564,7 +577,11 @@ def build_github_dataset(max_prs: int = 50) -> list[dict[str, Any]]:
             # Be nice to the API
             time.sleep(0.5)
 
-    logger.info("GitHub dataset: %d entries from %d repos", len(all_entries), len(set(e["repo"] for e in all_entries)))
+    logger.info(
+        "GitHub dataset: %d entries from %d repos",
+        len(all_entries),
+        len(set(e["repo"] for e in all_entries)),
+    )
     return all_entries
 
 
@@ -607,7 +624,11 @@ def build_fixture_dataset() -> list[dict[str, Any]]:
         issue_count = len(fx["known_issues"])
         logger.info("  Fixture '%s': %d known issue(s)", fx["id"], issue_count)
 
-    logger.info("Fixture dataset: %d entries (%d known issues)", len(entries), sum(len(fx["known_issues"]) for fx in FIXTURES))
+    logger.info(
+        "Fixture dataset: %d entries (%d known issues)",
+        len(entries),
+        sum(len(fx["known_issues"]) for fx in FIXTURES),
+    )
     return entries
 
 
@@ -738,8 +759,7 @@ def main() -> None:
 
     if missing_deps:
         logger.error(
-            "Missing required dependencies: %s\n"
-            "Install with: pip install httpx",
+            "Missing required dependencies: %s\nInstall with: pip install httpx",
             ", ".join(missing_deps),
         )
         sys.exit(1)

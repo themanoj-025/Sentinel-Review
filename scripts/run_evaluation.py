@@ -49,14 +49,15 @@ REPORT_PATH = PROJECT_ROOT / "docs" / "evaluation-report.md"
 
 
 class MatchResult(Enum):
-    TP = "TP"   # True Positive: finding matches a known issue
-    FP = "FP"   # False Positive: finding doesn't match any known issue
-    FN = "FN"   # False Negative: known issue with no matching finding
+    TP = "TP"  # True Positive: finding matches a known issue
+    FP = "FP"  # False Positive: finding doesn't match any known issue
+    FN = "FN"  # False Negative: known issue with no matching finding
 
 
 @dataclass
 class Finding:
     """Mirrors Finding from schemas.py for standalone evaluation."""
+
     file_path: str
     line_number: int | None
     category: str
@@ -69,6 +70,7 @@ class Finding:
 @dataclass
 class EvalEntry:
     """A single evaluation entry with its findings and scores."""
+
     fixture_id: str
     known_issues: list[dict[str, Any]]
     mock_findings: list[Finding] = field(default_factory=list)
@@ -168,80 +170,94 @@ def _mock_review_diff(diff: str) -> list[Finding]:
                     and description in f.comment
                     for f in findings
                 ):
-                    findings.append(Finding(
-                        file_path=_infer_file_path(lines),
-                        line_number=line_num,
-                        category="security",
-                        severity="blocking",
-                        comment=f"Hardcoded {description} committed to source code.",
-                        suggested_fix="Load secrets from environment variables or a secrets manager.",
-                    ))
+                    findings.append(
+                        Finding(
+                            file_path=_infer_file_path(lines),
+                            line_number=line_num,
+                            category="security",
+                            severity="blocking",
+                            comment=f"Hardcoded {description} committed to source code.",
+                            suggested_fix="Load secrets from environment variables or a secrets manager.",
+                        )
+                    )
 
     # Unsafe Deserialization detection
     for line_num, content in added_lines:
         if "pickle.load" in content:
             if not any(f.line_number == line_num and "pickle" in f.comment for f in findings):
-                findings.append(Finding(
-                    file_path=_infer_file_path(lines),
-                    line_number=line_num,
-                    category="security",
-                    severity="blocking",
-                    comment=(
-                        "Unsafe deserialization with pickle.loads on untrusted input — "
-                        "can lead to remote code execution (CWE-502)."
-                    ),
-                    suggested_fix=(
-                        "Replace pickle with a safer serialization format such as JSON, "
-                        "or sign the pickle data with HMAC before deserializing."
-                    ),
-                ))
+                findings.append(
+                    Finding(
+                        file_path=_infer_file_path(lines),
+                        line_number=line_num,
+                        category="security",
+                        severity="blocking",
+                        comment=(
+                            "Unsafe deserialization with pickle.loads on untrusted input — "
+                            "can lead to remote code execution (CWE-502)."
+                        ),
+                        suggested_fix=(
+                            "Replace pickle with a safer serialization format such as JSON, "
+                            "or sign the pickle data with HMAC before deserializing."
+                        ),
+                    )
+                )
 
     # Off-by-One / Index Error detection
     for line_num, content in added_lines:
         # range(1, len(items) + 1)  ← off by one (should be just len(items))
         if re.search(r"range\s*\(\s*1\s*,\s*len\s*\(.*?\)\s*\+\s*1\s*\)", content):
             if not any(f.line_number == line_num and "off-by-one" in f.comment for f in findings):
-                findings.append(Finding(
-                    file_path=_infer_file_path(lines),
-                    line_number=line_num,
-                    category="bug",
-                    severity="blocking",
-                    comment=(
-                        "Off-by-one error: range(1, len(items) + 1) goes one beyond "
-                        "the last index, causing an IndexError."
-                    ),
-                    suggested_fix="Use `range(0, len(items))` or `enumerate(items)`.",
-                ))
+                findings.append(
+                    Finding(
+                        file_path=_infer_file_path(lines),
+                        line_number=line_num,
+                        category="bug",
+                        severity="blocking",
+                        comment=(
+                            "Off-by-one error: range(1, len(items) + 1) goes one beyond "
+                            "the last index, causing an IndexError."
+                        ),
+                        suggested_fix="Use `range(0, len(items))` or `enumerate(items)`.",
+                    )
+                )
 
         # items[i] access that may go out of bounds
         if re.search(r"items\s*\[", content) and not re.search(r"len|range|for", content):
-            if not any(f.line_number == line_num and "out of bounds" in f.comment for f in findings):
-                findings.append(Finding(
-                    file_path=_infer_file_path(lines),
-                    line_number=line_num,
-                    category="bug",
-                    severity="warning",
-                    comment=(
-                        "Potentially accessing list index that may be out of bounds "
-                        "(see off-by-one in preceding loop range)."
-                    ),
-                ))
+            if not any(
+                f.line_number == line_num and "out of bounds" in f.comment for f in findings
+            ):
+                findings.append(
+                    Finding(
+                        file_path=_infer_file_path(lines),
+                        line_number=line_num,
+                        category="bug",
+                        severity="warning",
+                        comment=(
+                            "Potentially accessing list index that may be out of bounds "
+                            "(see off-by-one in preceding loop range)."
+                        ),
+                    )
+                )
 
     # Missing Zero Division Guard detection
     for line_num, content in added_lines:
         if re.search(r"return\s+.+/", content) and "if b == 0" not in content:
-            if not any(f.line_number == line_num and "zero-division" in f.comment for f in findings):
-                findings.append(Finding(
-                    file_path=_infer_file_path(lines),
-                    line_number=line_num,
-                    category="bug",
-                    severity="blocking",
-                    comment=(
-                        "Division by zero guard missing — passing b=0 will raise "
-                        "a ZeroDivisionError at runtime."
-                    ),
-                    suggested_fix="Add a check: `if b == 0: return None` (or appropriate error handling).",
-                ))
+            if not any(
+                f.line_number == line_num and "zero-division" in f.comment for f in findings
+            ):
+                findings.append(
+                    Finding(
+                        file_path=_infer_file_path(lines),
+                        line_number=line_num,
+                        category="bug",
+                        severity="blocking",
+                        comment=(
+                            "Division by zero guard missing — passing b=0 will raise "
+                            "a ZeroDivisionError at runtime."
+                        ),
+                        suggested_fix="Add a check: `if b == 0: return None` (or appropriate error handling).",
+                    )
+                )
 
     return findings
 
@@ -270,7 +286,11 @@ def _live_review_diff(
     try:
         # Attempt to use the actual review pipeline
 
-        api_key = os.environ.get("ANTHROPIC_API_KEY") if provider == "anthropic" else os.environ.get("OPENAI_API_KEY")
+        api_key = (
+            os.environ.get("ANTHROPIC_API_KEY")
+            if provider == "anthropic"
+            else os.environ.get("OPENAI_API_KEY")
+        )
         if not api_key:
             print(f"  ⚠ No API key configured for {provider}, falling back to mock")
             return _mock_review_diff(diff)
@@ -300,10 +320,12 @@ def _live_review_diff(
             openai_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
             for ex in get_few_shot_examples():
                 openai_messages.append(ex)
-            openai_messages.append({
-                "role": "user",
-                "content": f"Review this diff:\n```diff\n{diff[:30000]}\n```",
-            })
+            openai_messages.append(
+                {
+                    "role": "user",
+                    "content": f"Review this diff:\n```diff\n{diff[:30000]}\n```",
+                }
+            )
             response = client.chat.completions.create(
                 model=model or "gpt-4o",
                 messages=openai_messages,
@@ -390,16 +412,18 @@ def _compute_metrics(
             if _finding_matches_known(finding, known):
                 matched = True
                 matched_known_indices.add(i)
-                true_positives.append({
-                    "finding": {
-                        "file_path": finding.file_path,
-                        "line_number": finding.line_number,
-                        "category": finding.category,
-                        "severity": finding.severity,
-                        "comment": finding.comment[:80],
-                    },
-                    "known_issue": known,
-                })
+                true_positives.append(
+                    {
+                        "finding": {
+                            "file_path": finding.file_path,
+                            "line_number": finding.line_number,
+                            "category": finding.category,
+                            "severity": finding.severity,
+                            "comment": finding.comment[:80],
+                        },
+                        "known_issue": known,
+                    }
+                )
                 break
 
         if not matched:
@@ -446,7 +470,9 @@ def _format_results_table(
             f"{len(entry.false_negatives)} | {prec} | {rec} | {f1} |"
         )
 
-    lines.append(f"| **Total** | **{total_known}** | **{total_tp}** | **{total_fp}** | **{total_fn}** |")
+    lines.append(
+        f"| **Total** | **{total_known}** | **{total_tp}** | **{total_fp}** | **{total_fn}** |"
+    )
     grand_prec = f"{total_tp / (total_tp + total_fp):.0%}" if (total_tp + total_fp) > 0 else "—"
     grand_rec = f"{total_tp / (total_tp + total_fn):.0%}" if (total_tp + total_fn) > 0 else "—"
     grand_f1 = (
@@ -534,7 +560,7 @@ def _generate_report(
 
     report = f"""# Sentinel Review — Evaluation Report
 
-> *Generated: {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}*
+> *Generated: {time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())}*
 > *Mode: {mode_label}*
 > *Fixtures: {len(entries)} entries, {total_known} known issues*
 > *Duration: {elapsed:.1f}s*
@@ -561,7 +587,11 @@ def _generate_report(
         cat_tp_count = cat_tp.get(cat, 0)
         cat_fp_count = cat_fp.get(cat, 0)
         cat_fn_count = cat_known[cat] - cat_tp_count
-        cat_prec = f"{cat_tp_count / (cat_tp_count + cat_fp_count):.0%}" if (cat_tp_count + cat_fp_count) > 0 else "—"
+        cat_prec = (
+            f"{cat_tp_count / (cat_tp_count + cat_fp_count):.0%}"
+            if (cat_tp_count + cat_fp_count) > 0
+            else "—"
+        )
         cat_rec = f"{cat_tp_count / cat_known[cat]:.0%}" if cat_known[cat] > 0 else "—"
         report += f"| {cat} | {cat_known[cat]} | {cat_tp_count} | {cat_fp_count} | {cat_fn_count} | {cat_prec} | {cat_rec} |\n"
 
@@ -685,7 +715,8 @@ def main() -> None:
         help="Write evaluation report to this path (default: print to stdout only)",
     )
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Show per-fixture detailed breakdown",
     )
@@ -716,7 +747,11 @@ def main() -> None:
     print(f"Known:     {known_total} issues")
     print(f"{'=' * 50}\n")
 
-    mode_label = f"Mock ({args.mode})" if args.mode == "mock" else f"Live ({args.provider}/{args.model or 'default'})"
+    mode_label = (
+        f"Mock ({args.mode})"
+        if args.mode == "mock"
+        else f"Live ({args.provider}/{args.model or 'default'})"
+    )
 
     # Run evaluation
     entries: list[EvalEntry] = []
@@ -727,7 +762,7 @@ def main() -> None:
         diff = entry_data.get("diff", "")
         known_issues = entry_data.get("known_issues", [])
 
-        print(f"  [{i+1}/{len(entries_data)}] {fixture_id}...", end=" ", flush=True)
+        print(f"  [{i + 1}/{len(entries_data)}] {fixture_id}...", end=" ", flush=True)
 
         tick = time.time()
 
@@ -771,9 +806,11 @@ def main() -> None:
         entries.append(entry)
 
         # Print summary line
-        print(f"  {len(findings)} findings, "
-              f"{tp_count} TP / {fp_count} FP / {fn_count} FN "
-              f"({latency}ms)")
+        print(
+            f"  {len(findings)} findings, "
+            f"{tp_count} TP / {fp_count} FP / {fn_count} FN "
+            f"({latency}ms)"
+        )
 
     elapsed = time.time() - start_time
 
