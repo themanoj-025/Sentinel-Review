@@ -48,5 +48,5 @@ fly.toml
 .coverage
 htmlcov/
 
-# Scripts (not needed at build time)
-scripts/
+# NOTE: scripts/ is intentionally NOT ignored — the Dockerfile runs
+# `COPY scripts/ /app/scripts/` and gunicorn/celery workers use it.

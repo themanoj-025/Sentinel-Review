@@ -4,7 +4,10 @@ FROM node:22-alpine AS frontend
 WORKDIR /build
 
 COPY frontend/package.json frontend/package-lock.json* ./
-RUN npm ci --only=production 2>/dev/null || npm install
+# Build stage: install ALL deps (incl. devDependencies — esbuild/tailwind
+# are required to build the static bundle). --only=production would skip
+# them and fail with "esbuild binary not found for linux-x64".
+RUN npm ci 2>/dev/null || npm install
 
 COPY frontend/ ./
 RUN npm run build
