@@ -33,7 +33,7 @@ jobs:
           POSTGRES_USER: sentinel
           POSTGRES_PASSWORD: sentinel
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U sentinel"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
