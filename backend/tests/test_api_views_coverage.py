@@ -47,11 +47,11 @@ class TestFeedbackAuth:
             content_type="application/json",
         ).status_code in (401, 403)
 
-    def test_authenticated_post_accepted(self, seeded_db):
+    def test_authenticated_post_accepted(self, seeded_db, db_comments):
         User.objects.create_user(username="apitester", password="pass1234")
         client = Client()
         client.login(username="apitester", password="pass1234")
-        comment_id = 1
+        comment_id = db_comments[0].id
         resp = client.post(
             "/api/feedback/",
             {"comment": comment_id, "reaction": "thumbs_up"},

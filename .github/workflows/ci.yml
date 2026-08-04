@@ -104,7 +104,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Semgrep on codebase
-        uses: semgrep/semgrep-action@b7f7b0c8f6e5d4a3c2b1a0f9e8d7c6b5a4f3e2d1
+        uses: semgrep/semgrep-action@v1
         with:
           config: p/python
         env:
