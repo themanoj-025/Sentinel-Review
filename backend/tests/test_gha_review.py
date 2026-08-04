@@ -227,7 +227,7 @@ class TestMainEntryPoint:
 
     def test_main_missing_event(self):
         """Should fail fast when GITHUB_EVENT_PATH is not set."""
-        with patch.dict(os.environ, {"GITHUB_REPOSITORY": "owner/repo"}, clear=False):
+        with patch.dict(os.environ, {"GITHUB_REPOSITORY": "owner/repo"}, clear=True):
             result = main()
             assert result == 1
 

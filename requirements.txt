@@ -19,6 +19,7 @@ httpx-sse>=0.4.3,<0.5
 # LLM
 anthropic>=0.39,<1.0
 openai>=1.40,<2.0
+mcp>=1.28.1
 
 # Structured output
 pydantic>=2.9,<3.0
