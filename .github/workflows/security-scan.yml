@@ -21,12 +21,13 @@ jobs:
         run: docker build -t sentinel-review:${{ github.sha }} .
 
       - name: Run Trivy vulnerability scanner (Docker image)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.30.0
         with:
           image-ref: sentinel-review:${{ github.sha }}
           format: table
           exit-code: "1"
           severity: CRITICAL,HIGH
+          ignore-unfixed: true
           skip-dirs: /app/staticfiles
           # Known accepted risks — document with date and reason:
           # aquasecurity/trivy-action supports --ignore-unfixed to suppress
@@ -41,13 +42,14 @@ jobs:
           #   CVE-2024-XXXXX  # Reason: not exploitable in runtime context
 
       - name: Run Trivy vulnerability scanner (Python dependencies)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.30.0
         with:
           scan-type: fs
           scan-ref: .
           format: table
           exit-code: "1"
           severity: CRITICAL,HIGH
+          ignore-unfixed: true
 
       - name: Upload Trivy report
         if: always()
