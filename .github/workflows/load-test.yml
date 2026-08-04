@@ -1,5 +1,7 @@
 name: Load Test
 
+permissions:
+  contents: read
 on:
   schedule:
     # Weekly on Monday 06:00 UTC
