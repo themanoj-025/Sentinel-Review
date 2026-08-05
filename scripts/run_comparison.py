@@ -292,7 +292,7 @@ def update_evaluation_report(comparison_table: str, mode: str) -> None:
     section_header = "## Multi-Model Comparison\n"
     notes = (
         "\n"
-        "> **Note:** These results are from **{mode}** mode. "
+        f"> **Note:** These results are from **{mode}** mode. "
         "In mock mode, both providers use the same rule-based analyzer, "
         "so precision/recall are identical. The latency and cost figures "
         "reflect the mock pipeline overhead, not real API latency. "
@@ -305,7 +305,7 @@ def update_evaluation_report(comparison_table: str, mode: str) -> None:
         "python scripts/run_comparison.py --mode live --output docs/evaluation-report.md\n"
         "```\n"
         "\n"
-    ).format(mode=mode)
+    )
 
     table_section = f"{section_header}{notes}{comparison_table}\n\n"
 

@@ -95,7 +95,7 @@ def _ensure_dir(path: Path) -> Path:
 
 def _load_json(path: Path) -> Any:
     """Load a JSON file from disk."""
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
