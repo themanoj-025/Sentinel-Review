@@ -146,6 +146,24 @@ sequenceDiagram
 | Malformed output | Pydantic + corrective retry |
 | GitHub rate limits | Retry/backoff + token management |
 
+## Deployment Topology
+
+```mermaid
+graph TD
+    GH[GitHub App events] -->|webhook| WEB[Django web + DRF]
+    WEB --> PG[(PostgreSQL)]
+    WEB --> REDIS[(Redis)]
+    WEB --> CELERY[Celery workers]
+    CELERY --> SEM[Semgrep static analysis]
+    CELERY --> LLM[LLM: Claude Sonnet / GPT-4o tool use]
+    CELERY --> PYD[Pydantic v2 validation]
+    WEB --> UI[Server-rendered templates + HTMX + Alpine]
+    subgraph Deploy
+        WEB --> WEB_C[Web container]
+        CELERY --> WK_C[Worker container]
+    end
+```
+
 ## 11. Related Documents
 
 | Document | Relationship |
