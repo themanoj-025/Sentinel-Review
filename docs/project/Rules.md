@@ -1,11 +1,11 @@
 # Rules — Sentinel Review: Coding Standards & AI-Agent Operating Rules
 
-|Field|Value|
-|---|---|
-|Version|v0.1|
-|Last Updated|2026-08-06|
-|Owner|Engineering Lead|
-|Status|In Review|
+| Field | Value |
+| --- | --- |
+| Version | v0.1 |
+| Last Updated | 2026-08-06 |
+| Owner | Engineering Lead |
+| Status | In Review |
 
 ---
 
@@ -79,14 +79,14 @@ docs/             # mkdocs, 22 ADRs
 
 ## 8. Prohibited Patterns
 
-|Anti-pattern|Why|
-|---|---|
-|`except Exception: pass`|Silent failures (audit finding)|
-|AllowAny on write endpoints|Forgery vector (P0 audit fix)|
-|Default secrets in prod|Startup validation|
-|God functions|Audit remediation|
-|Posting unvalidated LLM output|Malformed comments|
-|Unpinned action versions|Supply-chain risk|
+| Anti-pattern | Why |
+| --- | --- |
+| `except Exception: pass` | Silent failures (audit finding) |
+| AllowAny on write endpoints | Forgery vector (P0 audit fix) |
+| Default secrets in prod | Startup validation |
+| God functions | Audit remediation |
+| Posting unvalidated LLM output | Malformed comments |
+| Unpinned action versions | Supply-chain risk |
 
 ## 9. Escalation Rules
 
@@ -95,18 +95,18 @@ docs/             # mkdocs, 22 ADRs
 
 ## 10. Related Documents
 
-|Document|Relationship|
-|---|---|
-|[Testing.md](../technical/Testing.md)|Test requirements|
-|[SecurityAndCompliance.md](../technical/SecurityAndCompliance.md)|Security baseline|
-|[PRD.md](../product/PRD.md)|Requirements|
-|[TechSpec.md](../technical/TechSpec.md)|Architecture|
-|[AppFlow.md](../design/AppFlow.md)|Flows|
-|[Design.md](../design/Design.md)|Design|
-|[Schema.md](../technical/Schema.md)|Data|
-|[ImplementationPlan.md](ImplementationPlan.md)|Tasks|
-|[Tracker.md](Tracker.md)|Status|
-|[API.md](../technical/API.md)|Contract|
-|[Deployment.md](../technical/Deployment.md)|Env vars|
-|[Glossary.md](../reference/Glossary.md)|Vocabulary|
-|[RiskRegister.md](RiskRegister.md)|Risks|
+| Document | Relationship |
+| --- | --- |
+| [Testing.md](../technical/Testing.md) | Test requirements |
+| [SecurityAndCompliance.md](../technical/SecurityAndCompliance.md) | Security baseline |
+| [PRD.md](../product/PRD.md) | Requirements |
+| [TechSpec.md](../technical/TechSpec.md) | Architecture |
+| [AppFlow.md](../design/AppFlow.md) | Flows |
+| [Design.md](../design/Design.md) | Design |
+| [Schema.md](../technical/Schema.md) | Data |
+| [ImplementationPlan.md](ImplementationPlan.md) | Tasks |
+| [Tracker.md](Tracker.md) | Status |
+| [API.md](../technical/API.md) | Contract |
+| [Deployment.md](../technical/Deployment.md) | Env vars |
+| [Glossary.md](../reference/Glossary.md) | Vocabulary |
+| [RiskRegister.md](RiskRegister.md) | Risks |

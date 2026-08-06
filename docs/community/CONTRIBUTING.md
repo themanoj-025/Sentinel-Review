@@ -102,12 +102,12 @@ We use:
 
 Key documentation lives in the `docs/` directory:
 
-|File|Purpose|
-|------|---------|
-|`architecture.md`|System architecture and data flow|
-|`../decisions/decisions.md`|Architectural Decision Records (21 ADRs)|
-|`../technical/security-notes.md`|Threat model and security controls|
-|`../reference/evaluation-report.md`|Test results, evaluation metrics, multi-model comparison|
+| File | Purpose |
+| ------ | --------- |
+| `architecture.md` | System architecture and data flow |
+| `../decisions/decisions.md` | Architectural Decision Records (21 ADRs) |
+| `../technical/security-notes.md` | Threat model and security controls |
+| `../reference/evaluation-report.md` | Test results, evaluation metrics, multi-model comparison |
 
 If your change affects architecture, configuration, or security, please update the relevant docs.
 

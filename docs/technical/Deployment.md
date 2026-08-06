@@ -1,23 +1,23 @@
 # Deployment — Sentinel Review: Environments, CI/CD, Rollback
 
-|Field|Value|
-|---|---|
-|Version|v0.1|
-|Last Updated|2026-08-06|
-|Owner|DevOps Engineer|
-|Status|In Review|
+| Field | Value |
+| --- | --- |
+| Version | v0.1 |
+| Last Updated | 2026-08-06 |
+| Owner | DevOps Engineer |
+| Status | In Review |
 
 ---
 
 ## 1. Service Topology
 
-|Service|Base|Purpose|Port|
-|---|---|---|---|
-|web|Django + gunicorn|HTTP (webhook, API, dashboard, health, metrics)|8000|
-|worker|Celery|Reviews + feedback|—|
-|redis|redis:7-alpine|Broker + backend + LLM cache|6379|
-|db|postgres:16-alpine|Primary DB|5432|
-|flower|mher/flower:2.0|Celery monitoring (basic-auth)|5555|
+| Service | Base | Purpose | Port |
+| --- | --- | --- | --- |
+| web | Django + gunicorn | HTTP (webhook, API, dashboard, health, metrics) | 8000 |
+| worker | Celery | Reviews + feedback | — |
+| redis | redis:7-alpine | Broker + backend + LLM cache | 6379 |
+| db | postgres:16-alpine | Primary DB | 5432 |
+| flower | mher/flower:2.0 | Celery monitoring (basic-auth) | 5555 |
 
 ## 2. CI/CD Pipeline (6 jobs)
 
@@ -32,10 +32,10 @@ graph LR
 
 ## 3. Environment Promotion
 
-|Step|From|To|Trigger|
-|---|---|---|---|
-|1|main|staging|CI green|
-|2|staging|prod (Render/Fly)|manual|
+| Step | From | To | Trigger |
+| --- | --- | --- | --- |
+| 1 | main | staging | CI green |
+| 2 | staging | prod (Render/Fly) | manual |
 
 Render Blueprint (`render.yaml`) + Fly (`fly.toml`) supported.
 
@@ -59,18 +59,18 @@ Render Blueprint (`render.yaml`) + Fly (`fly.toml`) supported.
 
 ## 7. Related Documents
 
-|Document|Relationship|
-|---|---|
-|[TechSpec.md](TechSpec.md)|Environments|
-|[SecurityAndCompliance.md](SecurityAndCompliance.md)|Secrets|
-|[PRD.md](../product/PRD.md)|Release criteria|
-|[AppFlow.md](../design/AppFlow.md)|Flows|
-|[Schema.md](Schema.md)|Migrations|
-|[Design.md](../design/Design.md)|Design|
-|[ImplementationPlan.md](../project/ImplementationPlan.md)|Rollout|
-|[Tracker.md](../project/Tracker.md)|Status|
-|[Rules.md](../project/Rules.md)|Standards|
-|[API.md](API.md)|Endpoints|
-|[Testing.md](Testing.md)|CI gates|
-|[Glossary.md](../reference/Glossary.md)|Vocabulary|
-|[RiskRegister.md](../project/RiskRegister.md)|Risks|
+| Document | Relationship |
+| --- | --- |
+| [TechSpec.md](TechSpec.md) | Environments |
+| [SecurityAndCompliance.md](SecurityAndCompliance.md) | Secrets |
+| [PRD.md](../product/PRD.md) | Release criteria |
+| [AppFlow.md](../design/AppFlow.md) | Flows |
+| [Schema.md](Schema.md) | Migrations |
+| [Design.md](../design/Design.md) | Design |
+| [ImplementationPlan.md](../project/ImplementationPlan.md) | Rollout |
+| [Tracker.md](../project/Tracker.md) | Status |
+| [Rules.md](../project/Rules.md) | Standards |
+| [API.md](API.md) | Endpoints |
+| [Testing.md](Testing.md) | CI gates |
+| [Glossary.md](../reference/Glossary.md) | Vocabulary |
+| [RiskRegister.md](../project/RiskRegister.md) | Risks |

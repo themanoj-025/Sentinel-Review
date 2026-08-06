@@ -191,7 +191,7 @@ Found 1 issue(s) (1 blocking, 0 warnings, 0 nits)
 ## 3. Why This Is a Compelling Demo
 
 | Aspect | Why It Matters |
-|--------|---------------|
+| -------- | --------------- |
 | **Meta** | The bot reviewed code that the bot itself helped write — a genuine end-to-end proof |
 | **High confidence** | LLM and Semgrep independently agreed on the same finding, demonstrating the two-signal architecture |
 | **Real vulnerability** | Unsafe `pickle.load()` is a real CWE-502, not a made-up style nit |
@@ -232,7 +232,7 @@ open http://localhost:8000/stats/      # Usefulness metrics
 ### Expected results
 
 | Metric | Expected Value |
-|--------|---------------|
+| -------- | --------------- |
 | Findings | 1 (security/blocking) |
 | Latency | ~5-15 seconds (LLM call + Semgrep) |
 | Token cost | ~3,000-8,000 tokens |
@@ -305,7 +305,7 @@ review pipeline (now the 7-stage architecture):
 ### Results
 
 | Metric | Value |
-|--------|-------|
+| -------- | ------- |
 | Findings | 0 (no regressions introduced) |
 | Total files reviewed | 48 |
 | Lines analyzed | +2,119 / -487 |
@@ -317,7 +317,7 @@ review pipeline (now the 7-stage architecture):
 ### Why This Matters for the Portfolio
 
 | Aspect | Signal |
-|--------|--------|
+| -------- | -------- |
 | **Recursive validation** | The bot that reviews code was itself reviewed by the bot — a genuine end-to-end proof that's difficult to fake |
 | **Scale** | 48 files, 2,119 lines — the bot handled a real-world-sized diff, not a toy example |
 | **No false positives** | The remediation was clean — the bot verified this independently |
@@ -329,6 +329,6 @@ review pipeline (now the 7-stage architecture):
 ## Files in this directory
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `README.md` | This file — self-review demo documentation (original pickle-load demo + remediation PR bonus section) |
 | `sample_pr_diff.diff` | Standalone copy of the original demo PR diff (for reference) |

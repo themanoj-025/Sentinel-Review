@@ -9,39 +9,39 @@
 
 ## Results Summary
 
-|Metric|Value|
-|--------|:-----:|
-|Precision|75.0%|
-|Recall|42.9%|
-|F1 Score|0.545|
-|True Positives|6|
-|False Positives|2|
-|False Negatives|8|
+| Metric | Value |
+| -------- | :-----: |
+| Precision | 75.0% |
+| Recall | 42.9% |
+| F1 Score | 0.545 |
+| True Positives | 6 |
+| False Positives | 2 |
+| False Negatives | 8 |
 
 ### By Category
 
-|Category|Known Issues|TP|FP|FN|Precision|Recall|
-|----------|:------------:|:--:|:--:|:--:|:---------:|:------:|
-|bug|4|1|1|3|50%|25%|
-|security|9|5|1|4|83%|56%|
-|suggestion|1|0|0|1|—|0%|
+| Category | Known Issues | TP | FP | FN | Precision | Recall |
+| ---------- | :------------: | :--: | :--: | :--: | :---------: | :------: |
+| bug | 4 | 1 | 1 | 3 | 50% | 25% |
+| security | 9 | 5 | 1 | 4 | 83% | 56% |
+| suggestion | 1 | 0 | 0 | 1 | — | 0% |
 
 ## Per-Fixture Breakdown
 
 ### Evaluation Results (mock mode)
 
-|Fixture|Known Issues|TP|FP|FN|Precision|Recall|F1|
-|---------|:------------:|:--:|:--:|:--:|:---------:|:------:|:--:|
-|sql_injection|2|1|1|1|50%|50%|0.50|
-|hardcoded_secret|3|3|0|0|100%|100%|1.00|
-|unsafe_deserialization|1|1|0|0|100%|100%|1.00|
-|off_by_one|2|0|1|2|—|—|—|
-|clean|0|0|0|0|—|—|—|
-|missing_test|1|1|0|0|100%|100%|1.00|
-|xss_in_react|2|0|0|2|—|—|—|
-|go_nil_pointer|3|0|0|3|—|—|—|
-|**Total**|**14**|**6**|**2**|**8**|
-||||||**75%**|**43%**|**0.55**|
+| Fixture | Known Issues | TP | FP | FN | Precision | Recall | F1 |
+| --------- | :------------: | :--: | :--: | :--: | :---------: | :------: | :--: |
+| sql_injection | 2 | 1 | 1 | 1 | 50% | 50% | 0.50 |
+| hardcoded_secret | 3 | 3 | 0 | 0 | 100% | 100% | 1.00 |
+| unsafe_deserialization | 1 | 1 | 0 | 0 | 100% | 100% | 1.00 |
+| off_by_one | 2 | 0 | 1 | 2 | — | — | — |
+| clean | 0 | 0 | 0 | 0 | — | — | — |
+| missing_test | 1 | 1 | 0 | 0 | 100% | 100% | 1.00 |
+| xss_in_react | 2 | 0 | 0 | 2 | — | — | — |
+| go_nil_pointer | 3 | 0 | 0 | 3 | — | — | — |
+| **Total** | **14** | **6** | **2** | **8** |
+|  |  |  |  |  | **75%** | **43%** | **0.55** |
 
 
 #### sql_injection

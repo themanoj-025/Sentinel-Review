@@ -1,11 +1,11 @@
 # Design — Sentinel Review: Design System & UX Principles
 
-|Field|Value|
-|---|---|
-|Version|v0.1|
-|Last Updated|2026-08-06|
-|Owner|Design Lead|
-|Status|In Review|
+| Field | Value |
+| --- | --- |
+| Version | v0.1 |
+| Last Updated | 2026-08-06 |
+| Owner | Design Lead |
+| Status | In Review |
 
 ---
 
@@ -24,25 +24,25 @@
 
 ## 3. Color System
 
-|Token|Hex|Usage|Contrast (AA)|
-|---|---|---|---|
-|bg|`#0F172A`|dark bg|—|
-|surface|`#1E293B`|cards|—|
-|text|`#F1F5F9`|primary|12:1|
-|severity-blocking|`#EF4444`|blocking|5.5:1|
-|severity-warning|`#F59E0B`|warning|4.8:1|
-|severity-nit|`#3B82F6`|nit|5.8:1|
-|success|`#22C55E`|useful/ok|5:1|
+| Token | Hex | Usage | Contrast (AA) |
+| --- | --- | --- | --- |
+| bg | `#0F172A` | dark bg | — |
+| surface | `#1E293B` | cards | — |
+| text | `#F1F5F9` | primary | 12:1 |
+| severity-blocking | `#EF4444` | blocking | 5.5:1 |
+| severity-warning | `#F59E0B` | warning | 4.8:1 |
+| severity-nit | `#3B82F6` | nit | 5.8:1 |
+| success | `#22C55E` | useful/ok | 5:1 |
 
 ## 4. Typography Scale
 
-|Token|Font|Size|Weight|Line-height|Usage|
-|---|---|---|---|---|---|
-|display|sans|28px|700|1.2|KPI numbers|
-|heading|sans|20px|600|1.3|page titles|
-|body|sans|14px|400|1.5|content|
-|code|mono|13px|400|1.4|code in comments|
-|label|sans|12px|600|1.4|severity badges|
+| Token | Font | Size | Weight | Line-height | Usage |
+| --- | --- | --- | --- | --- | --- |
+| display | sans | 28px | 700 | 1.2 | KPI numbers |
+| heading | sans | 20px | 600 | 1.3 | page titles |
+| body | sans | 14px | 400 | 1.5 | content |
+| code | mono | 13px | 400 | 1.4 | code in comments |
+| label | sans | 12px | 600 | 1.4 | severity badges |
 
 ## 5. Spacing & Grid
 
@@ -77,10 +77,10 @@ Inline SVG + emoji; no image assets.
 
 ## 9. Responsive
 
-|Breakpoint|Rule|
-|---|---|
-|< 640|Single column|
-|≥ 1024|Sidebar + content|
+| Breakpoint | Rule |
+| --- | --- |
+| < 640 | Single column |
+| ≥ 1024 | Sidebar + content |
 
 ## 10. Motion
 
@@ -92,18 +92,18 @@ Dark-first theme.
 
 ## 12. Related Documents
 
-|Document|Relationship|
-|---|---|
-|[AppFlow.md](AppFlow.md)|Screens|
-|[PRD.md](../product/PRD.md)|UX goals|
-|[TechSpec.md](../technical/TechSpec.md)|Stack|
-|[Schema.md](../technical/Schema.md)|Display data|
-|[ImplementationPlan.md](../project/ImplementationPlan.md)|Tasks|
-|[Tracker.md](../project/Tracker.md)|Status|
-|[Rules.md](../project/Rules.md)|Standards|
-|[API.md](../technical/API.md)|Contracts|
-|[SecurityAndCompliance.md](../technical/SecurityAndCompliance.md)|Security|
-|[Testing.md](../technical/Testing.md)|UI tests|
-|[Deployment.md](../technical/Deployment.md)|Deploy|
-|[Glossary.md](../reference/Glossary.md)|Vocabulary|
-|[RiskRegister.md](../project/RiskRegister.md)|Risks|
+| Document | Relationship |
+| --- | --- |
+| [AppFlow.md](AppFlow.md) | Screens |
+| [PRD.md](../product/PRD.md) | UX goals |
+| [TechSpec.md](../technical/TechSpec.md) | Stack |
+| [Schema.md](../technical/Schema.md) | Display data |
+| [ImplementationPlan.md](../project/ImplementationPlan.md) | Tasks |
+| [Tracker.md](../project/Tracker.md) | Status |
+| [Rules.md](../project/Rules.md) | Standards |
+| [API.md](../technical/API.md) | Contracts |
+| [SecurityAndCompliance.md](../technical/SecurityAndCompliance.md) | Security |
+| [Testing.md](../technical/Testing.md) | UI tests |
+| [Deployment.md](../technical/Deployment.md) | Deploy |
+| [Glossary.md](../reference/Glossary.md) | Vocabulary |
+| [RiskRegister.md](../project/RiskRegister.md) | Risks |
