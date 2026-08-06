@@ -1,11 +1,11 @@
 # Rules — Sentinel Review: Coding Standards & AI-Agent Operating Rules
 
-| Field | Value |
+|Field|Value|
 |---|---|
-| Version | v0.1 |
-| Last Updated | 2026-08-06 |
-| Owner | Engineering Lead |
-| Status | In Review |
+|Version|v0.1|
+|Last Updated|2026-08-06|
+|Owner|Engineering Lead|
+|Status|In Review|
 
 ---
 
@@ -50,15 +50,15 @@ docs/             # mkdocs, 22 ADRs
 
 - Coverage ≥ 91% (current); mypy strict.
 - MUST have tests: HMAC, schemas, cache, circuit breaker, ignore rules, GHA runner, health, E2E.
-- See [Testing.md](Testing.md).
+- See [Testing.md](../technical/Testing.md).
 
 ## 5. AI Agent Operating Rules
 
 - Always read Tracker.md and ImplementationPlan.md before starting.
 - Never mark a task 🟢 Done without tests passing.
-- Never invent requirements not in PRD.md/TechSpec.md — flag ambiguity.
-- Always update Schema.md when models change.
-- Never commit secrets; env vars per SecurityAndCompliance.md.
+- Never invent requirements not in ../product/PRD.md/../technical/TechSpec.md — flag ambiguity.
+- Always update ../technical/Schema.md when models change.
+- Never commit secrets; env vars per ../technical/SecurityAndCompliance.md.
 - Keep the staged pipeline architecture — no new god functions.
 - State conflicts rather than silently picking one.
 
@@ -73,20 +73,20 @@ docs/             # mkdocs, 22 ADRs
 
 ## 7. Documentation Rules
 
-- Model changes → Schema.md same PR.
-- Endpoint changes → API.md same PR.
-- New decisions → ADR in docs/decisions.md.
+- Model changes → ../technical/Schema.md same PR.
+- Endpoint changes → ../technical/API.md same PR.
+- New decisions → ADR in docs/../decisions/decisions.md.
 
 ## 8. Prohibited Patterns
 
-| Anti-pattern | Why |
+|Anti-pattern|Why|
 |---|---|
-| `except Exception: pass` | Silent failures (audit finding) |
-| AllowAny on write endpoints | Forgery vector (P0 audit fix) |
-| Default secrets in prod | Startup validation |
-| God functions | Audit remediation |
-| Posting unvalidated LLM output | Malformed comments |
-| Unpinned action versions | Supply-chain risk |
+|`except Exception: pass`|Silent failures (audit finding)|
+|AllowAny on write endpoints|Forgery vector (P0 audit fix)|
+|Default secrets in prod|Startup validation|
+|God functions|Audit remediation|
+|Posting unvalidated LLM output|Malformed comments|
+|Unpinned action versions|Supply-chain risk|
 
 ## 9. Escalation Rules
 
@@ -95,18 +95,18 @@ docs/             # mkdocs, 22 ADRs
 
 ## 10. Related Documents
 
-| Document | Relationship |
+|Document|Relationship|
 |---|---|
-| [Testing.md](Testing.md) | Test requirements |
-| [SecurityAndCompliance.md](SecurityAndCompliance.md) | Security baseline |
-| [PRD.md](PRD.md) | Requirements |
-| [TechSpec.md](TechSpec.md) | Architecture |
-| [AppFlow.md](AppFlow.md) | Flows |
-| [Design.md](Design.md) | Design |
-| [Schema.md](Schema.md) | Data |
-| [ImplementationPlan.md](ImplementationPlan.md) | Tasks |
-| [Tracker.md](Tracker.md) | Status |
-| [API.md](API.md) | Contract |
-| [Deployment.md](Deployment.md) | Env vars |
-| [Glossary.md](Glossary.md) | Vocabulary |
-| [RiskRegister.md](RiskRegister.md) | Risks |
+|[Testing.md](../technical/Testing.md)|Test requirements|
+|[SecurityAndCompliance.md](../technical/SecurityAndCompliance.md)|Security baseline|
+|[PRD.md](../product/PRD.md)|Requirements|
+|[TechSpec.md](../technical/TechSpec.md)|Architecture|
+|[AppFlow.md](../design/AppFlow.md)|Flows|
+|[Design.md](../design/Design.md)|Design|
+|[Schema.md](../technical/Schema.md)|Data|
+|[ImplementationPlan.md](ImplementationPlan.md)|Tasks|
+|[Tracker.md](Tracker.md)|Status|
+|[API.md](../technical/API.md)|Contract|
+|[Deployment.md](../technical/Deployment.md)|Env vars|
+|[Glossary.md](../reference/Glossary.md)|Vocabulary|
+|[RiskRegister.md](RiskRegister.md)|Risks|

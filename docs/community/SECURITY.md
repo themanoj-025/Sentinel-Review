@@ -2,10 +2,10 @@
 
 ## Supported Versions
 
-| Version | Supported |
+|Version|Supported|
 |---------|-----------|
-| 1.0.x   | ✅ Active development |
-| < 1.0   | ❌ Pre-release |
+|1.0.x|✅ Active development|
+|< 1.0|❌ Pre-release|
 
 ## Reporting a Vulnerability
 
@@ -30,4 +30,4 @@ We follow responsible disclosure: we ask that you give us reasonable time to fix
 
 ## Security Controls
 
-See [docs/security-notes.md](docs/security-notes.md) for the full threat model, security architecture, and deployment hardening checklist.
+See [../technical/security-notes.md](../technical/security-notes.md) for the full threat model, security architecture, and deployment hardening checklist.

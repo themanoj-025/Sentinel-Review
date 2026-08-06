@@ -617,7 +617,7 @@ We planted a deliberately vulnerable function — an unsafe `pickle.load()` on u
 
 **Result:** 1 finding (blocking/security), high confidence, suggested fix included, zero false positives.
 
-See [`docs/demo/README.md`](docs/demo/README.md) for the full walkthrough.
+See [`docs/assets/demo/README.md`](docs/assets/demo/README.md) for the full walkthrough.
 
 ---
 

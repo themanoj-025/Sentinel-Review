@@ -132,7 +132,7 @@ pattern-matching analyzer, not real-world LLM performance.
 
 The Dependabot configuration detects outdated dependencies but does
 not auto-merge any updates (even patch-level). Auto-merge for
-low-risk updates (documented in `docs/decisions.md`) is planned but
+low-risk updates (documented in `docs/../decisions/decisions.md`) is planned but
 not yet implemented.
 
 **Why it's not done:** Auto-merge requires a mature test suite with

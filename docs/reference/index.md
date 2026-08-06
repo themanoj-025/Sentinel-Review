@@ -39,14 +39,14 @@ GitHub PR Event → Webhook (HMAC verified) → Celery Queue → 7-Stage Pipelin
 
 ## Quick Links
 
-| Page | Description |
+|Page|Description|
 |------|-------------|
-| [Architecture](architecture.md) | System design, component details, data flow |
-| [Decisions](decisions.md) | 22 Architecture Decision Records (ADRs) |
-| [Evaluation Report](evaluation-report.md) | Precision/recall/F1 across 8 fixtures |
-| [Security Notes](security-notes.md) | Security architecture and threat model |
-| [Limitations](limitations.md) | Known limitations and conscious scope decisions |
-| [Demo: Self-Review](demo/README.md) | "The bot reviewed its own code" |
+|[Architecture](../technical/TechSpec.md)|System design, component details, data flow|
+|[Decisions](../decisions/decisions.md)|22 Architecture Decision Records (ADRs)|
+|[Evaluation Report](evaluation-report.md)|Precision/recall/F1 across 8 fixtures|
+|[Security Notes](../technical/security-notes.md)|Security architecture and threat model|
+|[Limitations](limitations.md)|Known limitations and conscious scope decisions|
+|[Demo: Self-Review](../assets/demo/README.md)|"The bot reviewed its own code"|
 
 ## Quick Start
 

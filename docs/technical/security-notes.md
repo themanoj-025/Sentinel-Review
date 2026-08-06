@@ -8,15 +8,15 @@
 
 ### Assets to Protect
 
-| Asset | Sensitivity | Impact of Compromise |
+|Asset|Sensitivity|Impact of Compromise|
 |-------|-------------|---------------------|
-| GitHub App private key | Critical | Full access to all installed repositories |
-| LLM API key | Critical | Unauthorized API usage (monetary cost) |
-| Webhook secret | High | Forged webhooks → malicious PR comments posted as bot |
-| Django `SECRET_KEY` | High | Session forgery, CSRF bypass |
-| User DB credentials | High | Direct database access |
-| Private repository code | Medium | Exposure of proprietary code to LLM provider |
-| Review comments / user feedback | Low | Minor data exposure |
+|GitHub App private key|Critical|Full access to all installed repositories|
+|LLM API key|Critical|Unauthorized API usage (monetary cost)|
+|Webhook secret|High|Forged webhooks → malicious PR comments posted as bot|
+|Django `SECRET_KEY`|High|Session forgery, CSRF bypass|
+|User DB credentials|High|Direct database access|
+|Private repository code|Medium|Exposure of proprietary code to LLM provider|
+|Review comments / user feedback|Low|Minor data exposure|
 
 ### Attack Surface
 
@@ -60,10 +60,10 @@ def verify_signature(payload_body: bytes, signature_header: str | None) -> bool:
 
 ### 2. API Authentication
 
-| Endpoint | Before Remediation | After Remediation |
+|Endpoint|Before Remediation|After Remediation|
 |----------|-------------------|-------------------|
-| `FeedbackViewSet` | `AllowAny` (unauthenticated writes) | `IsAuthenticated` |
-| `StatsViewSet` | `AllowAny` (unauthenticated writes) | `IsAuthenticatedOrReadOnly` |
+|`FeedbackViewSet`|`AllowAny` (unauthenticated writes)|`IsAuthenticated`|
+|`StatsViewSet`|`AllowAny` (unauthenticated writes)|`IsAuthenticatedOrReadOnly`|
 
 - **Rate limiting:** DRF throttle classes — 100 requests/hour for anonymous, 1000/hr for authenticated
 - **Startup validation:** Missing `DJANGO_SECRET_KEY` or `WEBHOOK_SECRET` raises `ImproperlyConfigured`
@@ -86,22 +86,22 @@ GitHub App Private Key (loaded from env/mounted file)
 
 ### 4. Least-Privilege GitHub App Permissions
 
-| Permission | Access | Rationale |
+|Permission|Access|Rationale|
 |------------|--------|-----------|
-| Repository contents | Read-only | Fetch diff, file contents, repo config |
-| Pull requests | Read & Write | Read PR metadata, post inline review comments |
-| Repository metadata | Read-only | Webhook delivery, repo info |
+|Repository contents|Read-only|Fetch diff, file contents, repo config|
+|Pull requests|Read & Write|Read PR metadata, post inline review comments|
+|Repository metadata|Read-only|Webhook delivery, repo info|
 
 ### 5. Secrets Management
 
-| Secret | Storage | Source of Truth |
+|Secret|Storage|Source of Truth|
 |--------|---------|-----------------|
-| `DJANGO_SECRET_KEY` | Env var (required) | `.env` (local), CI secrets |
-| `WEBHOOK_SECRET` | Env var (required) | `.env` (local), GitHub App config |
-| `GITHUB_APP_PRIVATE_KEY_B64` | Env var | Base64-encoded, copied manually |
-| `ANTHROPIC_API_KEY` | Env var | Anthropic Console |
-| `OPENAI_API_KEY` | Env var | OpenAI Platform |
-| Postgres password | Env var | `.env` (local), Docker Compose default |
+|`DJANGO_SECRET_KEY`|Env var (required)|`.env` (local), CI secrets|
+|`WEBHOOK_SECRET`|Env var (required)|`.env` (local), GitHub App config|
+|`GITHUB_APP_PRIVATE_KEY_B64`|Env var|Base64-encoded, copied manually|
+|`ANTHROPIC_API_KEY`|Env var|Anthropic Console|
+|`OPENAI_API_KEY`|Env var|OpenAI Platform|
+|Postgres password|Env var|`.env` (local), Docker Compose default|
 
 **Startup enforcement:** If `DJANGO_SECRET_KEY` or `WEBHOOK_SECRET` are unset and
 `DJANGO_DEBUG` is `False`, Django will raise `ImproperlyConfigured` and refuse to start.
@@ -111,16 +111,16 @@ GitHub App Private Key (loaded from env/mounted file)
 All log output passes through `sentinel_review.logging_filters.RedactingFilter`.
 This filter redacts the following patterns:
 
-| Pattern | Example | Status |
+|Pattern|Example|Status|
 |---------|---------|--------|
-| Anthropic API keys | `sk-ant-...` | ✅ |
-| OpenAI API keys | `sk-...` (20+ chars) | ✅ |
-| RSA/DSA private keys | `-----BEGIN PRIVATE KEY-----` | ✅ |
-| GitHub tokens | `ghp_...`, `ghs_...`, `gho_...`, `ghu_...`, `ghb_...`, `ghv_...` | ✅ |
-| Bearer tokens in headers | `Bearer eyJ...` | ✅ |
-| Password/secret assignments | `PASSWORD=supersecret`, `API_KEY=abc123...` | ✅ |
-| JWT tokens | `eyJ...` (three base64url segments) | ✅ |
-| DB connection strings | `postgres://user:pass@host/db` | ✅ |
+|Anthropic API keys|`sk-ant-...`|✅|
+|OpenAI API keys|`sk-...` (20+ chars)|✅|
+|RSA/DSA private keys|`-----BEGIN PRIVATE KEY-----`|✅|
+|GitHub tokens|`ghp_...`, `ghs_...`, `gho_...`, `ghu_...`, `ghb_...`, `ghv_...`|✅|
+|Bearer tokens in headers|`Bearer eyJ...`|✅|
+|Password/secret assignments|`PASSWORD=supersecret`, `API_KEY=abc123...`|✅|
+|JWT tokens|`eyJ...` (three base64url segments)|✅|
+|DB connection strings|`postgres://user:pass@host/db`|✅|
 
 **Fixed in remediation:** The previous `[a-fA-F0-9]{40,}` pattern falsely matched
 40-character git commit SHAs. This was removed to avoid false redactions.
@@ -134,15 +134,15 @@ This filter redacts the following patterns:
 
 ### 8. Django Security Settings
 
-| Setting | Value | Notes |
+|Setting|Value|Notes|
 |---------|-------|-------|
-| `SECURE_SSL_REDIRECT` | Unset | Enable in production behind reverse proxy |
-| `SECURE_HSTS_SECONDS` | Unset | Enable in production |
-| `CSRF_COOKIE_SECURE` | Unset | Enable over HTTPS |
-| `SESSION_COOKIE_SECURE` | Unset | Enable over HTTPS |
-| `SECURE_CONTENT_TYPE_NOSNIFF` | Default | Django security middleware |
-| `SECURE_BROWSER_XSS_FILTER` | Default | Django security middleware |
-| `X_FRAME_OPTIONS` | `DENY` | Default Django setting |
+|`SECURE_SSL_REDIRECT`|Unset|Enable in production behind reverse proxy|
+|`SECURE_HSTS_SECONDS`|Unset|Enable in production|
+|`CSRF_COOKIE_SECURE`|Unset|Enable over HTTPS|
+|`SESSION_COOKIE_SECURE`|Unset|Enable over HTTPS|
+|`SECURE_CONTENT_TYPE_NOSNIFF`|Default|Django security middleware|
+|`SECURE_BROWSER_XSS_FILTER`|Default|Django security middleware|
+|`X_FRAME_OPTIONS`|`DENY`|Default Django setting|
 
 ### 9. CI/CD Security
 
@@ -154,16 +154,16 @@ This filter redacts the following patterns:
 
 ## Remediation Audit: Security Fixes
 
-| Issue | Severity | Fix |
+|Issue|Severity|Fix|
 |-------|:--------:|-----|
-| `AllowAny` on FeedbackViewSet (open write) | Critical | Changed to `IsAuthenticated` |
-| `AllowAny` on StatsViewSet (open write) | High | Changed to `IsAuthenticatedOrReadOnly` |
-| Insecure fallback defaults | Critical | `ImproperlyConfigured` at startup |
-| Webhook returns True when secret unset | High | Returns `False` (rejects) |
-| No rate limiting | Medium | DRF throttle classes (100/1000/hr) |
-| Log redaction matches git SHAs | Low | Removed false-positive hex pattern |
-| No CSP | Low | Not implemented (CDN scripts need hashes) |
-| No CSRF on webhook | Informational | WAI — `@csrf_exempt` by design (HMAC is the auth mechanism) |
+|`AllowAny` on FeedbackViewSet (open write)|Critical|Changed to `IsAuthenticated`|
+|`AllowAny` on StatsViewSet (open write)|High|Changed to `IsAuthenticatedOrReadOnly`|
+|Insecure fallback defaults|Critical|`ImproperlyConfigured` at startup|
+|Webhook returns True when secret unset|High|Returns `False` (rejects)|
+|No rate limiting|Medium|DRF throttle classes (100/1000/hr)|
+|Log redaction matches git SHAs|Low|Removed false-positive hex pattern|
+|No CSP|Low|Not implemented (CDN scripts need hashes)|
+|No CSRF on webhook|Informational|WAI — `@csrf_exempt` by design (HMAC is the auth mechanism)|
 
 ---
 

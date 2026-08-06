@@ -300,7 +300,7 @@ sentinel_review/
 - Shares evaluation logic with `run_evaluation.py` (no code duplication)
 - Mock mode requires no API keys for quick testing
 - Live mode runs real LLM calls for accurate cost/latency/quality comparison
-- Output updates `docs/evaluation-report.md` with the comparison table
+- Output updates `docs/../reference/evaluation-report.md` with the comparison table
 
 ---
 
@@ -387,16 +387,16 @@ sentinel_review/
 
 ## Manual Step: Live LLM Evaluation
 
-**Context:** The evaluation harness (`scripts/run_evaluation.py`) defaults to a rule-based mock provider. It must be run with real API keys to produce accurate precision/recall/F1 numbers in `docs/evaluation-report.md`.
+**Context:** The evaluation harness (`scripts/run_evaluation.py`) defaults to a rule-based mock provider. It must be run with real API keys to produce accurate precision/recall/F1 numbers in `docs/../reference/evaluation-report.md`.
 
 **How to run:**
 ```bash
 # Requires real Anthropic + OpenAI API keys (set in .env or environment)
-python scripts/run_evaluation.py --mode live --provider anthropic --output docs/evaluation-report.md
-python scripts/run_evaluation.py --mode live --provider openai --output docs/evaluation-report.md
+python scripts/run_evaluation.py --mode live --provider anthropic --output docs/../reference/evaluation-report.md
+python scripts/run_evaluation.py --mode live --provider openai --output docs/../reference/evaluation-report.md
 
 # For side-by-side comparison:
-python scripts/run_comparison.py --mode live --output docs/evaluation-report.md
+python scripts/run_comparison.py --mode live --output docs/../reference/evaluation-report.md
 ```
 
 **Note:** This step incurs API usage costs (~$2-5 per full run depending on model and eval set size). The mock mode results in the current report are illustrative only and should be replaced with live numbers before publishing evaluation claims.

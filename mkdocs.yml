@@ -35,11 +35,11 @@ markdown_extensions:
       permalink: true
 
 nav:
-  - Home: index.md
-  - Architecture: architecture.md
-  - Decisions: decisions.md
-  - Evaluation: evaluation-report.md
-  - Security: security-notes.md
-  - Limitations: limitations.md
+  - Home: reference/index.md
+  - Architecture: technical/TechSpec.md
+  - Decisions: decisions/decisions.md
+  - Evaluation: reference/evaluation-report.md
+  - Security: technical/security-notes.md
+  - Limitations: reference/limitations.md
   - Demo:
-      - Overview: demo/README.md
+      - Overview: assets/demo/README.md
