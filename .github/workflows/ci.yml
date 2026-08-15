@@ -16,6 +16,20 @@ env:
   GITHUB_APP_PRIVATE_KEY_B64: test-base64-not-a-secret-key
 
 jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run pre-commit hooks
+        run: |
+          pip install pre-commit
+          pre-commit run --all-files
+
   test:
     runs-on: ubuntu-latest
     defaults:
