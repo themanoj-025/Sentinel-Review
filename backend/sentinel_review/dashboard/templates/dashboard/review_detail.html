@@ -1,0 +1,111 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Review #{{ review.id }} — Sentinel Review{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <a href="{% url 'repo-detail' review.pull_request.repo.id %}" class="text-sm text-gray-400 hover:text-gray-300 transition-colors">
+            ← {{ review.pull_request.repo.full_name }}
+        </a>
+        <div class="flex items-center justify-between mt-2">
+            <div>
+                <h1 class="text-3xl font-bold text-white">
+                    Review #{{ review.id }} for PR #{{ review.pull_request.github_pr_number }}
+                </h1>
+                <p class="mt-1 text-gray-400">{{ review.pull_request.title }}</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="badge {% if review.status == 'completed' %}bg-green-900/50 text-green-300
+                                       {% elif review.status == 'failed' %}bg-red-900/50 text-red-300
+                                       {% elif review.status == 'processing' %}bg-blue-900/50 text-blue-300
+                                       {% else %}bg-gray-800 text-gray-400{% endif %}">
+                    {{ review.get_status_display }}
+                </span>
+                <span class="text-sm text-gray-500">{{ review.created_at|date:"M d, Y H:i" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metadata -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <p class="text-sm text-gray-400">Trigger</p>
+            <p class="text-lg font-semibold text-white">{{ review.get_triggered_by_display }}</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <p class="text-sm text-gray-400">Findings</p>
+            <p class="text-lg font-semibold text-white">{{ comments|length }}</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <p class="text-sm text-gray-400">Latency</p>
+            <p class="text-lg font-semibold text-white">
+                {% if review.latency_ms %}{{ review.latency_ms|floatformat:0 }}ms{% else %}—{% endif %}
+            </p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <p class="text-sm text-gray-400">Tokens Used</p>
+            <p class="text-lg font-semibold text-white">{{ review.token_cost|default:"—" }}</p>
+            <p class="text-xs text-gray-500 mt-1">Est. cost: ~${{ review.estimated_cost_usd|default:"?" }}</p>
+        </div>
+    </div>
+
+    <!-- Comments -->
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Findings</h2>
+        {% if comments %}
+        <div class="space-y-4">
+            {% for comment in comments %}
+            <div class="border border-gray-800 rounded-xl p-5 severity-{{ comment.severity }}">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 mt-0.5">
+                            {% if comment.severity == 'blocking' %}
+                            <span class="text-lg">🔴</span>
+                            {% elif comment.severity == 'warning' %}
+                            <span class="text-lg">🟡</span>
+                            {% else %}
+                            <span class="text-lg">🔵</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="badge badge-{{ comment.severity }}">{{ comment.get_severity_display }}</span>
+                                <span class="badge badge-{{ comment.category }}">{{ comment.get_category_display }}</span>
+                            </div>
+                            <p class="mt-2 text-sm text-gray-500">
+                                <code class="text-sentinel-400">{{ comment.file_path }}</code>{% if comment.line_number %}:{{ comment.line_number }}{% endif %}
+                            </p>
+                            <p class="mt-2 text-gray-300 leading-relaxed">{{ comment.content }}</p>
+                            {% if comment.suggested_fix %}
+                            <div class="mt-3 bg-gray-950 rounded-lg p-4">
+                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Suggested Fix</p>
+                                <pre class="text-sm text-gray-300 font-mono whitespace-pre-wrap">{{ comment.suggested_fix }}</pre>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 text-sm">
+                        <span class="flex items-center space-x-1 text-green-400">
+                            <span>👍</span>
+                            <span>{{ comment.upvotes }}</span>
+                        </span>
+                        <span class="flex items-center space-x-1 text-red-400">
+                            <span>👎</span>
+                            <span>{{ comment.downvotes }}</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <span class="text-4xl">✅</span>
+            <p class="mt-4 text-gray-400">No issues found in this review.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

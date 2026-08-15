@@ -1,0 +1,39 @@
+# Core
+django>=5.1,<5.3
+djangorestframework>=3.17.1,<3.18
+django-cors-headers>=4.4,<5.0
+
+# Database
+dj-database-url>=2.2,<3.0
+psycopg[binary]>=3.3.4,<4.0
+
+# Background tasks
+celery[redis]>=5.6.3,<5.7
+redis>=5.0.0,<6.5
+
+# GitHub integration
+PyJWT>=2.13.0,<3.0
+httpx>=0.27,<0.28
+httpx-sse>=0.4.3,<0.5
+
+# LLM
+anthropic>=0.39,<0.50
+openai>=1.40,<1.50
+mcp>=1.28.1,<1.30
+protobuf>=5.29.6,<5.30
+
+# Structured output
+pydantic>=2.13.4,<3.0
+
+# Semgrep was removed to avoid dependency conflicts with protobuf
+# Monitoring
+prometheus-client>=0.26.0,<0.27
+
+# Utilities
+python-dotenv>=1.0,<2.0
+# Required at runtime when DJANGO_DEBUG=true (compose default) —
+# settings.py adds django_extensions to INSTALLED_APPS only under DEBUG.
+django-extensions>=3.2,<4.0
+whitenoise>=6.7,<7.0
+gunicorn>=23.0,<24.0
+python-dateutil>=2.9,<3.0

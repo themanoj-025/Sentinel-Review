@@ -1,0 +1,62 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Weekly on Monday 02:00 UTC
+    - cron: "0 2 * * 1"
+  workflow_dispatch:
+
+jobs:
+  trivy-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t sentinel-review:${{ github.sha }} .
+
+      - name: Run Trivy vulnerability scanner (Docker image)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: sentinel-review:${{ github.sha }}
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          skip-dirs: /app/staticfiles
+          # Known accepted risks — document with date and reason:
+          # aquasecurity/trivy-action supports --ignore-unfixed to suppress
+          # OS package CVEs without available fixes. Accept only with
+          # documented justification per finding.
+          #
+          # Current suppressions (as of 2026-07-27):
+          # - None: all critical/high findings should be triaged
+          #
+          # To suppress specific CVEs, add:
+          # trivyignores: |
+          #   CVE-2024-XXXXX  # Reason: not exploitable in runtime context
+
+      - name: Run Trivy vulnerability scanner (Python dependencies)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Upload Trivy report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: |
+            trivy-results-*.json
+            trivy-image-results-*.json
+          retention-days: 30

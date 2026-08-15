@@ -1,0 +1,177 @@
+# Sentinel Review — Evaluation Report
+
+> *Generated: 2026-07-27 18:00:33 UTC*
+> *Mode: Mock (mock)*
+> *Fixtures: 8 entries, 14 known issues*
+> *Duration: 0.0s*
+
+---
+
+## Results Summary
+
+| Metric | Value |
+| -------- | :-----: |
+| Precision | 75.0% |
+| Recall | 42.9% |
+| F1 Score | 0.545 |
+| True Positives | 6 |
+| False Positives | 2 |
+| False Negatives | 8 |
+
+### By Category
+
+| Category | Known Issues | TP | FP | FN | Precision | Recall |
+| ---------- | :------------: | :--: | :--: | :--: | :---------: | :------: |
+| bug | 4 | 1 | 1 | 3 | 50% | 25% |
+| security | 9 | 5 | 1 | 4 | 83% | 56% |
+| suggestion | 1 | 0 | 0 | 1 | — | 0% |
+
+## Per-Fixture Breakdown
+
+### Evaluation Results (mock mode)
+
+| Fixture | Known Issues | TP | FP | FN | Precision | Recall | F1 |
+| --------- | :------------: | :--: | :--: | :--: | :---------: | :------: | :--: |
+| sql_injection | 2 | 1 | 1 | 1 | 50% | 50% | 0.50 |
+| hardcoded_secret | 3 | 3 | 0 | 0 | 100% | 100% | 1.00 |
+| unsafe_deserialization | 1 | 1 | 0 | 0 | 100% | 100% | 1.00 |
+| off_by_one | 2 | 0 | 1 | 2 | — | — | — |
+| clean | 0 | 0 | 0 | 0 | — | — | — |
+| missing_test | 1 | 1 | 0 | 0 | 100% | 100% | 1.00 |
+| xss_in_react | 2 | 0 | 0 | 2 | — | — | — |
+| go_nil_pointer | 3 | 0 | 0 | 3 | — | — | — |
+| **Total** | **14** | **6** | **2** | **8** |
+|  |  |  |  |  | **75%** | **43%** | **0.55** |
+
+
+#### sql_injection
+
+**True Positives:**
+- ✅ `users.py:6` (security/blocking) — SQL injection vulnerability — user input is interpolated directly into the query
+
+**False Positives (noise):**
+- ❌ `users.py:11` (security/blocking) — SQL injection vulnerability — user input is interpolated directly into the query
+
+**False Negatives (missed):**
+- ⚠️ `users.py:10` (security) — SQL injection via string concatenation with user_id
+
+
+#### hardcoded_secret
+
+**True Positives:**
+- ✅ `config.py:2` (security/blocking) — Hardcoded API secret key committed to source code.
+- ✅ `config.py:3` (security/blocking) — Hardcoded hardcoded password committed to source code.
+- ✅ `config.py:4` (security/blocking) — Hardcoded Django SECRET_KEY committed to source code.
+
+
+#### unsafe_deserialization
+
+**True Positives:**
+- ✅ `api.py:5` (security/blocking) — Unsafe deserialization with pickle.loads on untrusted input — can lead to remote
+
+
+#### off_by_one
+
+
+**False Positives (noise):**
+- ❌ `processor.py:8` (bug/blocking) — Off-by-one error: range(1, len(items) + 1) goes one beyond the last index, causi
+
+**False Negatives (missed):**
+- ⚠️ `processor.py:9` (bug) — Off-by-one error: range(1, len(items) + 1) causes IndexError on last iteration
+- ⚠️ `processor.py:10` (bug) — Potentially accessing items[i] when i is out of bounds (see off-by-one above)
+
+
+#### clean
+
+- No known issues and no findings (correct).
+
+
+#### missing_test
+
+**True Positives:**
+- ✅ `calculator.py:2` (bug/blocking) — Division by zero guard missing — passing b=0 will raise a ZeroDivisionError at r
+
+
+#### xss_in_react
+
+
+**False Negatives (missed):**
+- ⚠️ `components/UserProfile.tsx:8` (security) — Cross-Site Scripting (XSS) via dangerouslySetInnerHTML with untrusted user.bio —
+- ⚠️ `components/UserProfile.tsx:11` (security) — Insecure random token generation using Math.random() — not cryptographically sec
+
+
+#### go_nil_pointer
+
+
+**False Negatives (missed):**
+- ⚠️ `handlers/user.go:6` (security) — SQL injection via fmt.Sprintf with user-controlled id — should use parameterized
+- ⚠️ `handlers/user.go:10` (bug) — Nil pointer dereference: db.QueryRow error is silently ignored, user can be nil 
+- ⚠️ `handlers/user.go:17` (suggestion) — Potential nil pointer dereference: u.FirstName accessed without nil check on u
+
+
+---
+
+## Methodology
+
+### Metric Definitions
+
+```
+Precision = TP / (TP + FP)   — How many of our findings are correct?
+Recall    = TP / (TP + FN)   — How many real issues did we catch?
+F1        = 2 × P × R / (P + R) — Harmonic mean of precision and recall
+```
+
+### Matching Criteria
+
+A finding is considered a **True Positive** if it matches a known issue on:
+
+1. **file_path** — same file
+2. **line_number** — same line (or both null for file-level findings)
+3. **category** — same category (`bug`, `security`, `style`, `suggestion`)
+
+If a finding doesn't match any known issue, it's a **False Positive**.
+If a known issue isn't matched by any finding, it's a **False Negative**.
+
+### Mode: Mock (mock)
+
+This evaluation was run in **mock** mode.
+
+The mock provider uses rule-based pattern matching to simulate LLM output.
+This gives a deterministic baseline for the evaluation harness. Results may
+differ when using a real LLM provider (run with `--mode live`).
+
+**Mock rules implemented:**
+1. SQL injection detection (f-string + SQL keywords, string concatenation)
+2. Hardcoded secret detection (API keys, passwords, SECRET_KEY patterns)
+3. Unsafe deserialization detection (`pickle.loads`, `pickle.load`)
+4. Off-by-one index errors (`range(1, len + 1)`)
+5. Missing zero-division guard (`return a/b` without `b==0` check)
+
+### Evaluation Dataset
+
+The `data/eval_set.json` file was generated by `scripts/build_eval_set.py`:
+- 6 planted-bug fixtures from `backend/tests/fixtures/sample_prs/`
+- 9 known issues across security and bug categories
+- Includes a clean diff (0 issues) as a false-positive check
+
+### Reproducibility
+
+```bash
+# Regenerate evaluation set
+python scripts/build_eval_set.py --sources fixtures
+
+# Re-run evaluation
+python scripts/run_evaluation.py --output docs/evaluation-report.md
+```
+
+---
+
+## Limitations
+
+- **Planted-bug set is small (9 known issues):** Statistical significance
+  requires 100+ fixtures across more languages
+- **Python-only:** All fixtures are Python — no JS/TS/Go/Ruby coverage
+- **Mock mode:** Rule-based patterns miss context-dependent issues an LLM
+  would catch; live numbers will differ
+- **No production data:** Usefulness metrics require real deployment with
+  actual PR reviews and human feedback

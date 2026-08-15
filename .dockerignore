@@ -1,0 +1,52 @@
+# Git
+.git
+.gitattributes
+.gitignore
+.github/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Environment
+.env
+.env.*
+.secrets/
+*.pem
+*.key
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Docker
+docker-data/
+docker-compose*.yml
+
+# Docs
+docs/
+
+# Data (not needed at build time)
+data/
+
+# CI configs
+render.yaml
+fly.toml
+
+# Lint/tool caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# NOTE: scripts/ is intentionally NOT ignored — the Dockerfile runs
+# `COPY scripts/ /app/scripts/` and gunicorn/celery workers use it.

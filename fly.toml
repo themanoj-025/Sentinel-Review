@@ -1,0 +1,87 @@
+# Sentinel Review — Fly.io Deployment Config
+# https://fly.io/docs/reference/configuration/
+#
+# Deploy with:
+#   1. Install flyctl: https://fly.io/docs/hands-on/install-flyctl/
+#   2. fly launch (first time) or fly deploy (subsequent)
+#   3. Set secrets: fly secrets set KEY=VALUE
+#   4. Create attached Postgres + Redis resources
+#
+# Prerequisites:
+#   - Fly.io account (free tier: 3 VMs, 3GB transfer)
+#   - flyctl CLI installed
+#   - PostgreSQL cluster: `fly postgres create`
+#   - Upstash Redis or fly Redis: `fly redis create`
+#   - GitHub App credentials + LLM API key as secrets
+#
+# Quick start:
+#   fly launch --copy-config --no-deploy
+#   fly postgres create --name sentinel-review-db
+#   fly redis create --name sentinel-review-redis
+#   fly secrets set DJANGO_SECRET_KEY="..."
+#   fly secrets set WEBHOOK_SECRET="..."
+#   fly secrets set GITHUB_APP_ID="..."
+#   fly secrets set GITHUB_APP_PRIVATE_KEY_B64="..."
+#   fly secrets set ANTHROPIC_API_KEY="..."
+#   fly deploy
+
+app = "sentinel-review"
+primary_region = "iad"
+kill_signal = "SIGTERM"
+
+# Web Service
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["web"]
+
+[env]
+  DJANGO_SETTINGS_MODULE = "sentinel_review.settings"
+  DJANGO_DEBUG = "False"
+  DJANGO_ALLOWED_HOSTS = "sentinel-review.fly.dev,localhost"
+  LLM_PROVIDER = "anthropic"
+  ANTHROPIC_MODEL = "claude-sonnet-4-20250514"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[deploy]
+  release_command = "python manage.py migrate --noinput"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+# Background Worker — runs as a separate machine within the same Fly app
+[[processes]]
+  name = "worker"
+  cmd = "celery -A sentinel_review worker -l info -Q reviews,feedback,default -c 2 --without-gossip --without-mingle --without-heartbeat"
+
+[[vm]]
+  process = "worker"
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
+
+# Required secrets (set via `fly secrets set`)
+# DJANGO_SECRET_KEY        — Django cryptographic signing key
+# DATABASE_URL             — PostgreSQL connection string
+# CELERY_BROKER_URL        — Redis connection string (Upstash or Fly Redis)
+# CELERY_RESULT_BACKEND    — Redis connection string (same as broker)
+# WEBHOOK_SECRET           — GitHub webhook secret
+# GITHUB_APP_ID            — GitHub App ID
+# GITHUB_APP_PRIVATE_KEY_B64 — Base64-encoded private key PEM
+# ANTHROPIC_API_KEY        — Anthropic API key (if using Claude)
+
+# Machine-level mounts (for .secrets volume)
+# If using a PEM file instead of base64 env var, mount it:
+#   fly volumes create sentinel_secrets --size 1 --region iad
+# Then uncomment the [[mounts]] section and copy the .pem file.
+#
+# [[mounts]]
+#   source = "sentinel_secrets"
+#   destination = "/app/.secrets"
