@@ -8,8 +8,12 @@
     <!-- Compiled Tailwind CSS (purged, ~17KB) -->
     <link rel="stylesheet" href="/static/css/output.css">
 
-    <!-- Bundled HTMX + Alpine.js (~60KB, minified) -->
-    <script src="/static/js/bundle.js" defer></script>
+    <!-- Bundled HTMX + Alpine.js (~60KB, minified).
+         See frontend/static/js/README.md for provenance and the rebuild process.
+         The integrity hash must be updated whenever bundle.js is regenerated. -->
+    <script src="/static/js/bundle.js" defer
+            integrity="sha256-8b440509b6d2d7b0d88d4620ce582899a9f66d779f7a248c2462ecffd02e223f"
+            crossorigin="anonymous"></script>
 
     <!-- Alpine.js loading fallback -->
     <script>
