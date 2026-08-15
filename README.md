@@ -35,9 +35,9 @@
   <!-- Links -->
   <p>
     <a href="#-features">Features</a> •
-    <a href="#-architecture">Architecture</a> •
+    <a href="#️-architecture">Architecture</a> •
     <a href="#-quick-start">Quick Start</a> •
-    <a href="#-case-study-the-auditbeforeafter-story">The Audit Story</a> •
+    <a href="#-case-study-the-audit--beforeafter-story">The Audit Story</a> •
     <a href="https://github.com/sentinel-review/sentinel-review/issues">Report Bug</a>
   </p>
   <br/>
@@ -49,18 +49,18 @@
 
 - [Why Sentinel Review?](#-why-sentinel-review)
 - [Features](#-features)
-- [Architecture](#-architecture)
+- [Architecture](#️-architecture)
 - [Quick Start](#-quick-start)
 - [Configuration](#-configuration)
-- [Dashboard & API](#-dashboard--api)
-- [Tech Stack](#-tech-stack)
+- [Dashboard & API](#️-dashboard--api)
+- [Tech Stack](#️-tech-stack)
 - [Project Structure](#-project-structure)
-- [Case Study: The Audit → Before/After Story](#-case-study-the-auditbeforeafter-story)
+- [Case Study: The Audit → Before/After Story](#-case-study-the-audit--beforeafter-story)
 - [Demo: Self-Review](#-demo-self-review)
 - [Development](#-development)
 - [Testing & CI](#-testing--ci)
 - [Deployment](#-deployment)
-- [Roadmap](#-roadmap)
+- [Roadmap](#️-roadmap)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -805,6 +805,8 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more informa
     <a href="https://github.com/sentinel-review/sentinel-review/issues">💡 Request Feature</a>
     ·
     <a href="https://github.com/sentinel-review/sentinel-review/pulls">🔧 Contribute</a>
+    ·
+    <a href="https://github.com/sentinel-review/sentinel-review/stargazers">⭐ Star the Repo</a>
   </p>
   <br/>
 </div>
