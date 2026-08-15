@@ -13,8 +13,8 @@
 
   <!-- Badges -->
   <p>
-    <a href="https://github.com/sentinel-review/sentinel-review/actions/workflows/ci.yml">
-      <img src="https://img.shields.io/github/actions/workflow/status/sentinel-review/sentinel-review/ci.yml?branch=main&label=CI&logo=github&style=flat-square" alt="CI Status"/>
+    <a href="https://github.com/themanoj-025/Sentinel-Review/actions/workflows/ci.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/themanoj-025/Sentinel-Review/ci.yml?branch=main&label=CI&logo=github&style=flat-square" alt="CI Status"/>
     </a><a href="#">
       <img src="https://img.shields.io/badge/tests-352%20passing-brightgreen?style=flat-square&logo=pytest" alt="Tests"/></a>
     <a href="#">
@@ -38,7 +38,7 @@
     <a href="#️-architecture">Architecture</a> •
     <a href="#-quick-start">Quick Start</a> •
     <a href="#-case-study-the-audit--beforeafter-story">The Audit Story</a> •
-    <a href="https://github.com/sentinel-review/sentinel-review/issues">Report Bug</a>
+    <a href="https://github.com/themanoj-025/Sentinel-Review/issues">Report Bug</a>
   </p>
   <br/>
 </div>
@@ -246,8 +246,8 @@ The core review pipeline is a **staged, modular** design. Each stage is independ
 
 ```bash
 # 1. Clone
-git clone https://github.com/sentinel-review/sentinel-review.git
-cd sentinel-review
+git clone https://github.com/themanoj-025/Sentinel-Review.git
+cd Sentinel-Review
 
 # 2. Configure
 cp .env.example .env
@@ -278,7 +278,7 @@ docker compose up --build
 1. **GitHub Settings → Developer settings → GitHub Apps → New GitHub App**
 2. Configure:
    - **App name:** `sentinel-review` (or your choice)
-   - **Homepage URL:** `https://github.com/sentinel-review/sentinel-review`
+   - **Homepage URL:** `https://github.com/themanoj-025/Sentinel-Review`
    - **Webhook URL:** `https://your-public-url.com/webhooks/github/`
    - **Webhook secret:** Strong random string → copy to `.env` as `WEBHOOK_SECRET`
 3. **Permissions** (least-privilege):
@@ -310,7 +310,7 @@ jobs:
   review:
     runs-on: ubuntu-latest
     steps:
-      - uses: sentinel-review/sentinel-review/.github/actions/sentinel-review@main
+      - uses: themanoj-025/Sentinel-Review/.github/actions/sentinel-review@main
         with:
           github-token: ${{ github.token }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -728,7 +728,7 @@ jobs:
   review:
     runs-on: ubuntu-latest
     steps:
-      - uses: sentinel-review/sentinel-review/.github/actions/sentinel-review@main
+      - uses: themanoj-025/Sentinel-Review/.github/actions/sentinel-review@main
         with:
           github-token: ${{ github.token }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -800,13 +800,21 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more informa
     Built with <strong>Django</strong>, <strong>Celery</strong>, and <strong>Anthropic Claude</strong>
   </p>
   <p>
-    <a href="https://github.com/sentinel-review/sentinel-review/issues">🐛 Report Bug</a>
+    <a href="https://github.com/themanoj-025/Sentinel-Review/issues">🐛 Report Bug</a>
     ·
-    <a href="https://github.com/sentinel-review/sentinel-review/issues">💡 Request Feature</a>
+    <a href="https://github.com/themanoj-025/Sentinel-Review/issues">💡 Request Feature</a>
     ·
-    <a href="https://github.com/sentinel-review/sentinel-review/pulls">🔧 Contribute</a>
+    <a href="https://github.com/themanoj-025/Sentinel-Review/pulls">🔧 Contribute</a>
     ·
-    <a href="https://github.com/sentinel-review/sentinel-review/stargazers">⭐ Star the Repo</a>
+    <a href="https://github.com/themanoj-025/Sentinel-Review/stargazers">⭐ Star the Repo</a>
   </p>
   <br/>
 </div>
+---
+
+## ⭐ Star History
+
+[![Last Commit](https://img.shields.io/github/last-commit/themanoj-025/Sentinel-Review?style=flat-square)](https://github.com/themanoj-025/Sentinel-Review)
+[![Contributors](https://img.shields.io/github/contributors/themanoj-025/Sentinel-Review?style=flat-square)](https://github.com/themanoj-025/Sentinel-Review/graphs/contributors)
+
+[![Star History Chart](https://api.star-history.com/svg?repos=themanoj-025/Sentinel-Review&type=Date)](https://star-history.com/#Sentinel-Review&Date)
