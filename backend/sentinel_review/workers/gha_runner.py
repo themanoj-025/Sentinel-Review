@@ -312,7 +312,7 @@ def build_review_body(findings: list[dict], total_comments: int) -> str:
     blocking = sum(1 for m in findings if m.get("severity") == "blocking")
     warnings = sum(1 for m in findings if m.get("severity") == "warning")
     nits = sum(1 for m in findings if m.get("severity") == "nit")
-    categories = sorted(set(m.get("category", "unknown") for m in findings))
+    categories = sorted({m.get("category", "unknown") for m in findings})
     cat_rows = "\n".join(
         "| %s | %d |" % (cat, sum(1 for m in findings if m.get("category") == cat))
         for cat in categories

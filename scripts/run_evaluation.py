@@ -111,10 +111,7 @@ def _mock_review_diff(diff: str) -> list[Finding]:
             in_hunk = True
             # @@ -old_start,old_count +new_start,new_count @@
             match = re.match(r"@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@", line)
-            if match:
-                current_line_num = int(match.group(1))
-            else:
-                current_line_num = 0
+            current_line_num = int(match.group(1)) if match else 0
             continue
 
         if not in_hunk:
@@ -555,7 +552,7 @@ def _generate_report(
         for tp in entry.true_positives:
             cat = tp["finding"]["category"]
             cat_tp[cat] = cat_tp.get(cat, 0) + 1
-        for fp in entry.false_positives:
+        for _fp in entry.false_positives:
             cat_fp[cat] = cat_fp.get(cat, 0) + 1
 
     report = f"""# Sentinel Review — Evaluation Report

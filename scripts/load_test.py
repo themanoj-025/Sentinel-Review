@@ -111,13 +111,12 @@ def run_load_test(
     """Run the load test with concurrent requests."""
     results: list[dict[str, Any]] = []
 
-    with httpx.Client() as client:
-        with ThreadPoolExecutor(max_workers=concurrent) as executor:
-            futures = [
-                executor.submit(_send_request, client, url, secret, timeout) for _ in range(total)
-            ]
-            for future in as_completed(futures):
-                results.append(future.result())
+    with httpx.Client() as client, ThreadPoolExecutor(max_workers=concurrent) as executor:
+        futures = [
+            executor.submit(_send_request, client, url, secret, timeout) for _ in range(total)
+        ]
+        for future in as_completed(futures):
+            results.append(future.result())
 
     return results
 

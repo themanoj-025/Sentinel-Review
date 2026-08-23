@@ -7,6 +7,7 @@ Backed by Redis with an in-memory fallback for single-worker / test environments
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import logging
@@ -188,10 +189,8 @@ def cache_clear(diff: str, repo_context: str = "") -> None:
 
     redis_client = _get_redis_client()
     if redis_client is not None:
-        try:
+        with contextlib.suppress(Exception):
             redis_client.delete(key)
-        except Exception:
-            pass
 
     _in_memory_store.pop(key, None)
     _in_memory_expiry.pop(key, None)

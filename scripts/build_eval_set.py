@@ -580,7 +580,7 @@ def build_github_dataset(max_prs: int = 50) -> list[dict[str, Any]]:
     logger.info(
         "GitHub dataset: %d entries from %d repos",
         len(all_entries),
-        len(set(e["repo"] for e in all_entries)),
+        len({e["repo"] for e in all_entries}),
     )
     return all_entries
 
