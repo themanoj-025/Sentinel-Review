@@ -21,13 +21,13 @@ import os
 import traceback
 import uuid
 from contextvars import ContextVar
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 # Context variable for request ID tracking (works with async)
-request_id_var: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
+request_id_var: ContextVar[str | None] = ContextVar("request_id", default=None)
 
 # Cached loggers
 _configured_loggers: set[str] = set()
@@ -42,7 +42,7 @@ class JSONFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         base: dict[str, Any] = {
-            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "timestamp": datetime.fromtimestamp(record.created, tz=UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "module": record.module,
@@ -74,10 +74,10 @@ class JSONFormatter(logging.Formatter):
 
 def setup_logger(
     name: str,
-    log_file: Optional[str] = None,
-    log_dir: Optional[str] = None,
+    log_file: str | None = None,
+    log_dir: str | None = None,
     level: int = logging.INFO,
-    context: Optional[dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
 ) -> logging.Logger:
     """Get or create a logger with JSON file and console handlers.
 
@@ -155,12 +155,12 @@ def setup_logger(
     return logger
 
 
-def get_request_id() -> Optional[str]:
+def get_request_id() -> str | None:
     """Get the current request ID from context."""
     return request_id_var.get()
 
 
-def set_request_id(request_id: Optional[str] = None) -> str:
+def set_request_id(request_id: str | None = None) -> str:
     """Set the current request ID in context. Returns the ID."""
     if request_id is None:
         request_id = str(uuid.uuid4())[:12]
