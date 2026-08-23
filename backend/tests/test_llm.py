@@ -109,7 +109,7 @@ class TestLLMProviderBase:
     def test_validate_and_parse_empty_findings(self):
         """An empty findings list should be valid."""
         raw = '{"findings": []}'
-        findings, success, error = LLMProvider._validate_and_parse(raw)
+        findings, success, _error = LLMProvider._validate_and_parse(raw)
         assert success is True
         assert len(findings) == 0
 
@@ -124,21 +124,21 @@ class TestLLMProviderBase:
     def test_validate_and_parse_invalid_schema(self):
         """JSON that doesn't match ReviewOutput should fail."""
         raw = json.dumps({"wrong_key": "value"})
-        findings, success, error = LLMProvider._validate_and_parse(raw)
+        _findings, success, error = LLMProvider._validate_and_parse(raw)
         assert success is False
         assert "Pydantic validation failed" in error
 
     def test_validate_and_parse_codeblock(self):
         """JSON wrapped in markdown code blocks should be extractable."""
         raw = f"```json\n{json.dumps({'findings': []})}\n```"
-        findings, success, error = LLMProvider._validate_and_parse(raw)
+        findings, success, _error = LLMProvider._validate_and_parse(raw)
         assert success is True
         assert len(findings) == 0
 
     def test_validate_and_parse_partial_data(self):
         """Partially valid data (missing required fields) should fail."""
         raw = json.dumps({"findings": [{"file_path": "app.py"}]})
-        findings, success, error = LLMProvider._validate_and_parse(raw)
+        _findings, success, _error = LLMProvider._validate_and_parse(raw)
         assert success is False
 
 

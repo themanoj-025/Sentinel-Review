@@ -520,7 +520,7 @@ class PostCommentsStage(PipelineStage):
         blocking = sum(1 for f in ctx.merged_findings if f.get("severity") == "blocking")
         warnings = sum(1 for f in ctx.merged_findings if f.get("severity") == "warning")
         nits = sum(1 for f in ctx.merged_findings if f.get("severity") == "nit")
-        categories = sorted(set(f.get("category", "unknown") for f in ctx.merged_findings))
+        categories = sorted({f.get("category", "unknown") for f in ctx.merged_findings})
         cat_rows = "\n".join(
             "| %s | %d |" % (cat, sum(1 for f in ctx.merged_findings if f.get("category") == cat))
             for cat in categories
@@ -763,7 +763,7 @@ def _build_review_body(findings: list[dict], total_comments: int) -> str:
     blocking = sum(1 for m in findings if m.get("severity") == "blocking")
     warnings = sum(1 for m in findings if m.get("severity") == "warning")
     nits = sum(1 for m in findings if m.get("severity") == "nit")
-    categories = sorted(set(m.get("category", "unknown") for m in findings))
+    categories = sorted({m.get("category", "unknown") for m in findings})
     cat_rows = "\n".join(
         "| %s | %d |" % (cat, sum(1 for m in findings if m.get("category") == cat))
         for cat in categories

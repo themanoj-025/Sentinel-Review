@@ -50,10 +50,7 @@ def parse_ignore_file(content: str) -> list[str]:
         # Strip inline comments (everything after the first unquoted #)
         # Simple heuristic: split on # that follows a non-backslash space
         comment_idx = _find_inline_comment(line)
-        if comment_idx >= 0:
-            pattern = line[:comment_idx].strip()
-        else:
-            pattern = line
+        pattern = line[:comment_idx].strip() if comment_idx >= 0 else line
 
         if pattern:
             patterns.append(pattern)

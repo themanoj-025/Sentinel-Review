@@ -122,14 +122,14 @@ class TestLLMProviderValidateAndParse:
     def test_type_error_handled(self):
         """TypeError (e.g., from Pydantic v1) should be caught gracefully."""
         raw = json.dumps({"findings": "not_a_list"})
-        findings, success, error = LLMProvider._validate_and_parse(raw)
+        _findings, success, error = LLMProvider._validate_and_parse(raw)
         assert success is False
         assert error != ""
 
     def test_codeblock_without_json_lang(self):
         """Code block without 'json' language tag should still parse."""
         raw = "```\n" + json.dumps({"findings": []}) + "\n```"
-        findings, success, error = LLMProvider._validate_and_parse(raw)
+        _findings, success, _error = LLMProvider._validate_and_parse(raw)
         assert success is True
 
     def test_codeblock_with_junk_around(self):
@@ -140,32 +140,32 @@ class TestLLMProviderValidateAndParse:
             + json.dumps({"findings": []})
             + "\n```\n\nDone!"
         )
-        findings, success, error = LLMProvider._validate_and_parse(raw)
+        findings, success, _error = LLMProvider._validate_and_parse(raw)
         assert success is True
         assert len(findings) == 0
 
     def test_extra_fields_in_output(self):
         """Extra fields beyond the schema should be ignored (not fail)."""
         raw = json.dumps({"findings": [], "extra_info": "this should be ignored"})
-        findings, success, error = LLMProvider._validate_and_parse(raw)
+        _findings, success, _error = LLMProvider._validate_and_parse(raw)
         assert success is True
 
     def test_empty_string(self):
         """Empty string should fail gracefully."""
-        findings, success, error = LLMProvider._validate_and_parse("")
+        _findings, success, error = LLMProvider._validate_and_parse("")
         assert success is False
         assert "Failed to parse JSON" in error
 
     def test_whitespace_only(self):
         """Whitespace-only input should fail gracefully."""
-        findings, success, error = LLMProvider._validate_and_parse("   \n\n  ")
+        _findings, success, error = LLMProvider._validate_and_parse("   \n\n  ")
         assert success is False
         assert "Failed to parse JSON" in error
 
     def test_none_instead_of_list(self):
         """None instead of findings list should fail."""
         raw = json.dumps({"findings": None})
-        findings, success, error = LLMProvider._validate_and_parse(raw)
+        _findings, success, _error = LLMProvider._validate_and_parse(raw)
         assert success is False
 
 

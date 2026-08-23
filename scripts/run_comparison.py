@@ -314,10 +314,7 @@ def update_evaluation_report(comparison_table: str, mode: str) -> None:
         before, rest = content.split(section_header, 1)
         # Find the next ## heading (any section) or end of string
         next_section = rest.find("\n## ")
-        if next_section >= 0:
-            after = rest[next_section:]
-        else:
-            after = ""
+        after = rest[next_section:] if next_section >= 0 else ""
         content = before + table_section + after
     elif "\n## Limitations\n" in content:
         # Insert before Limitations section
@@ -361,7 +358,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    results, totals = run_comparison(mode=args.mode)
+    results, _totals = run_comparison(mode=args.mode)
 
     print(f"\n{'=' * 60}")
     print("MULTI-MODEL COMPARISON")

@@ -43,7 +43,7 @@ class TestCircuitBreakerStateMachine:
             call_count[0] += 1
             raise ConnectionError("Simulated 5xx")
 
-        for i in range(3):
+        for _i in range(3):
             with pytest.raises(ConnectionError):
                 self.cb.call(failing_fn)
 
