@@ -235,7 +235,7 @@ class FetchContextStage(PipelineStage):
                             ctx.repo_full_name,
                             ctx.repo_ctx.default_branch,
                         )
-                except Exception:
+                except (OSError, KeyError, ValueError):
                     logger.debug(".sentinel-ignore not found in %s (non-fatal)", ctx.repo_full_name)
 
         except (ConnectionError, TimeoutError) as e:
@@ -396,7 +396,7 @@ class DedupeStage(PipelineStage):
 
                     patterns = parse_ignore_file(ignore_content)
                     merged = filter_ignored_findings(merged, patterns)
-            except Exception:
+            except (KeyError, ValueError, TypeError, ImportError):
                 logger.debug("Failed to apply .sentinel-ignore patterns (non-fatal)")
 
             # Deduplicate

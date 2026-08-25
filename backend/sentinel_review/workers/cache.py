@@ -106,7 +106,7 @@ def _get_redis_client():
             redis_url, socket_connect_timeout=2.0, decode_responses=True
         )
         return _redis_client_instance
-    except Exception:
+    except (ImportError, OSError, ConnectionError):
         return None
 
 
@@ -128,7 +128,7 @@ def cache_get(diff: str, repo_context: str = "") -> LLMResult | None:
             if raw is not None:
                 logger.debug("LLM cache HIT (redis): key=%s", key[:30])
                 return _deserialize(raw)
-        except Exception:
+        except (OSError, ConnectionError, ValueError):
             pass  # Fall through to in-memory
 
     # Try in-memory fallback
@@ -165,7 +165,7 @@ def cache_set(diff: str, result: LLMResult, repo_context: str = "", ttl: int | N
             redis_client.setex(key, effective_ttl, serialized)
             logger.debug("LLM cache SET (redis): key=%s, ttl=%ds", key[:30], effective_ttl)
             return
-        except Exception:
+        except (OSError, ConnectionError, ValueError):
             pass  # Fall through to in-memory
 
     # In-memory fallback
@@ -212,7 +212,7 @@ def cache_clear_all() -> None:
                     redis_client.delete(*keys)
                 if cursor == 0:
                     break
-        except Exception:
+        except (OSError, ConnectionError, ValueError):
             pass
 
     # In-memory

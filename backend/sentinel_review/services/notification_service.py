@@ -211,7 +211,7 @@ class NotificationService:
                         subject=title,
                         body_text=body,
                     )
-            except Exception:
+            except (OSError, ConnectionError, TimeoutError, ValueError):
                 logger.exception("Notification backend failed unexpectedly")
 
     def notify_blocking_findings(
@@ -260,5 +260,5 @@ class NotificationService:
                         subject=title,
                         body_text=body,
                     )
-            except Exception:
+            except (OSError, ConnectionError, TimeoutError, ValueError):
                 logger.exception("Notification backend failed unexpectedly")

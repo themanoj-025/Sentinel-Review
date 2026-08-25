@@ -46,7 +46,7 @@ def _is_duplicate_delivery(delivery_id: str) -> bool:
                 r.expire(key, _DELIVERY_TTL)
                 return False
             return True
-        except Exception:
+        except (ImportError, OSError, ConnectionError, ValueError):
             pass  # Fall through to in-memory
 
     # In-memory fallback (single-worker dev)

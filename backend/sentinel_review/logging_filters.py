@@ -73,7 +73,7 @@ class RedactingFilter(logging.Filter):
                 val = getattr(record, key)
                 if isinstance(val, str):
                     setattr(record, key, self._redact(val))
-            except Exception:
+            except (AttributeError, TypeError):
                 pass
 
         return True

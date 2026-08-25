@@ -455,7 +455,7 @@ def _fetch_pr_review_comments(repo: str, pr_number: int) -> list[dict[str, Any]]
     try:
         data = _github_api_get(f"/repos/{repo}/pulls/{pr_number}/comments")
         return data if isinstance(data, list) else []
-    except Exception:
+    except (OSError, ConnectionError, TimeoutError, KeyError, ValueError):
         return []
 
 
@@ -464,7 +464,7 @@ def _fetch_pr_issue_comments(repo: str, pr_number: int) -> list[dict[str, Any]]:
     try:
         data = _github_api_get(f"/repos/{repo}/issues/{pr_number}/comments")
         return data if isinstance(data, list) else []
-    except Exception:
+    except (OSError, ConnectionError, TimeoutError, KeyError, ValueError):
         return []
 
 
