@@ -19,7 +19,7 @@ httpx-sse>=0.4.3,<0.5
 # LLM
 anthropic>=0.39,<0.50
 openai>=1.40,<1.50
-mcp>=1.28.1,<1.30
+mcp>=2.0.0,<2.1
 protobuf>=5.29.6,<5.30
 
 # Structured output
