@@ -28,7 +28,7 @@ from sentinel_review.workers.llm import (
 class TestLLMProviderCorrectiveRetry:
     """_review_with_retry — corrective retry on validation failure."""
 
-    def test_first_attempt_succeeds(self):
+    def test_first_attempt_succeeds(self) -> None:
         """When _call_api returns success on first try, return immediately."""
         provider = LLMProvider()
 
@@ -41,7 +41,7 @@ class TestLLMProviderCorrectiveRetry:
             result = provider._review_with_retry(diff="test")
         assert result.validation_success is True
 
-    def test_first_fails_retry_succeeds(self):
+    def test_first_fails_retry_succeeds(self) -> None:
         """When first attempt fails, retry with corrective hint should succeed."""
         provider = LLMProvider()
         call_count = [0]
@@ -59,7 +59,7 @@ class TestLLMProviderCorrectiveRetry:
         assert result.validation_success is True
         assert call_count[0] == 2
 
-    def test_both_attempts_fail(self):
+    def test_both_attempts_fail(self) -> None:
         """When both attempts fail, return the failed result."""
         provider = LLMProvider()
 
@@ -77,7 +77,7 @@ class TestLLMProviderCorrectiveRetry:
 class TestLLMProviderBuildPrompt:
     """_build_prompt — message construction."""
 
-    def test_with_corrective_hint(self):
+    def test_with_corrective_hint(self) -> None:
         """Corrective hint should be included in the prompt messages."""
         from sentinel_review.workers.prompt_builder import PromptBuilder
 
@@ -89,7 +89,7 @@ class TestLLMProviderBuildPrompt:
         )
         assert hint_found
 
-    def test_with_repo_context_and_files(self):
+    def test_with_repo_context_and_files(self) -> None:
         """Both repo context and file contents should be included."""
         from sentinel_review.workers.prompt_builder import PromptBuilder
 
@@ -103,7 +103,7 @@ class TestLLMProviderBuildPrompt:
         assert context_found
         assert files_found
 
-    def test_with_all_three_options(self):
+    def test_with_all_three_options(self) -> None:
         """All optional params (hint, context, files) should combine correctly."""
         from sentinel_review.workers.prompt_builder import PromptBuilder
 
@@ -119,20 +119,20 @@ class TestLLMProviderBuildPrompt:
 class TestLLMProviderValidateAndParse:
     """_validate_and_parse — edge cases."""
 
-    def test_type_error_handled(self):
+    def test_type_error_handled(self) -> None:
         """TypeError (e.g., from Pydantic v1) should be caught gracefully."""
         raw = json.dumps({"findings": "not_a_list"})
         _findings, success, error = LLMProvider._validate_and_parse(raw)
         assert success is False
         assert error != ""
 
-    def test_codeblock_without_json_lang(self):
+    def test_codeblock_without_json_lang(self) -> None:
         """Code block without 'json' language tag should still parse."""
         raw = "```\n" + json.dumps({"findings": []}) + "\n```"
         _findings, success, _error = LLMProvider._validate_and_parse(raw)
         assert success is True
 
-    def test_codeblock_with_junk_around(self):
+    def test_codeblock_with_junk_around(self) -> None:
         """Junk text around a code block should be handled."""
         raw = (
             "Let me review this diff...\n\n"
@@ -144,25 +144,25 @@ class TestLLMProviderValidateAndParse:
         assert success is True
         assert len(findings) == 0
 
-    def test_extra_fields_in_output(self):
+    def test_extra_fields_in_output(self) -> None:
         """Extra fields beyond the schema should be ignored (not fail)."""
         raw = json.dumps({"findings": [], "extra_info": "this should be ignored"})
         _findings, success, _error = LLMProvider._validate_and_parse(raw)
         assert success is True
 
-    def test_empty_string(self):
+    def test_empty_string(self) -> None:
         """Empty string should fail gracefully."""
         _findings, success, error = LLMProvider._validate_and_parse("")
         assert success is False
         assert "Failed to parse JSON" in error
 
-    def test_whitespace_only(self):
+    def test_whitespace_only(self) -> None:
         """Whitespace-only input should fail gracefully."""
         _findings, success, error = LLMProvider._validate_and_parse("   \n\n  ")
         assert success is False
         assert "Failed to parse JSON" in error
 
-    def test_none_instead_of_list(self):
+    def test_none_instead_of_list(self) -> None:
         """None instead of findings list should fail."""
         raw = json.dumps({"findings": None})
         _findings, success, _error = LLMProvider._validate_and_parse(raw)
@@ -173,7 +173,7 @@ class TestAnthropicProviderEdgeCases:
     """AnthropicProvider — circuit breaker and error handling."""
 
     @pytest.mark.django_db
-    def test_circuit_breaker_protection(self, monkeypatch):
+    def test_circuit_breaker_protection(self, monkeypatch) -> None:
         """When circuit breaker is open, return error without calling API."""
         monkeypatch.setattr("django.conf.settings.ANTHROPIC_API_KEY", "sk-ant-test-key")
 
@@ -191,7 +191,7 @@ class TestAnthropicProviderEdgeCases:
         llm_circuit_breaker.failure_count = 0
 
     @pytest.mark.django_db
-    def test_missing_key_returns_error(self):
+    def test_missing_key_returns_error(self) -> None:
         """When API key is empty, return early error."""
         provider = AnthropicProvider()
         provider.api_key = ""
@@ -204,7 +204,7 @@ class TestOpenAIProviderEdgeCases:
     """OpenAIProvider — circuit breaker and error handling."""
 
     @pytest.mark.django_db
-    def test_circuit_breaker_protection(self, monkeypatch):
+    def test_circuit_breaker_protection(self, monkeypatch) -> None:
         """When circuit breaker is open, return error without calling API."""
         monkeypatch.setattr("django.conf.settings.OPENAI_API_KEY", "sk-test-key")
 
@@ -222,7 +222,7 @@ class TestOpenAIProviderEdgeCases:
         llm_circuit_breaker.failure_count = 0
 
     @pytest.mark.django_db
-    def test_missing_key_returns_error(self):
+    def test_missing_key_returns_error(self) -> None:
         """When API key is empty, return early error."""
         provider = OpenAIProvider()
         provider.api_key = ""
@@ -235,27 +235,27 @@ class TestGetLLMProvider:
     """get_llm_provider factory function."""
 
     @pytest.mark.django_db
-    def test_default(self):
+    def test_default(self) -> None:
         """Default provider should be Anthropic."""
         provider = get_llm_provider()
         assert isinstance(provider, AnthropicProvider)
 
     @pytest.mark.django_db
-    def test_openai(self, monkeypatch):
+    def test_openai(self, monkeypatch) -> None:
         """Setting provider to 'openai' should return OpenAIProvider."""
         monkeypatch.setattr("django.conf.settings.LLM_PROVIDER", "openai")
         provider = get_llm_provider()
         assert isinstance(provider, OpenAIProvider)
 
     @pytest.mark.django_db
-    def test_unknown_defaults_to_anthropic(self, monkeypatch):
+    def test_unknown_defaults_to_anthropic(self, monkeypatch) -> None:
         """Unknown provider should default to Anthropic."""
         monkeypatch.setattr("django.conf.settings.LLM_PROVIDER", "unknown")
         provider = get_llm_provider()
         assert isinstance(provider, AnthropicProvider)
 
     @pytest.mark.django_db
-    def test_empty_provider_defaults_to_anthropic(self, monkeypatch):
+    def test_empty_provider_defaults_to_anthropic(self, monkeypatch) -> None:
         """Empty provider should default to Anthropic."""
         monkeypatch.setattr("django.conf.settings.LLM_PROVIDER", "")
         provider = get_llm_provider()

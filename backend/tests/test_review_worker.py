@@ -33,12 +33,12 @@ from sentinel_review.workers.review_worker import review_pull_request
 class TestParseChangedFiles:
     """Tests for _parse_changed_files()."""
 
-    def test_parse_single_file(self, sample_diff: str):
+    def test_parse_single_file(self, sample_diff: str) -> None:
         """A diff with one file should return one path."""
         files = _parse_changed_files(sample_diff)
         assert "app.py" in files
 
-    def test_parse_multiple_files(self):
+    def test_parse_multiple_files(self) -> None:
         """A diff with multiple files should return all paths."""
         diff = """diff --git a/a.py b/a.py
 --- a/a.py
@@ -57,17 +57,17 @@ diff --git a/b.py b/b.py
         assert "a.py" in files
         assert "b.py" in files
 
-    def test_empty_diff(self):
+    def test_empty_diff(self) -> None:
         """An empty diff should return an empty list."""
         assert _parse_changed_files("") == []
 
-    def test_no_changes_diff(self):
+    def test_no_changes_diff(self) -> None:
         """A diff with no file changes should return empty."""
         diff = "diff --git a/a.py b/a.py\\n"
         # No +++ b/ line
         assert _parse_changed_files(diff) == []
 
-    def test_skip_dev_null(self):
+    def test_skip_dev_null(self) -> None:
         """+++ b/dev/null should be skipped (deleted files)."""
         diff = """diff --git a/deleted.py b/deleted.py
 deleted file mode 100644
@@ -80,7 +80,7 @@ deleted file mode 100644
         assert "dev/null" not in files
         assert files == []
 
-    def test_duplicate_paths_deduplicated(self):
+    def test_duplicate_paths_deduplicated(self) -> None:
         """The same file appearing twice should be deduplicated."""
         diff = """diff --git a/app.py b/app.py
 --- a/app.py
@@ -103,7 +103,7 @@ diff --git a/app.py b/app.py
 class TestDeduplicate:
     """Tests for _deduplicate()."""
 
-    def test_exact_duplicate_removed(self):
+    def test_exact_duplicate_removed(self) -> None:
         """Entries with same (file, line, category) should be deduplicated."""
         findings = [
             {"file_path": "app.py", "line_number": 2, "category": "security", "comment": "A"},
@@ -112,7 +112,7 @@ class TestDeduplicate:
         result = _deduplicate(findings)
         assert len(result) == 1
 
-    def test_different_files_kept(self):
+    def test_different_files_kept(self) -> None:
         """Different files should both be kept."""
         findings = [
             {"file_path": "a.py", "line_number": 2, "category": "bug", "comment": "A"},
@@ -121,7 +121,7 @@ class TestDeduplicate:
         result = _deduplicate(findings)
         assert len(result) == 2
 
-    def test_different_lines_kept(self):
+    def test_different_lines_kept(self) -> None:
         """Different line numbers should both be kept."""
         findings = [
             {"file_path": "a.py", "line_number": 2, "category": "bug", "comment": "A"},
@@ -130,7 +130,7 @@ class TestDeduplicate:
         result = _deduplicate(findings)
         assert len(result) == 2
 
-    def test_different_categories_kept(self):
+    def test_different_categories_kept(self) -> None:
         """Different categories on same file/line should both be kept."""
         findings = [
             {"file_path": "a.py", "line_number": 2, "category": "bug", "comment": "A"},
@@ -139,11 +139,11 @@ class TestDeduplicate:
         result = _deduplicate(findings)
         assert len(result) == 2
 
-    def test_empty_list(self):
+    def test_empty_list(self) -> None:
         """An empty list should return empty."""
         assert _deduplicate([]) == []
 
-    def test_none_line_number(self):
+    def test_none_line_number(self) -> None:
         """Findings with None line numbers should be handled."""
         findings = [
             {"file_path": "a.py", "line_number": None, "category": "style", "comment": "A"},
@@ -156,7 +156,7 @@ class TestDeduplicate:
 class TestBuildContextStr:
     """Tests for _build_context_str()."""
 
-    def test_basic_context(self):
+    def test_basic_context(self) -> None:
         """Basic repo context should be built."""
         ctx = GitHubRepoContext(
             full_name="owner/repo",
@@ -165,7 +165,7 @@ class TestBuildContextStr:
         result = _build_context_str(ctx)
         assert "main" in result
 
-    def test_with_contributing(self):
+    def test_with_contributing(self) -> None:
         """CONTRIBUTING.md content should be included."""
         ctx = GitHubRepoContext(
             full_name="owner/repo",
@@ -177,7 +177,7 @@ class TestBuildContextStr:
         assert "Contributing" in result
         assert "write tests" in result
 
-    def test_with_linter_config(self):
+    def test_with_linter_config(self) -> None:
         """Linter config content should be included."""
         ctx = GitHubRepoContext(
             full_name="owner/repo",
@@ -188,7 +188,7 @@ class TestBuildContextStr:
         result = _build_context_str(ctx)
         assert ".eslintrc" in result
 
-    def test_default_branch_only(self):
+    def test_default_branch_only(self) -> None:
         """Minimal context with only default_branch."""
         ctx = GitHubRepoContext(full_name="owner/repo", default_branch="develop")
         result = _build_context_str(ctx)
@@ -209,7 +209,7 @@ class TestReviewPullRequestTask:
 
     @SETTINGS
     @patch("sentinel_review.workers.pipeline.GitHubClient")
-    def test_private_repo_skipped(self, mock_github_client, db_installation, db):
+    def test_private_repo_skipped(self, mock_github_client, db_installation, db) -> None:
         """Private repos without opt-in should be skipped."""
         Repo.objects.create(
             installation=db_installation,
@@ -232,7 +232,7 @@ class TestReviewPullRequestTask:
     @SETTINGS
     @patch("sentinel_review.workers.pipeline.GitHubClient")
     @patch("sentinel_review.workers.pipeline.get_llm_provider")
-    def test_github_error_propagates(self, mock_get_llm, mock_github_client, db):
+    def test_github_error_propagates(self, mock_get_llm, mock_github_client, db) -> None:
         """An error in the review pipeline should be caught."""
         # Setup: mock GitHub client to succeed, mock LLM to fail
         mock_client = MagicMock()
@@ -266,7 +266,7 @@ class TestReviewPullRequestTask:
         db_installation,
         db,
         sample_diff: str,
-    ):
+    ) -> None:
         """The full pipeline should complete and produce comments."""
         mock_client = MagicMock()
         mock_client.get_diff.return_value = sample_diff
@@ -345,7 +345,7 @@ class TestReviewPullRequestTask:
     @patch("sentinel_review.workers.pipeline.get_llm_provider")
     def test_no_findings_posts_clean_review(
         self, mock_get_llm, mock_github_client, db_installation, db, sample_diff_safe: str
-    ):
+    ) -> None:
         """When no issues are found, a clean review should be posted."""
         mock_client = MagicMock()
         mock_client.get_diff.return_value = sample_diff_safe
@@ -381,7 +381,7 @@ class TestReviewPullRequestTask:
 
     @SETTINGS
     @patch("sentinel_review.workers.pipeline.GitHubClient")
-    def test_github_error_handled(self, mock_github_client, db_installation, db):
+    def test_github_error_handled(self, mock_github_client, db_installation, db) -> None:
         """A GitHub API error should be recorded as failed."""
         mock_client = MagicMock()
         mock_client.get_diff.side_effect = Exception("GitHub API timeout")

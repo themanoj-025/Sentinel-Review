@@ -16,40 +16,40 @@ from sentinel_review.workers.ignore_rules import (
 class TestParsing:
     """Tests for parse_ignore_file."""
 
-    def test_empty_content(self):
+    def test_empty_content(self) -> None:
         """Empty content should return empty patterns."""
         assert parse_ignore_file("") == []
 
-    def test_only_comments(self):
+    def test_only_comments(self) -> None:
         """Only comments should return empty patterns."""
         content = "# This is a comment\n# Another comment\n"
         assert parse_ignore_file(content) == []
 
-    def test_single_pattern(self):
+    def test_single_pattern(self) -> None:
         """Single pattern should be returned."""
         content = "*.generated.py\n"
         patterns = parse_ignore_file(content)
         assert patterns == ["*.generated.py"]
 
-    def test_multiple_patterns(self):
+    def test_multiple_patterns(self) -> None:
         """Multiple patterns should be returned."""
         content = "*.generated.py\nnode_modules/\n*.test.js\n"
         patterns = parse_ignore_file(content)
         assert patterns == ["*.generated.py", "node_modules/", "*.test.js"]
 
-    def test_inline_comment(self):
+    def test_inline_comment(self) -> None:
         """Inline comments after patterns should be stripped."""
         content = "*.generated.py  # Ignore generated files\nnode_modules/  # Node deps\n"
         patterns = parse_ignore_file(content)
         assert patterns == ["*.generated.py", "node_modules/"]
 
-    def test_blank_lines_skipped(self):
+    def test_blank_lines_skipped(self) -> None:
         """Blank lines should be skipped."""
         content = "*.generated.py\n\nnode_modules/\n"
         patterns = parse_ignore_file(content)
         assert patterns == ["*.generated.py", "node_modules/"]
 
-    def test_whitespace_handling(self):
+    def test_whitespace_handling(self) -> None:
         """Trailing whitespace should be stripped."""
         content = "  *.generated.py  \n"
         patterns = parse_ignore_file(content)
@@ -59,64 +59,64 @@ class TestParsing:
 class TestMatching:
     """Tests for is_ignored."""
 
-    def test_simple_filename_pattern(self):
+    def test_simple_filename_pattern(self) -> None:
         """Simple filename glob should match."""
         assert is_ignored("build/output.generated.py", ["*.generated.py"])
         assert is_ignored("src/data.generated.py", ["*.generated.py"])
 
-    def test_directory_pattern(self):
+    def test_directory_pattern(self) -> None:
         """Directory pattern (ending with /) should match files inside."""
         assert is_ignored("node_modules/foo/bar.js", ["node_modules/"])
         assert is_ignored("node_modules/foo.js", ["node_modules/"])
 
-    def test_nested_path_pattern(self):
+    def test_nested_path_pattern(self) -> None:
         """Nested path pattern with / should match correctly."""
         assert is_ignored("docs/api/readme.md", ["docs/*.md"])
 
-    def test_specific_file_pattern(self):
+    def test_specific_file_pattern(self) -> None:
         """Specific file pattern should match exact file."""
         assert is_ignored("src/secret.py", ["src/secret.py"])
 
-    def test_no_match(self):
+    def test_no_match(self) -> None:
         """File not matching any pattern should return False."""
         assert not is_ignored("src/app.py", ["*.generated.py", "node_modules/"])
 
-    def test_empty_patterns(self):
+    def test_empty_patterns(self) -> None:
         """Empty patterns list should return False."""
         assert not is_ignored("src/app.py", [])
 
-    def test_wildcard_directory(self):
+    def test_wildcard_directory(self) -> None:
         """Wildcard directory pattern should match."""
         patterns = ["*/generated/*"]
         assert is_ignored("src/generated/output.py", patterns)
         assert not is_ignored("src/app.py", patterns)
 
-    def test_multiple_extensions(self):
+    def test_multiple_extensions(self) -> None:
         """Multiple extension patterns should work."""
         patterns = ["*.log", "*.tmp", "*.cache"]
         assert is_ignored("debug.log", patterns)
         assert is_ignored("data.tmp", patterns)
         assert not is_ignored("app.py", patterns)
 
-    def test_path_normalization(self):
+    def test_path_normalization(self) -> None:
         """Backslash paths should be normalized."""
         patterns = ["src/ignored/*"]
         assert is_ignored("src\\ignored\\file.py", patterns)
 
-    def test_filename_only_pattern(self):
+    def test_filename_only_pattern(self) -> None:
         """Pattern without / should match filename anywhere in path."""
         assert is_ignored("src/foo/bar/test.log", ["*.log"])
 
-    def test_no_false_positive_for_non_matching_directory(self):
+    def test_no_false_positive_for_non_matching_directory(self) -> None:
         """Non-matching directory pattern should not match."""
         assert not is_ignored("src/app.py", ["build/"])
 
-    def test_subdirectory_pattern(self):
+    def test_subdirectory_pattern(self) -> None:
         """Pattern with subdirectory should match nested paths."""
         assert is_ignored("vendor/lib/foo.py", ["vendor/*"])
         assert is_ignored("vendor/foo.py", ["vendor/*"])
 
-    def test_empty_file_path(self):
+    def test_empty_file_path(self) -> None:
         """Empty file path should not match anything."""
         assert not is_ignored("", ["*.py"])
 
@@ -124,13 +124,13 @@ class TestMatching:
 class TestFiltering:
     """Tests for filter_ignored_findings."""
 
-    def test_filter_single_finding(self):
+    def test_filter_single_finding(self) -> None:
         """A finding in an ignored file should be removed."""
         findings = [{"file_path": "src/foo.generated.py", "line_number": 1, "category": "bug"}]
         result = filter_ignored_findings(findings, ["*.generated.py"])
         assert len(result) == 0
 
-    def test_keep_non_matching(self):
+    def test_keep_non_matching(self) -> None:
         """Findings not matching any pattern should be kept."""
         findings = [
             {"file_path": "src/app.py", "line_number": 1, "category": "bug"},
@@ -140,17 +140,17 @@ class TestFiltering:
         assert len(result) == 1
         assert result[0]["file_path"] == "src/app.py"
 
-    def test_no_patterns(self):
+    def test_no_patterns(self) -> None:
         """Empty patterns should keep all findings."""
         findings = [{"file_path": "src/app.py", "line_number": 1, "category": "bug"}]
         result = filter_ignored_findings(findings, [])
         assert len(result) == 1
 
-    def test_empty_findings(self):
+    def test_empty_findings(self) -> None:
         """Empty findings list should return empty list."""
         assert filter_ignored_findings([], ["*.py"]) == []
 
-    def test_multiple_ignored_files(self):
+    def test_multiple_ignored_files(self) -> None:
         """Multiple findings in ignored files should all be removed."""
         findings = [
             {"file_path": "node_modules/foo.js", "line_number": 1, "category": "bug"},
@@ -161,7 +161,7 @@ class TestFiltering:
         assert len(result) == 1
         assert result[0]["file_path"] == "src/app.py"
 
-    def test_mixed_ignored_and_kept(self):
+    def test_mixed_ignored_and_kept(self) -> None:
         """Mixed patterns should correctly filter."""
         findings = [
             {"file_path": "src/app.py", "line_number": 1, "category": "bug"},

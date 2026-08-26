@@ -28,7 +28,7 @@ from sentinel_review.workers.schemas import (
 class TestFindingSchema:
     """Tests for the Finding Pydantic model."""
 
-    def test_valid_finding(self):
+    def test_valid_finding(self) -> None:
         """A well-formed Finding should be created successfully."""
         finding = Finding(
             file_path="src/app.py",
@@ -44,7 +44,7 @@ class TestFindingSchema:
         assert finding.severity == "blocking"
         assert finding.suggested_fix == "Use parameterized queries."
 
-    def test_finding_without_suggested_fix(self):
+    def test_finding_without_suggested_fix(self) -> None:
         """suggested_fix should default to None."""
         finding = Finding(
             file_path="src/app.py",
@@ -55,7 +55,7 @@ class TestFindingSchema:
         )
         assert finding.suggested_fix is None
 
-    def test_finding_without_line_number(self):
+    def test_finding_without_line_number(self) -> None:
         """line_number should default to None (file-level finding)."""
         finding = Finding(
             file_path="src/app.py",
@@ -65,7 +65,7 @@ class TestFindingSchema:
         )
         assert finding.line_number is None
 
-    def test_invalid_category_rejected(self):
+    def test_invalid_category_rejected(self) -> None:
         """An invalid category should raise ValidationError."""
         with pytest.raises(ValidationError) as exc:
             Finding(
@@ -77,7 +77,7 @@ class TestFindingSchema:
             )
         assert "category" in str(exc.value)
 
-    def test_invalid_severity_rejected(self):
+    def test_invalid_severity_rejected(self) -> None:
         """An invalid severity should raise ValidationError."""
         with pytest.raises(ValidationError) as exc:
             Finding(
@@ -89,7 +89,7 @@ class TestFindingSchema:
             )
         assert "severity" in str(exc.value)
 
-    def test_empty_file_path_rejected_if_blank(self):
+    def test_empty_file_path_rejected_if_blank(self) -> None:
         """file_path should be a string but blank might be accepted."""
         finding = Finding(
             file_path="",
@@ -100,13 +100,13 @@ class TestFindingSchema:
         )
         assert finding.file_path == ""
 
-    def test_missing_required_fields(self):
+    def test_missing_required_fields(self) -> None:
         """Missing required fields should raise ValidationError."""
         with pytest.raises(ValidationError):
             Finding()  # type: ignore[call-arg]
 
     @pytest.mark.parametrize("category", ["bug", "style", "security", "suggestion"])
-    def test_all_valid_categories(self, category: str):
+    def test_all_valid_categories(self, category: str) -> None:
         """All valid category values should be accepted."""
         finding = Finding(
             file_path="app.py",
@@ -118,7 +118,7 @@ class TestFindingSchema:
         assert finding.category == category
 
     @pytest.mark.parametrize("severity", ["blocking", "warning", "nit"])
-    def test_all_valid_severities(self, severity: str):
+    def test_all_valid_severities(self, severity: str) -> None:
         """All valid severity values should be accepted."""
         finding = Finding(
             file_path="app.py",
@@ -133,12 +133,12 @@ class TestFindingSchema:
 class TestReviewOutputSchema:
     """Tests for the ReviewOutput Pydantic model."""
 
-    def test_empty_findings(self):
+    def test_empty_findings(self) -> None:
         """ReviewOutput with no findings should be valid."""
         output = ReviewOutput(findings=[])
         assert output.findings == []
 
-    def test_multiple_findings(self):
+    def test_multiple_findings(self) -> None:
         """ReviewOutput should accept multiple findings."""
         output = ReviewOutput(
             findings=[
@@ -160,7 +160,7 @@ class TestReviewOutputSchema:
         )
         assert len(output.findings) == 2
 
-    def test_invalid_finding_in_list_rejected(self):
+    def test_invalid_finding_in_list_rejected(self) -> None:
         """An invalid finding inside the list should raise ValidationError."""
         with pytest.raises(ValidationError):
             ReviewOutput(
@@ -179,7 +179,7 @@ class TestReviewOutputSchema:
 class TestJSONParsing:
     """Tests for JSON output parsing and recovery."""
 
-    def test_parse_valid_json(self):
+    def test_parse_valid_json(self) -> None:
         """A valid JSON response should parse correctly."""
         import json as _json
 
@@ -203,7 +203,7 @@ class TestJSONParsing:
         assert output.findings[0].file_path == "app.py"
         assert output.findings[0].severity == "blocking"
 
-    def test_parse_codeblock_json(self):
+    def test_parse_codeblock_json(self) -> None:
         """JSON wrapped in markdown code blocks should be extractable."""
         raw = """```json
 {
@@ -230,7 +230,7 @@ class TestJSONParsing:
         assert len(output.findings) == 1
         assert output.findings[0].category == "bug"
 
-    def test_parse_codeblock_no_language(self):
+    def test_parse_codeblock_no_language(self) -> None:
         """JSON wrapped in plain ``` blocks should also work."""
         raw = """```
 {"findings": []}
@@ -241,7 +241,7 @@ class TestJSONParsing:
         output = ReviewOutput(**data)
         assert output.findings == []
 
-    def test_malformed_json_rejected(self):
+    def test_malformed_json_rejected(self) -> None:
         """Completely malformed JSON should fail parsing."""
         raw = "This is not JSON at all {{{"
         import json
@@ -249,7 +249,7 @@ class TestJSONParsing:
         with pytest.raises(json.JSONDecodeError):
             json.loads(raw)
 
-    def test_partial_malformed_finding(self):
+    def test_partial_malformed_finding(self) -> None:
         """A finding with missing required fields should be rejected by Pydantic."""
         data = {"findings": [{"file_path": "app.py"}]}  # missing many fields
         with pytest.raises(ValidationError):
@@ -259,29 +259,29 @@ class TestJSONParsing:
 class TestSystemPrompt:
     """Tests for the system prompt."""
 
-    def test_system_prompt_exists(self):
+    def test_system_prompt_exists(self) -> None:
         """SYSTEM_PROMPT should be a non-empty string."""
         assert SYSTEM_PROMPT
         assert len(SYSTEM_PROMPT) > 100
 
-    def test_system_prompt_contains_key_instructions(self):
+    def test_system_prompt_contains_key_instructions(self) -> None:
         """The prompt should contain critical behavioral instructions."""
         assert "senior engineer" in SYSTEM_PROMPT.lower()
         assert "never restate" in SYSTEM_PROMPT.lower()
         assert "omit a finding" in SYSTEM_PROMPT.lower()
         assert "false positive" in SYSTEM_PROMPT.lower()
 
-    def test_prompt_includes_categories(self):
+    def test_prompt_includes_categories(self) -> None:
         """All review categories should be documented in the prompt."""
         for cat in ["bug", "style", "security", "suggestion"]:
             assert cat in SYSTEM_PROMPT
 
-    def test_prompt_includes_severities(self):
+    def test_prompt_includes_severities(self) -> None:
         """All severity levels should be documented in the prompt."""
         for sev in ["blocking", "warning", "nit"]:
             assert sev in SYSTEM_PROMPT
 
-    def test_system_prompt_mentions_json_output(self):
+    def test_system_prompt_mentions_json_output(self) -> None:
         """The prompt should instruct JSON output format."""
         assert "JSON" in SYSTEM_PROMPT
 
@@ -289,20 +289,20 @@ class TestSystemPrompt:
 class TestFewShotExamples:
     """Tests for few-shot examples."""
 
-    def test_examples_return_list(self):
+    def test_examples_return_list(self) -> None:
         """get_few_shot_examples() should return a list."""
         examples = get_few_shot_examples()
         assert isinstance(examples, list)
         assert len(examples) > 0
 
-    def test_examples_have_correct_structure(self):
+    def test_examples_have_correct_structure(self) -> None:
         """Each example should have 'role' and 'content' keys."""
         for example in get_few_shot_examples():
             assert "role" in example
             assert "content" in example
             assert example["role"] in ("user", "assistant")
 
-    def test_at_least_one_good_example(self):
+    def test_at_least_one_good_example(self) -> None:
         """There should be at least one example with findings."""
         examples = get_few_shot_examples()
         has_findings = False
@@ -312,7 +312,7 @@ class TestFewShotExamples:
                 break
         assert has_findings, "No assistant example contains findings"
 
-    def test_at_least_one_no_findings_example(self):
+    def test_at_least_one_no_findings_example(self) -> None:
         """There should be an example showing empty findings (to discourage noise)."""
         examples = get_few_shot_examples()
         has_empty = False

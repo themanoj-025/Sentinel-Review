@@ -37,23 +37,23 @@ class Repo(models.Model):
             models.Index(fields=["full_name"]),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.full_name
 
     @property
-    def enabled_categories(self):
+    def enabled_categories(self) -> list[str]:
         return self.config.get("enabled_categories", ["bug", "style", "security", "suggestion"])
 
     @enabled_categories.setter
-    def enabled_categories(self, value):
+    def enabled_categories(self, value: list[str]) -> None:
         cfg = dict(self.config or {})
         cfg["enabled_categories"] = value
         self.config = cfg
 
     @property
-    def private_review_allowed(self):
+    def private_review_allowed(self) -> bool:
         return self.config.get("private_repo_opt_in", False)
 
     @property
-    def max_comments(self):
+    def max_comments(self) -> int:
         return self.config.get("max_comments", 25)

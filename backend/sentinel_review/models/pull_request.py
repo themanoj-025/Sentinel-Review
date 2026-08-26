@@ -36,5 +36,5 @@ class PullRequest(models.Model):
             models.Index(fields=["repo", "status"]),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"#{self.github_pr_number} on {self.repo.full_name}"

@@ -56,30 +56,30 @@ def _make_sample_result(findings_count: int = 2) -> LLMResult:
 class TestKeyGeneration:
     """Key generation from diff + context."""
 
-    def test_same_diff_same_key(self):
+    def test_same_diff_same_key(self) -> None:
         """Same diff should produce the same cache key."""
         key1 = _make_key(SAMPLE_DIFF)
         key2 = _make_key(SAMPLE_DIFF)
         assert key1 == key2
 
-    def test_different_diff_different_key(self):
+    def test_different_diff_different_key(self) -> None:
         """Different diffs should produce different keys."""
         key1 = _make_key(SAMPLE_DIFF)
         key2 = _make_key(SAMPLE_DIFF + "extra line")
         assert key1 != key2
 
-    def test_context_affects_key(self):
+    def test_context_affects_key(self) -> None:
         """Different repo contexts should produce different keys for the same diff."""
         key1 = _make_key(SAMPLE_DIFF, "")
         key2 = _make_key(SAMPLE_DIFF, "Default branch: develop")
         assert key1 != key2
 
-    def test_key_format(self):
+    def test_key_format(self) -> None:
         """Cache key should start with the configured prefix."""
         key = _make_key(SAMPLE_DIFF)
         assert key.startswith("llm_cache:")
 
-    def test_empty_diff_key(self):
+    def test_empty_diff_key(self) -> None:
         """Empty diff should still produce a valid key."""
         key = _make_key("")
         assert key.startswith("llm_cache:")
@@ -89,7 +89,7 @@ class TestKeyGeneration:
 class TestSerialization:
     """Serialization round-trip for LLMResult."""
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """A serialized LLMResult should deserialize to an equal object."""
         original = _make_sample_result()
         serialized = _serialize(original)
@@ -106,7 +106,7 @@ class TestSerialization:
         assert deserialized.model == original.model
         assert deserialized.validation_success == original.validation_success
 
-    def test_empty_findings(self):
+    def test_empty_findings(self) -> None:
         """LLMResult with no findings should serialize/deserialize correctly."""
         result = LLMResult(findings=[], total_tokens=50, latency_ms=100)
         serialized = _serialize(result)
@@ -117,11 +117,11 @@ class TestSerialization:
         assert deserialized.total_tokens == 50
         assert deserialized.validation_success is True
 
-    def test_invalid_json_returns_none(self):
+    def test_invalid_json_returns_none(self) -> None:
         """Deserializing invalid JSON should return None."""
         assert _deserialize("not valid json") is None
 
-    def test_missing_fields_uses_defaults(self):
+    def test_missing_fields_uses_defaults(self) -> None:
         """Deserializing JSON with missing top-level fields uses defaults (defensive)."""
         result = _deserialize('{"not": "findings"}')
         assert result is not None
@@ -129,7 +129,7 @@ class TestSerialization:
         assert result.total_tokens == 0
         assert result.provider == ""
 
-    def test_corrupted_finding_returns_none(self):
+    def test_corrupted_finding_returns_none(self) -> None:
         """Deserializing JSON with a corrupted finding entry should return None."""
         result = _deserialize('{"findings": [{"file_path": "x"}]}')
         # Missing required fields like category, severity trigger Finding constructor error
@@ -139,11 +139,11 @@ class TestSerialization:
 class TestInMemoryCache:
     """In-memory cache backend behavior."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         _in_memory_store.clear()
         _in_memory_expiry.clear()
 
-    def test_set_and_get(self):
+    def test_set_and_get(self) -> None:
         """Setting a value and getting it back should work."""
         result = _make_sample_result()
         cache_set(SAMPLE_DIFF, result)
@@ -153,12 +153,12 @@ class TestInMemoryCache:
         assert cached.total_tokens == 500
         assert cached.validation_success is True
 
-    def test_miss_returns_none(self):
+    def test_miss_returns_none(self) -> None:
         """Getting a value that was never set should return None."""
         result = cache_get("nonexistent diff")
         assert result is None
 
-    def test_context_aware(self):
+    def test_context_aware(self) -> None:
         """Cache should be context-aware — different context = different cache entry."""
         result = _make_sample_result()
         cache_set(SAMPLE_DIFF, result, repo_context=SAMPLE_CONTEXT)
@@ -170,7 +170,7 @@ class TestInMemoryCache:
         hit = cache_get(SAMPLE_DIFF, repo_context=SAMPLE_CONTEXT)
         assert hit is not None
 
-    def test_cache_hit_then_miss_after_clear(self):
+    def test_cache_hit_then_miss_after_clear(self) -> None:
         """Clearing a specific entry should cause a miss."""
         result = _make_sample_result()
         cache_set(SAMPLE_DIFF, result)
@@ -179,7 +179,7 @@ class TestInMemoryCache:
         cache_clear(SAMPLE_DIFF)
         assert cache_get(SAMPLE_DIFF) is None
 
-    def test_clear_all(self):
+    def test_clear_all(self) -> None:
         """Clearing all entries should cause a miss for all."""
         cache_set("diff1", _make_sample_result())
         cache_set("diff2", _make_sample_result())
@@ -188,7 +188,7 @@ class TestInMemoryCache:
         assert cache_get("diff1") is None
         assert cache_get("diff2") is None
 
-    def test_ttl_expiry(self):
+    def test_ttl_expiry(self) -> None:
         """Entries should expire after their TTL."""
         result = _make_sample_result()
         cache_set(SAMPLE_DIFF, result, ttl=1)
@@ -197,7 +197,7 @@ class TestInMemoryCache:
         time.sleep(1.1)
         assert cache_get(SAMPLE_DIFF) is None
 
-    def test_key_different_content(self):
+    def test_key_different_content(self) -> None:
         """Different diffs should not collide in the cache."""
         result1 = _make_sample_result(findings_count=1)
         result2 = _make_sample_result(findings_count=3)
@@ -222,11 +222,11 @@ class TestCacheIntegration:
     tested via the E2E tests.
     """
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         _in_memory_store.clear()
         _in_memory_expiry.clear()
 
-    def test_cache_round_trip_via_functions(self):
+    def test_cache_round_trip_via_functions(self) -> None:
         """Full round trip through the public cache API."""
         result = _make_sample_result()
         cache_set(SAMPLE_DIFF, result)
@@ -240,7 +240,7 @@ class TestCacheIntegration:
         assert cached.findings[0].comment == result.findings[0].comment
         assert cached.findings[0].suggested_fix == result.findings[0].suggested_fix
 
-    def test_cache_idempotent_set(self):
+    def test_cache_idempotent_set(self) -> None:
         """Setting the same diff twice should overwrite the cache entry."""
         result1 = _make_sample_result(findings_count=1)
         result2 = _make_sample_result(findings_count=5)

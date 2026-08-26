@@ -40,7 +40,7 @@ class RepoViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ["full_name"]
 
     @action(detail=True, methods=["patch"])
-    def config(self, request, pk=None):
+    def config(self, request, pk=None) -> Response:
         repo = self.get_object()
         serializer = RepoConfigSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -124,7 +124,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter]
     ordering = ["-created_at"]
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer) -> None:
         reactor_login = self.request.data.get("reactor_login", "")
         if not reactor_login and self.request.user.is_authenticated:
             reactor_login = self.request.user.username
@@ -134,7 +134,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 class StatsViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def list(self, request):
+    def list(self, request) -> Response:
         repo_full_name = request.query_params.get("repo", None)
         data = StatsService.get_usefulness_rate(repo_full_name)
         return Response(data)

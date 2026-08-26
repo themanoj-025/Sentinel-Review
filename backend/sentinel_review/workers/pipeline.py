@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 # Lazy-imported, cached singleton for notification service
 @lru_cache(maxsize=1)
-def _get_notification_service():
+def _get_notification_service() -> Any:
     from sentinel_review.services.notification_service import NotificationService
 
     return NotificationService()

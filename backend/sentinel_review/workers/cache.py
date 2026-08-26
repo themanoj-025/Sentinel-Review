@@ -85,7 +85,7 @@ def _deserialize(raw: str) -> LLMResult | None:
 # Redis backend
 
 
-def _get_redis_client():
+def _get_redis_client() -> Any:
     """Get (or create) a shared Redis client from the Celery broker URL.
 
     Uses a lazy-initialized singleton to avoid per-call connection overhead.

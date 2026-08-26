@@ -8,7 +8,7 @@ from sentinel_review.workers.feature_flags import FeatureFlags, FeatureFlagServi
 class TestFeatureFlags:
     """Tests for the FeatureFlags typed container."""
 
-    def test_defaults_when_config_empty(self):
+    def test_defaults_when_config_empty(self) -> None:
         """All flags should have safe defaults when config is None or empty."""
         flags = FeatureFlags({})
         assert flags.disable_style_nits is False
@@ -17,12 +17,12 @@ class TestFeatureFlags:
         assert flags.disable_semgrep is False
         assert flags.max_comments == 25
 
-    def test_defaults_when_config_none(self):
+    def test_defaults_when_config_none(self) -> None:
         flags = FeatureFlags(None)
         assert flags.disable_style_nits is False
         assert flags.security_only_review is False
 
-    def test_disable_style_nits_removes_style_from_categories(self):
+    def test_disable_style_nits_removes_style_from_categories(self) -> None:
         flags = FeatureFlags({"disable_style_nits": True})
         categories = flags.enabled_categories
         assert "style" not in categories
@@ -30,24 +30,24 @@ class TestFeatureFlags:
         assert "security" in categories
         assert "suggestion" in categories
 
-    def test_security_only_review_only_has_security(self):
+    def test_security_only_review_only_has_security(self) -> None:
         flags = FeatureFlags({"security_only_review": True})
         assert flags.enabled_categories == ["security"]
 
-    def test_security_only_review_overrides_disable_style_nits(self):
+    def test_security_only_review_overrides_disable_style_nits(self) -> None:
         """security_only_review is stricter and overrides disable_style_nits."""
         flags = FeatureFlags({"security_only_review": True, "disable_style_nits": True})
         assert flags.enabled_categories == ["security"]
 
-    def test_max_comments_per_file_parsed_from_config(self):
+    def test_max_comments_per_file_parsed_from_config(self) -> None:
         flags = FeatureFlags({"max_comments_per_file": "5"})
         assert flags.max_comments_per_file == 5
 
-    def test_disable_semgrep_flag(self):
+    def test_disable_semgrep_flag(self) -> None:
         flags = FeatureFlags({"disable_semgrep": True})
         assert flags.disable_semgrep is True
 
-    def test_max_comments_parsed(self):
+    def test_max_comments_parsed(self) -> None:
         flags = FeatureFlags({"max_comments": 50})
         assert flags.max_comments == 50
 
@@ -55,16 +55,16 @@ class TestFeatureFlags:
 class TestFeatureFlagService:
     """Tests for the FeatureFlagService static methods."""
 
-    def test_from_repo_config_none(self):
+    def test_from_repo_config_none(self) -> None:
         flags = FeatureFlagService.from_repo_config(None)
         assert flags.disable_style_nits is False
         assert flags.max_comments == 25
 
-    def test_from_repo_config_empty_dict(self):
+    def test_from_repo_config_empty_dict(self) -> None:
         flags = FeatureFlagService.from_repo_config({})
         assert flags.disable_style_nits is False
 
-    def test_from_repo_config_with_flags(self):
+    def test_from_repo_config_with_flags(self) -> None:
         flags = FeatureFlagService.from_repo_config(
             {"disable_style_nits": True, "max_comments_per_file": 3}
         )
@@ -129,7 +129,7 @@ class TestFilterFindings:
 
     # disable_style_nits
 
-    def test_disable_style_nits_filters_style_findings(self):
+    def test_disable_style_nits_filters_style_findings(self) -> None:
         """Setting disable_style_nits should remove style-category findings."""
         flags = FeatureFlags({"disable_style_nits": True})
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
@@ -137,7 +137,7 @@ class TestFilterFindings:
         assert "style" not in categories
         assert len(result) == 5  # 7 - 2 style = 5
 
-    def test_disable_style_nits_false_keeps_style(self):
+    def test_disable_style_nits_false_keeps_style(self) -> None:
         """When disable_style_nits is False, style findings should remain."""
         flags = FeatureFlags({"disable_style_nits": False})
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
@@ -147,7 +147,7 @@ class TestFilterFindings:
 
     # security_only_review
 
-    def test_security_only_review_keeps_only_security(self):
+    def test_security_only_review_keeps_only_security(self) -> None:
         """security_only_review should only keep security-category findings."""
         flags = FeatureFlags({"security_only_review": True})
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
@@ -157,7 +157,7 @@ class TestFilterFindings:
 
     # max_comments_per_file
 
-    def test_max_comments_per_file_limits_per_file(self):
+    def test_max_comments_per_file_limits_per_file(self) -> None:
         """Setting max_comments_per_file should cap comments per file path."""
         flags = FeatureFlags({"max_comments_per_file": 2})
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
@@ -172,13 +172,13 @@ class TestFilterFindings:
         assert config_count == 1, f"Expected 1 for config.py, got {config_count}"
         assert len(result) == 5  # 2 + 2 + 1 = 5
 
-    def test_max_comments_per_file_zero_is_unlimited(self):
+    def test_max_comments_per_file_zero_is_unlimited(self) -> None:
         """max_comments_per_file=0 should be unlimited."""
         flags = FeatureFlags({"max_comments_per_file": 0})
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
         assert len(result) == len(self.SAMPLE_FINDINGS)
 
-    def test_max_comments_per_file_negative_is_unlimited(self):
+    def test_max_comments_per_file_negative_is_unlimited(self) -> None:
         """max_comments_per_file negative should be unlimited."""
         flags = FeatureFlags({"max_comments_per_file": -1})
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
@@ -186,13 +186,13 @@ class TestFilterFindings:
 
     # max_comments (total limit)
 
-    def test_max_comments_total_limit(self):
+    def test_max_comments_total_limit(self) -> None:
         """max_comments should cap total findings across all files."""
         flags = FeatureFlags({"max_comments": 3})
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
         assert len(result) == 3
 
-    def test_max_comments_zero_is_unlimited(self):
+    def test_max_comments_zero_is_unlimited(self) -> None:
         """max_comments=0 should be unlimited."""
         flags = FeatureFlags({"max_comments": 0})
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
@@ -200,7 +200,7 @@ class TestFilterFindings:
 
     # Combination scenarios
 
-    def test_disable_style_nits_and_max_comments_per_file(self):
+    def test_disable_style_nits_and_max_comments_per_file(self) -> None:
         """Both flags should apply together — style first, then per-file limit."""
         flags = FeatureFlags({"disable_style_nits": True, "max_comments_per_file": 2})
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
@@ -211,7 +211,7 @@ class TestFilterFindings:
         assert len(result) == 5
         assert "style" not in {f.get("category") for f in result}
 
-    def test_security_only_and_max_comments_per_file(self):
+    def test_security_only_and_max_comments_per_file(self) -> None:
         """security_only_review + per-file limit should compose correctly."""
         flags = FeatureFlags({"security_only_review": True, "max_comments_per_file": 1})
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
@@ -220,19 +220,19 @@ class TestFilterFindings:
         assert len(result) == 2
         assert all(f.get("category") == "security" for f in result)
 
-    def test_unset_flags_dont_crash(self):
+    def test_unset_flags_dont_crash(self) -> None:
         """When feature flags are not set in config, filtering should work fine."""
         flags = FeatureFlagService.from_repo_config({})
         result = FeatureFlagService.filter_findings(self.SAMPLE_FINDINGS, flags)
         assert len(result) == len(self.SAMPLE_FINDINGS)  # All pass through
 
-    def test_empty_findings_list(self):
+    def test_empty_findings_list(self) -> None:
         """An empty findings list should return empty."""
         flags = FeatureFlags({"disable_style_nits": True})
         result = FeatureFlagService.filter_findings([], flags)
         assert result == []
 
-    def test_findings_without_category_are_filtered_out(self):
+    def test_findings_without_category_are_filtered_out(self) -> None:
         """Findings missing a 'category' key should be filtered out (empty string not in defaults)."""
         flags = FeatureFlags({})
         weird_findings = [
@@ -242,7 +242,7 @@ class TestFilterFindings:
         # Empty string category is not in default categories, so it's filtered
         assert len(result) == 0
 
-    def test_security_only_filters_findings_without_category(self):
+    def test_security_only_filters_findings_without_category(self) -> None:
         """security_only_review should filter out findings without a category."""
         flags = FeatureFlags({"security_only_review": True})
         weird_findings = [
@@ -253,7 +253,7 @@ class TestFilterFindings:
         assert len(result) == 1
         assert result[0].get("file_path") == "bar.py"
 
-    def test_filter_findings_does_not_mutate_input(self):
+    def test_filter_findings_does_not_mutate_input(self) -> None:
         """filter_findings should return a new list, not mutate the input."""
         flags = FeatureFlags({"disable_style_nits": True})
         original_len = len(self.SAMPLE_FINDINGS)
@@ -261,7 +261,7 @@ class TestFilterFindings:
         assert len(self.SAMPLE_FINDINGS) == original_len  # Unchanged
         assert result is not self.SAMPLE_FINDINGS  # Different object
 
-    def test_multiple_files_with_max_comments_per_file(self):
+    def test_multiple_files_with_max_comments_per_file(self) -> None:
         """More complex scenario: many files each with multiple comments."""
         findings = [
             {"file_path": f"src/{chr(97 + i)}.py", "category": "bug", "comment": f"Bug {i}"}

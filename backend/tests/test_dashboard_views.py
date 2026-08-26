@@ -22,14 +22,14 @@ class TestDashboardHome:
     """dashboard_home — KPI cards, recent reviews, status distribution."""
 
     @pytest.mark.django_db
-    def test_returns_200(self):
+    def test_returns_200(self) -> None:
         factory = RequestFactory()
         request = factory.get("/")
         response = dashboard_home(request)
         assert response.status_code == 200
 
     @pytest.mark.django_db
-    def test_cache_control_header(self):
+    def test_cache_control_header(self) -> None:
         factory = RequestFactory()
         request = factory.get("/")
         response = dashboard_home(request)
@@ -38,7 +38,7 @@ class TestDashboardHome:
         assert "max-age=30" in response["Cache-Control"], "Expected max-age=30"
 
     @pytest.mark.django_db
-    def test_context_has_reviews(self):
+    def test_context_has_reviews(self) -> None:
         factory = RequestFactory()
         request = factory.get("/")
         response = dashboard_home(request)
@@ -49,28 +49,28 @@ class TestRepoList:
     """repo_list — repository listing with search and HTMX support."""
 
     @pytest.mark.django_db
-    def test_returns_200(self, seeded_db):
+    def test_returns_200(self, seeded_db) -> None:
         factory = RequestFactory()
         request = factory.get("/repos/")
         response = repo_list(request)
         assert response.status_code == 200
 
     @pytest.mark.django_db
-    def test_with_search_query(self, seeded_db):
+    def test_with_search_query(self, seeded_db) -> None:
         factory = RequestFactory()
         request = factory.get("/repos/?search=test")
         response = repo_list(request)
         assert response.status_code == 200
 
     @pytest.mark.django_db
-    def test_htmx_partial(self, seeded_db):
+    def test_htmx_partial(self, seeded_db) -> None:
         factory = RequestFactory()
         request = factory.get("/repos/", HTTP_HX_REQUEST="true")
         response = repo_list(request)
         assert response.status_code == 200
 
     @pytest.mark.django_db
-    def test_htmx_partial_with_search(self, seeded_db):
+    def test_htmx_partial_with_search(self, seeded_db) -> None:
         factory = RequestFactory()
         request = factory.get("/repos/?search=test", HTTP_HX_REQUEST="true")
         response = repo_list(request)
@@ -81,7 +81,7 @@ class TestRepoDetail:
     """repo_detail — repo config panel, PR list, recent reviews, stats."""
 
     @pytest.mark.django_db
-    def test_returns_200(self, seeded_db):
+    def test_returns_200(self, seeded_db) -> None:
         repo, *_ = seeded_db
         factory = RequestFactory()
         request = factory.get(f"/repos/{repo.id}/")
@@ -89,7 +89,7 @@ class TestRepoDetail:
         assert response.status_code == 200
 
     @pytest.mark.django_db
-    def test_htmx_post_updates_config(self, seeded_db):
+    def test_htmx_post_updates_config(self, seeded_db) -> None:
         repo, *_ = seeded_db
         factory = RequestFactory()
         request = factory.post(
@@ -105,7 +105,7 @@ class TestRepoDetail:
         assert "security" in repo.config["enabled_categories"]
 
     @pytest.mark.django_db
-    def test_htmx_post_default_categories(self, seeded_db):
+    def test_htmx_post_default_categories(self, seeded_db) -> None:
         repo, *_ = seeded_db
         factory = RequestFactory()
         request = factory.post(
@@ -120,7 +120,7 @@ class TestRepoDetail:
         assert repo.config["max_comments"] == 5
 
     @pytest.mark.django_db
-    def test_htmx_post_int_max_comments(self, seeded_db):
+    def test_htmx_post_int_max_comments(self, seeded_db) -> None:
         repo, *_ = seeded_db
         factory = RequestFactory()
         request = factory.post(
@@ -134,7 +134,7 @@ class TestRepoDetail:
         assert repo.config["max_comments"] == 15
 
     @pytest.mark.django_db
-    def test_htmx_post_private_opt_in_false(self, seeded_db):
+    def test_htmx_post_private_opt_in_false(self, seeded_db) -> None:
         repo, *_ = seeded_db
         factory = RequestFactory()
         request = factory.post(
@@ -152,7 +152,7 @@ class TestReviewDetail:
     """review_detail — review comments with upvote/downvote counts."""
 
     @pytest.mark.django_db
-    def test_returns_200(self, seeded_db):
+    def test_returns_200(self, seeded_db) -> None:
         *_, review = seeded_db
         factory = RequestFactory()
         request = factory.get(f"/reviews/{review.id}/")
@@ -160,7 +160,7 @@ class TestReviewDetail:
         assert response.status_code == 200
 
     @pytest.mark.django_db
-    def test_returns_404_for_missing(self):
+    def test_returns_404_for_missing(self) -> None:
         factory = RequestFactory()
         request = factory.get("/reviews/99999/")
         with pytest.raises(Http404):
@@ -171,14 +171,14 @@ class TestStatsOverview:
     """stats_overview — full analytics page with Chart.js data."""
 
     @pytest.mark.django_db
-    def test_returns_200(self, seeded_db):
+    def test_returns_200(self, seeded_db) -> None:
         factory = RequestFactory()
         request = factory.get("/stats/")
         response = stats_overview(request)
         assert response.status_code == 200
 
     @pytest.mark.django_db
-    def test_cache_control_nocache(self, seeded_db):
+    def test_cache_control_nocache(self, seeded_db) -> None:
         factory = RequestFactory()
         request = factory.get("/stats/")
         response = stats_overview(request)
@@ -187,7 +187,7 @@ class TestStatsOverview:
         assert "no-cache" in response["Cache-Control"], "Expected no-cache on stats page"
 
     @pytest.mark.django_db
-    def test_context_has_json_data(self, seeded_db):
+    def test_context_has_json_data(self, seeded_db) -> None:
         factory = RequestFactory()
         request = factory.get("/stats/")
         response = stats_overview(request)

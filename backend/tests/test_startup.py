@@ -20,7 +20,7 @@ class TestAPIAuth:
     """Tests that API endpoints have proper authentication guards."""
 
     @pytest.mark.django_db
-    def test_feedback_list_requires_auth(self):
+    def test_feedback_list_requires_auth(self) -> None:
         """GET /api/feedback/ without auth should return 403."""
         client = Client()
         url = reverse("feedback-list")
@@ -34,7 +34,7 @@ class TestAPIAuth:
         ), f"Expected 401/403 for unauthenticated feedback list, got {response.status_code}"
 
     @pytest.mark.django_db
-    def test_feedback_create_requires_auth(self):
+    def test_feedback_create_requires_auth(self) -> None:
         """POST /api/feedback/ without auth should return 403."""
         client = Client()
         url = reverse("feedback-list")
@@ -51,7 +51,7 @@ class TestAPIAuth:
         ), f"Expected 401/403 for unauthenticated feedback create, got {response.status_code}"
 
     @pytest.mark.django_db
-    def test_stats_list_public_read(self):
+    def test_stats_list_public_read(self) -> None:
         """GET /api/stats/ should be readable without auth (IsAuthenticatedOrReadOnly)."""
         client = Client()
         url = reverse("stats-list")
@@ -74,7 +74,7 @@ class TestAPIAuth:
             },
         }
     )
-    def test_rate_limiting_returns_429(self):
+    def test_rate_limiting_returns_429(self) -> None:
         """Sending requests exceeding the throttle rate should return 429."""
         from rest_framework.throttling import AnonRateThrottle
 

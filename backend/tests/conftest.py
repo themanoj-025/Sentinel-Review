@@ -134,37 +134,37 @@ def webhook_payload() -> dict[str, Any]:
 # Database Fixtures
 
 
-def _get_installation_model():
+def _get_installation_model() -> None:
     from sentinel_review.models.installation import Installation
 
     return Installation
 
 
-def _get_repo_model():
+def _get_repo_model() -> None:
     from sentinel_review.models.repo import Repo
 
     return Repo
 
 
-def _get_pull_request_model():
+def _get_pull_request_model() -> None:
     from sentinel_review.models.pull_request import PullRequest
 
     return PullRequest
 
 
-def _get_review_model():
+def _get_review_model() -> None:
     from sentinel_review.models.review import Review
 
     return Review
 
 
-def _get_comment_model():
+def _get_comment_model() -> None:
     from sentinel_review.models.comment import Comment
 
     return Comment
 
 
-def _get_feedback_model():
+def _get_feedback_model() -> None:
     from sentinel_review.models.feedback import Feedback
 
     return Feedback

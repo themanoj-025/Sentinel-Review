@@ -186,7 +186,7 @@ class AnthropicProvider(LLMProvider):
             llm_errors.labels(provider=self.provider_name).inc()
             return LLMResult(error_message=str(e), latency_ms=latency_ms, validation_success=False)
 
-    def _do_anthropic_call(self, system_content, user_assistant_messages, start_time):
+    def _do_anthropic_call(self, system_content, user_assistant_messages, start_time) -> LLMResult:
         """Actual Anthropic API call — separated for circuit breaker wrapping."""
         import anthropic
 
@@ -276,7 +276,7 @@ class OpenAIProvider(LLMProvider):
             llm_errors.labels(provider=self.provider_name).inc()
             return LLMResult(error_message=str(e), latency_ms=latency_ms, validation_success=False)
 
-    def _do_openai_call(self, openai_messages, start_time):
+    def _do_openai_call(self, openai_messages, start_time) -> LLMResult:
         """Actual OpenAI API call — separated for circuit breaker wrapping."""
         from openai import OpenAI
 
