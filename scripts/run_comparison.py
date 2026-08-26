@@ -53,7 +53,7 @@ if str(_SELF_DIR) not in sys.path:
 # These functions are shared with run_evaluation.py to avoid code duplication.
 # They must be kept in sync — if you change mock rules or matching logic,
 # update both files or refactor into a shared module.
-from run_evaluation import (  # type: ignore[import-untyped]  # noqa: E402
+from run_evaluation import (  # type: ignore[import-untyped]
     Finding,
     _compute_metrics,
     _live_review_diff,
