@@ -77,7 +77,7 @@ class CircuitBreaker:
             self._on_failure(e)
             raise
 
-    def _on_success(self):
+    def _on_success(self) -> None:
         """Handle a successful call — reset state."""
         if self.state == CircuitState.HALF_OPEN:
             logger.info("Circuit %s: HALF_OPEN → CLOSED (recovery confirmed)", self.name)
@@ -107,13 +107,13 @@ class CircuitBreaker:
                 exception,
             )
 
-    def reset(self):
+    def reset(self) -> None:
         """Manually reset the circuit breaker to closed state."""
         self.state = CircuitState.CLOSED
         self.failure_count = 0
         logger.info("Circuit %s: manually reset to CLOSED", self.name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<CircuitBreaker %s: state=%s failures=%d/%d>" % (
             self.name,
             self.state.value,

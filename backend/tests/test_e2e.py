@@ -165,7 +165,7 @@ class TestE2EPipeline:
 
     @E2E_SETTINGS
     @pytest.mark.django_db(transaction=True)
-    def test_full_pipeline_creates_review_and_comments(self, client, e2e_mocks, db):
+    def test_full_pipeline_creates_review_and_comments(self, client, e2e_mocks, db) -> None:
         """Full pipeline: valid webhook → 202 → Review+Comment rows created."""
         payload = _build_webhook_payload()
         payload_bytes = json.dumps(payload).encode("utf-8")
@@ -247,7 +247,7 @@ class TestE2EPipeline:
 
     @E2E_SETTINGS
     @pytest.mark.django_db(transaction=True)
-    def test_webhook_ignores_non_pr_events(self, client, db):
+    def test_webhook_ignores_non_pr_events(self, client, db) -> None:
         """Non-PR events should return 200 without creating records."""
         payload = json.dumps({"action": "created"}).encode("utf-8")
         sig = _sign_payload(payload)
@@ -270,7 +270,7 @@ class TestE2EPipeline:
     @pytest.mark.django_db(transaction=True)
     def test_duplicate_webhook_delivery_does_not_create_duplicate_review(
         self, client, e2e_mocks, db
-    ):
+    ) -> None:
         """Same delivery_id sent twice should not create a second Review."""
         payload = _build_webhook_payload()
         payload_bytes = json.dumps(payload).encode("utf-8")
@@ -309,7 +309,7 @@ class TestE2EPipeline:
 
     @E2E_SETTINGS
     @pytest.mark.django_db(transaction=True)
-    def test_bad_signature_rejected(self, client, db):
+    def test_bad_signature_rejected(self, client, db) -> None:
         """Webhook with invalid signature should be rejected."""
         payload = json.dumps(_build_webhook_payload()).encode("utf-8")
 
@@ -327,7 +327,7 @@ class TestE2EPipeline:
 
     @E2E_SETTINGS
     @pytest.mark.django_db(transaction=True)
-    def test_github_failure_marks_review_as_failed(self, client, e2e_mocks, db):
+    def test_github_failure_marks_review_as_failed(self, client, e2e_mocks, db) -> None:
         """When GitHub API fails, the review should be marked FAILED."""
         mock_client = e2e_mocks["mock_client"]
         mock_client.get_diff.side_effect = ConnectionError("GitHub API timeout")
@@ -359,7 +359,7 @@ class TestE2EPipeline:
 
     @E2E_SETTINGS
     @pytest.mark.django_db(transaction=True)
-    def test_empty_diff_creates_review_with_no_comments(self, client, e2e_mocks, db):
+    def test_empty_diff_creates_review_with_no_comments(self, client, e2e_mocks, db) -> None:
         """Empty diff should still create a Review but with 0 Comments."""
         mock_client = e2e_mocks["mock_client"]
         mock_client.get_diff.return_value = ""

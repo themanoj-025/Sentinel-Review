@@ -28,7 +28,7 @@ from sentinel_review.workers.llm import (
 class TestLLMResult:
     """Tests for the LLMResult dataclass."""
 
-    def test_default_values(self):
+    def test_default_values(self) -> None:
         """LLMResult should have sensible defaults."""
         result = LLMResult()
         assert result.findings == []
@@ -42,13 +42,13 @@ class TestLLMResult:
 class TestLLMProviderBase:
     """Tests for the base LLMProvider class."""
 
-    def test_abstract_method_raises(self):
+    def test_abstract_method_raises(self) -> None:
         """review_diff should raise NotImplementedError on the base class."""
         provider = LLMProvider()
         with pytest.raises(NotImplementedError):
             provider.review_diff(diff="test")
 
-    def test_build_prompt_without_context(self):
+    def test_build_prompt_without_context(self) -> None:
         """PromptBuilder should create a minimal prompt without context."""
         from sentinel_review.workers.prompt_builder import PromptBuilder
 
@@ -56,7 +56,7 @@ class TestLLMProviderBase:
         assert len(messages) >= 2  # system + at least one user message
         assert messages[0]["role"] == "system"
 
-    def test_build_prompt_with_repo_context(self):
+    def test_build_prompt_with_repo_context(self) -> None:
         """PromptBuilder should include repo context when provided."""
         from sentinel_review.workers.prompt_builder import PromptBuilder
 
@@ -68,7 +68,7 @@ class TestLLMProviderBase:
         assert "user" in roles
         assert "assistant" in roles
 
-    def test_build_prompt_with_file_contents(self):
+    def test_build_prompt_with_file_contents(self) -> None:
         """PromptBuilder should include full file contents when provided."""
         from sentinel_review.workers.prompt_builder import PromptBuilder
 
@@ -84,7 +84,7 @@ class TestLLMProviderBase:
         )
         assert contents_found
 
-    def test_validate_and_parse_valid_json(self):
+    def test_validate_and_parse_valid_json(self) -> None:
         """_validate_and_parse should accept valid ReviewOutput JSON."""
         raw = json.dumps(
             {
@@ -106,14 +106,14 @@ class TestLLMProviderBase:
         assert len(findings) == 1
         assert findings[0].file_path == "app.py"
 
-    def test_validate_and_parse_empty_findings(self):
+    def test_validate_and_parse_empty_findings(self) -> None:
         """An empty findings list should be valid."""
         raw = '{"findings": []}'
         findings, success, _error = LLMProvider._validate_and_parse(raw)
         assert success is True
         assert len(findings) == 0
 
-    def test_validate_and_parse_malformed_json(self):
+    def test_validate_and_parse_malformed_json(self) -> None:
         """Malformed JSON should fail validation."""
         raw = "This is not json"
         findings, success, error = LLMProvider._validate_and_parse(raw)
@@ -121,21 +121,21 @@ class TestLLMProviderBase:
         assert len(findings) == 0
         assert "Failed to parse JSON" in error
 
-    def test_validate_and_parse_invalid_schema(self):
+    def test_validate_and_parse_invalid_schema(self) -> None:
         """JSON that doesn't match ReviewOutput should fail."""
         raw = json.dumps({"wrong_key": "value"})
         _findings, success, error = LLMProvider._validate_and_parse(raw)
         assert success is False
         assert "Pydantic validation failed" in error
 
-    def test_validate_and_parse_codeblock(self):
+    def test_validate_and_parse_codeblock(self) -> None:
         """JSON wrapped in markdown code blocks should be extractable."""
         raw = f"```json\n{json.dumps({'findings': []})}\n```"
         findings, success, _error = LLMProvider._validate_and_parse(raw)
         assert success is True
         assert len(findings) == 0
 
-    def test_validate_and_parse_partial_data(self):
+    def test_validate_and_parse_partial_data(self) -> None:
         """Partially valid data (missing required fields) should fail."""
         raw = json.dumps({"findings": [{"file_path": "app.py"}]})
         _findings, success, _error = LLMProvider._validate_and_parse(raw)
@@ -145,13 +145,13 @@ class TestLLMProviderBase:
 class TestAnthropicProvider:
     """Tests for the Anthropic provider."""
 
-    def test_init_without_api_key(self):
+    def test_init_without_api_key(self) -> None:
         """Provider should initialize even without an API key."""
         provider = AnthropicProvider()
         assert provider.provider_name == "anthropic"
         assert provider.api_key is not None  # Set from env
 
-    def test_review_diff_without_key(self, monkeypatch):
+    def test_review_diff_without_key(self, monkeypatch) -> None:
         """Without an API key, review_diff should return an error result."""
         monkeypatch.setattr("django.conf.settings.ANTHROPIC_API_KEY", "")
         provider = AnthropicProvider()
@@ -165,12 +165,12 @@ class TestAnthropicProvider:
 class TestOpenAIProvider:
     """Tests for the OpenAI provider."""
 
-    def test_init_without_api_key(self):
+    def test_init_without_api_key(self) -> None:
         """Provider should initialize even without an API key."""
         provider = OpenAIProvider()
         assert provider.provider_name == "openai"
 
-    def test_review_diff_without_key(self, monkeypatch):
+    def test_review_diff_without_key(self, monkeypatch) -> None:
         """Without an API key, review_diff should return an error result."""
         monkeypatch.setattr("django.conf.settings.OPENAI_API_KEY", "")
         provider = OpenAIProvider()
@@ -183,18 +183,18 @@ class TestOpenAIProvider:
 class TestGetLLMProvider:
     """Tests for the get_llm_provider factory."""
 
-    def test_default_is_anthropic(self):
+    def test_default_is_anthropic(self) -> None:
         """Default provider should be Anthropic."""
         provider = get_llm_provider()
         assert isinstance(provider, AnthropicProvider)
 
-    def test_openai_provider(self, monkeypatch):
+    def test_openai_provider(self, monkeypatch) -> None:
         """Setting LLM_PROVIDER to 'openai' should return OpenAIProvider."""
         monkeypatch.setattr("django.conf.settings.LLM_PROVIDER", "openai")
         provider = get_llm_provider()
         assert isinstance(provider, OpenAIProvider)
 
-    def test_unknown_provider_defaults_to_anthropic(self, monkeypatch):
+    def test_unknown_provider_defaults_to_anthropic(self, monkeypatch) -> None:
         """An unknown provider name should default to Anthropic."""
         monkeypatch.setattr("django.conf.settings.LLM_PROVIDER", "unknown")
         provider = get_llm_provider()

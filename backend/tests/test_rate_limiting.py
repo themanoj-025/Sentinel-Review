@@ -24,7 +24,7 @@ class TestAnonRateLimiting:
         request.user = AnonymousUser()
         return request
 
-    def test_first_requests_within_limit_succeed(self):
+    def test_first_requests_within_limit_succeed(self) -> None:
         """The first 3 requests within the 3/minute limit should be allowed."""
         throttle = AnonRateThrottle()
         throttle.rate = "3/minute"
@@ -35,7 +35,7 @@ class TestAnonRateLimiting:
                 request, None
             ), f"Request {i + 1} should be allowed within 3/minute limit"
 
-    def test_request_beyond_limit_is_blocked(self):
+    def test_request_beyond_limit_is_blocked(self) -> None:
         """The 4th request after exhausting 3/minute limit should be blocked."""
         throttle = AnonRateThrottle()
         throttle.rate = "3/minute"
@@ -47,7 +47,7 @@ class TestAnonRateLimiting:
             request, None
         ), "4th request should be blocked by throttle"
 
-    def test_throttle_resets_after_duration(self):
+    def test_throttle_resets_after_duration(self) -> None:
         """After clearing the cache (simulating duration expiry), requests allowed again."""
         throttle = AnonRateThrottle()
         throttle.rate = "3/minute"
@@ -64,7 +64,7 @@ class TestAnonRateLimiting:
             request, None
         ), "After cache cleared (simulating duration expiry), throttle should allow requests"
 
-    def test_wait_time_returned_on_block(self):
+    def test_wait_time_returned_on_block(self) -> None:
         """When blocked, throttle.wait() should return a positive number."""
         throttle = AnonRateThrottle()
         throttle.rate = "3/minute"
@@ -77,7 +77,7 @@ class TestAnonRateLimiting:
         assert wait_time is not None, "Wait time should be returned when throttled"
         assert wait_time > 0, "Wait time should be positive when throttled"
 
-    def test_429_response_has_retry_after_header(self):
+    def test_429_response_has_retry_after_header(self) -> None:
         """When API returns 429, the Retry-After header should be present.
 
         Uses a minimal DRF APIView subclass with a throttle that has a

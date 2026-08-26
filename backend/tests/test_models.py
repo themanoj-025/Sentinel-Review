@@ -27,7 +27,7 @@ from sentinel_review.services.stats_service import StatsService
 class TestInstallationModel:
     """Tests for the Installation model."""
 
-    def test_create_installation(self, db):
+    def test_create_installation(self, db) -> None:
         """A basic Installation should be creatable."""
         inst = Installation.objects.create(
             github_installation_id=1001,
@@ -38,24 +38,24 @@ class TestInstallationModel:
         assert inst.account_login == "testowner"
         assert inst.created_at is not None
 
-    def test_unique_github_installation_id(self, db):
+    def test_unique_github_installation_id(self, db) -> None:
         """Duplicate github_installation_id should be rejected."""
         Installation.objects.create(github_installation_id=1001, account_login="owner1")
         with pytest.raises(IntegrityError):
             Installation.objects.create(github_installation_id=1001, account_login="owner2")
 
-    def test_default_account_type(self, db):
+    def test_default_account_type(self, db) -> None:
         """Default account_type should be 'User'."""
         inst = Installation.objects.create(github_installation_id=2001, account_login="user")
         assert inst.account_type == "User"
 
-    def test_str(self, db):
+    def test_str(self, db) -> None:
         """__str__ should show installation ID and login."""
         inst = Installation.objects.create(github_installation_id=3001, account_login="org")
         assert "3001" in str(inst)
         assert "org" in str(inst)
 
-    def test_timestamps_auto(self, db):
+    def test_timestamps_auto(self, db) -> None:
         """created_at and updated_at should be set automatically."""
         inst = Installation.objects.create(github_installation_id=4001, account_login="test")
         assert inst.created_at is not None
@@ -65,7 +65,7 @@ class TestInstallationModel:
 class TestRepoModel:
     """Tests for the Repo model."""
 
-    def test_create_repo(self, db_installation: Installation, db):
+    def test_create_repo(self, db_installation: Installation, db) -> None:
         """A basic Repo should be creatable."""
         repo = Repo.objects.create(
             installation=db_installation,
@@ -76,7 +76,7 @@ class TestRepoModel:
         assert repo.full_name == "testowner/testrepo"
         assert repo.is_private is False
 
-    def test_unique_repo_per_installation(self, db_installation: Installation, db):
+    def test_unique_repo_per_installation(self, db_installation: Installation, db) -> None:
         """Duplicate (installation, github_repo_id) should be rejected."""
         Repo.objects.create(
             installation=db_installation,
@@ -90,7 +90,7 @@ class TestRepoModel:
                 full_name="testowner/testrepo2",
             )
 
-    def test_same_repo_id_different_installation(self, db, db_installation):
+    def test_same_repo_id_different_installation(self, db, db_installation) -> None:
         """Different installations CAN have the same repo_id."""
         inst2 = Installation.objects.create(github_installation_id=2002, account_login="other")
         repo1 = Repo.objects.create(
@@ -99,7 +99,7 @@ class TestRepoModel:
         repo2 = Repo.objects.create(installation=inst2, github_repo_id=789, full_name="b/repo")
         assert repo1.id != repo2.id
 
-    def test_default_config(self, db_installation: Installation, db):
+    def test_default_config(self, db_installation: Installation, db) -> None:
         """Default config should be an empty dict."""
         repo = Repo.objects.create(
             installation=db_installation,
@@ -108,7 +108,7 @@ class TestRepoModel:
         )
         assert repo.config == {}
 
-    def test_enabled_categories_property_default(self, db_installation: Installation, db):
+    def test_enabled_categories_property_default(self, db_installation: Installation, db) -> None:
         """enabled_categories should return all categories by default."""
         repo = Repo.objects.create(
             installation=db_installation,
@@ -121,7 +121,7 @@ class TestRepoModel:
         assert "security" in cats
         assert "suggestion" in cats
 
-    def test_enabled_categories_property_custom(self, db_installation: Installation, db):
+    def test_enabled_categories_property_custom(self, db_installation: Installation, db) -> None:
         """enabled_categories should return configured categories."""
         repo = Repo.objects.create(
             installation=db_installation,
@@ -131,7 +131,7 @@ class TestRepoModel:
         )
         assert repo.enabled_categories == ["security", "bug"]
 
-    def test_private_review_allowed_default(self, db_installation: Installation, db):
+    def test_private_review_allowed_default(self, db_installation: Installation, db) -> None:
         """private_review_allowed should default to False."""
         repo = Repo.objects.create(
             installation=db_installation,
@@ -141,7 +141,7 @@ class TestRepoModel:
         )
         assert repo.private_review_allowed is False
 
-    def test_private_review_allowed_opted_in(self, db_installation: Installation, db):
+    def test_private_review_allowed_opted_in(self, db_installation: Installation, db) -> None:
         """private_review_allowed should be True when opted in."""
         repo = Repo.objects.create(
             installation=db_installation,
@@ -152,7 +152,7 @@ class TestRepoModel:
         )
         assert repo.private_review_allowed is True
 
-    def test_max_comments_default(self, db_installation: Installation, db):
+    def test_max_comments_default(self, db_installation: Installation, db) -> None:
         """max_comments should default to 25."""
         repo = Repo.objects.create(
             installation=db_installation,
@@ -161,7 +161,7 @@ class TestRepoModel:
         )
         assert repo.max_comments == 25
 
-    def test_str(self, db_installation: Installation, db):
+    def test_str(self, db_installation: Installation, db) -> None:
         """__str__ should return the full_name."""
         repo = Repo.objects.create(
             installation=db_installation,
@@ -174,7 +174,7 @@ class TestRepoModel:
 class TestPullRequestModel:
     """Tests for the PullRequest model."""
 
-    def test_create_pull_request(self, db_repo: Repo, db):
+    def test_create_pull_request(self, db_repo: Repo, db) -> None:
         """A basic PullRequest should be creatable."""
         pr = PullRequest.objects.create(
             repo=db_repo,
@@ -186,18 +186,18 @@ class TestPullRequestModel:
         assert pr.github_pr_number == 42
         assert pr.status == PullRequest.Status.OPEN
 
-    def test_unique_pr_per_repo(self, db_repo: Repo, db):
+    def test_unique_pr_per_repo(self, db_repo: Repo, db) -> None:
         """Duplicate (repo, github_pr_number) should be rejected."""
         PullRequest.objects.create(repo=db_repo, github_pr_number=42)
         with pytest.raises(IntegrityError):
             PullRequest.objects.create(repo=db_repo, github_pr_number=42)
 
-    def test_default_status(self, db_repo: Repo, db):
+    def test_default_status(self, db_repo: Repo, db) -> None:
         """Default status should be 'open'."""
         pr = PullRequest.objects.create(repo=db_repo, github_pr_number=100)
         assert pr.status == PullRequest.Status.OPEN
 
-    def test_str(self, db_repo: Repo, db):
+    def test_str(self, db_repo: Repo, db) -> None:
         """__str__ should show PR number and repo."""
         pr = PullRequest.objects.create(repo=db_repo, github_pr_number=42)
         assert "#42" in str(pr)
@@ -207,7 +207,7 @@ class TestPullRequestModel:
 class TestReviewModel:
     """Tests for the Review model."""
 
-    def test_create_review(self, db_pull_request: PullRequest, db):
+    def test_create_review(self, db_pull_request: PullRequest, db) -> None:
         """A basic Review should be creatable."""
         review = Review.objects.create(
             pull_request=db_pull_request,
@@ -217,18 +217,18 @@ class TestReviewModel:
         assert review.status == Review.Status.QUEUED  # default
         assert review.triggered_by == Review.Trigger.OPENED
 
-    def test_default_status(self, db_pull_request: PullRequest, db):
+    def test_default_status(self, db_pull_request: PullRequest, db) -> None:
         """Default status should be 'queued'."""
         review = Review.objects.create(pull_request=db_pull_request)
         assert review.status == Review.Status.QUEUED
 
-    def test_str(self, db_pull_request: PullRequest, db):
+    def test_str(self, db_pull_request: PullRequest, db) -> None:
         """__str__ should show review and PR info."""
         review = Review.objects.create(pull_request=db_pull_request)
         assert str(review) is not None
         assert str(db_pull_request.github_pr_number) in str(review)
 
-    def test_review_cascade(self, db_pull_request: PullRequest, db):
+    def test_review_cascade(self, db_pull_request: PullRequest, db) -> None:
         """Deleting a PR should cascade to its reviews."""
         review = Review.objects.create(pull_request=db_pull_request)
         review_id = review.id
@@ -239,7 +239,7 @@ class TestReviewModel:
 class TestCommentModel:
     """Tests for the Comment model."""
 
-    def test_create_comment(self, db_review: Review, db):
+    def test_create_comment(self, db_review: Review, db) -> None:
         """A basic Comment should be creatable."""
         comment = Comment.objects.create(
             review=db_review,
@@ -256,7 +256,7 @@ class TestCommentModel:
         assert comment.severity == Comment.Severity.WARNING
         assert comment.suggested_fix is None
 
-    def test_str(self, db_review: Review, db):
+    def test_str(self, db_review: Review, db) -> None:
         """__str__ should show comment details."""
         comment = Comment.objects.create(
             review=db_review,
@@ -270,7 +270,7 @@ class TestCommentModel:
         assert "app.py" in str(comment)
         assert "5" in str(comment)
 
-    def test_comment_cascade(self, db_review: Review, db):
+    def test_comment_cascade(self, db_review: Review, db) -> None:
         """Deleting a review should cascade to its comments."""
         comment = Comment.objects.create(
             review=db_review,
@@ -288,7 +288,7 @@ class TestCommentModel:
 class TestFeedbackModel:
     """Tests for the Feedback model."""
 
-    def test_create_feedback(self, db_comments: list[Comment], db):
+    def test_create_feedback(self, db_comments: list[Comment], db) -> None:
         """A basic Feedback entry should be creatable."""
         feedback = Feedback.objects.create(
             comment=db_comments[0],
@@ -298,7 +298,7 @@ class TestFeedbackModel:
         assert feedback.id is not None
         assert feedback.reaction == Feedback.Reaction.THUMBS_UP
 
-    def test_unique_feedback_constraint(self, db_comments: list[Comment], db):
+    def test_unique_feedback_constraint(self, db_comments: list[Comment], db) -> None:
         """Duplicate (comment, reactor_login, reaction) should be rejected."""
         Feedback.objects.create(
             comment=db_comments[0],
@@ -312,7 +312,7 @@ class TestFeedbackModel:
                 reactor_login="reviewer1",
             )
 
-    def test_different_reaction_same_user(self, db_comments: list[Comment], db):
+    def test_different_reaction_same_user(self, db_comments: list[Comment], db) -> None:
         """Same user can have both thumbs_up and thumbs_down on the same comment."""
         Feedback.objects.create(
             comment=db_comments[0],
@@ -327,7 +327,7 @@ class TestFeedbackModel:
         )
         assert feedback.id is not None
 
-    def test_str(self, db_comments: list[Comment], db):
+    def test_str(self, db_comments: list[Comment], db) -> None:
         """__str__ should show reaction and login."""
         feedback = Feedback.objects.create(
             comment=db_comments[0],
@@ -341,7 +341,7 @@ class TestFeedbackModel:
 class TestSchemaRoundTrip:
     """Integration test: full schema round-trip with all models."""
 
-    def test_full_create_read_update(self, db):
+    def test_full_create_read_update(self, db) -> None:
         """Create, read, and update objects across the full model chain."""
         # Create
         inst = Installation.objects.create(github_installation_id=5001, account_login="org")
@@ -392,7 +392,7 @@ class TestSchemaRoundTrip:
 class TestUsefulnessRate:
     """Tests for StatsService.get_usefulness_rate."""
 
-    def test_no_feedback(self, db_review: Review, db):
+    def test_no_feedback(self, db_review: Review, db) -> None:
         """With no feedback, rate should be 0 and counts zero."""
         Comment.objects.create(
             review=db_review,
@@ -407,7 +407,7 @@ class TestUsefulnessRate:
         assert result["total_comments"] == 1
         assert result["total_feedback_votes"] == 0
 
-    def test_with_feedback(self, db_feedback: list[Feedback], db):
+    def test_with_feedback(self, db_feedback: list[Feedback], db) -> None:
         """With feedback, rate should be computed correctly."""
         result = StatsService.get_usefulness_rate()
         # 2 upvotes + 1 downvote = 3 total, rate = 2/3 * 100 = 66.7
@@ -416,19 +416,19 @@ class TestUsefulnessRate:
         assert result["downvotes"] == 1
         assert result["overall_usefulness_rate"] == 66.7
 
-    def test_per_repo_filter(self, db_feedback: list[Feedback], db, db_repo: Repo):
+    def test_per_repo_filter(self, db_feedback: list[Feedback], db, db_repo: Repo) -> None:
         """Filtering by repo should only count that repo's data."""
         result = StatsService.get_usefulness_rate("testowner/testrepo")
         assert result["total_comments"] == 2
         assert result["total_feedback_votes"] == 3
 
-    def test_per_repo_nonexistent(self, db):
+    def test_per_repo_nonexistent(self, db) -> None:
         """A non-existent repo should return zeros."""
         result = StatsService.get_usefulness_rate("nonexistent/repo")
         assert result["total_comments"] == 0
         assert result["total_feedback_votes"] == 0
 
-    def test_category_breakdown(self, db_feedback: list[Feedback], db):
+    def test_category_breakdown(self, db_feedback: list[Feedback], db) -> None:
         """Category breakdown should be returned correctly."""
         result = StatsService.get_usefulness_rate()
         categories = result["categories"]

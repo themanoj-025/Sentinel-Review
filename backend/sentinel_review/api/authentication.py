@@ -24,7 +24,7 @@ class APIKeyAuthentication(BaseAuthentication):
 
     keyword = "Bearer"
 
-    def authenticate(self, request):
+    def authenticate(self, request) -> tuple[None, str] | None:
         api_key = os.environ.get("SENTINEL_API_KEY", "")
         if not api_key:
             return None  # No key configured — skip API key auth
@@ -44,5 +44,5 @@ class APIKeyAuthentication(BaseAuthentication):
         # Return a dummy user tuple — the key itself is the credential
         return (None, token)
 
-    def authenticate_header(self, request):
+    def authenticate_header(self, request) -> str:
         return self.keyword

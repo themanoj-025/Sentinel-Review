@@ -40,5 +40,5 @@ class Comment(models.Model):
             models.Index(fields=["file_path", "line_number"]),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Comment #{self.id} ({self.severity}/{self.category}) on {self.file_path}:{self.line_number}"

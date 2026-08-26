@@ -33,5 +33,5 @@ class Feedback(models.Model):
             )
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.reaction} on Comment #{self.comment_id} by {self.reactor_login}"

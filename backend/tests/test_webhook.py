@@ -67,7 +67,7 @@ class TestWebhookSignatureRejection:
     """Tests for HMAC signature verification on the webhook endpoint."""
 
     @WH_SETTING
-    def test_missing_signature_returns_401(self, client: Client):
+    def test_missing_signature_returns_401(self, client: Client) -> None:
         """A request without X-Hub-Signature-256 should be rejected with 401."""
         response = client.post(
             WEBHOOK_URL,
@@ -78,7 +78,7 @@ class TestWebhookSignatureRejection:
         assert response.status_code == 401
 
     @WH_SETTING
-    def test_invalid_signature_returns_401(self, client: Client):
+    def test_invalid_signature_returns_401(self, client: Client) -> None:
         """A request with a wrong signature should be rejected with 401."""
         response = client.post(
             WEBHOOK_URL,
@@ -90,7 +90,7 @@ class TestWebhookSignatureRejection:
         assert response.status_code == 401
 
     @override_settings(WEBHOOK_SECRET=TEST_SECRET, CELERY_TASK_ALWAYS_EAGER=True)
-    def test_valid_signature_returns_202(self, client: Client, webhook_payload: dict[str, Any]):
+    def test_valid_signature_returns_202(self, client: Client, webhook_payload: dict[str, Any]) -> None:
         """A validly-signed webhook should be accepted with 202."""
         payload_bytes = json.dumps(webhook_payload).encode("utf-8")
         sig = _sign_payload(payload_bytes)
@@ -109,7 +109,7 @@ class TestWebhookEventHandling:
     """Tests for different webhook event types."""
 
     @WH_SETTING
-    def test_non_pr_event_returns_200(self, client: Client):
+    def test_non_pr_event_returns_200(self, client: Client) -> None:
         """Non-pull_request events should be acknowledged with 200."""
         payload = json.dumps({"action": "created"})
         sig = _sign_payload(payload.encode())
@@ -123,7 +123,7 @@ class TestWebhookEventHandling:
         assert response.status_code == 200
 
     @WH_SETTING
-    def test_pr_unsupported_action_returns_200(self, client: Client):
+    def test_pr_unsupported_action_returns_200(self, client: Client) -> None:
         """PR events with unsupported actions (closed) should return 200."""
         payload = json.dumps(
             {
@@ -144,7 +144,7 @@ class TestWebhookEventHandling:
         assert response.status_code == 200
 
     @override_settings(WEBHOOK_SECRET=TEST_SECRET, CELERY_TASK_ALWAYS_EAGER=True)
-    def test_review_comment_event_returns_202(self, client: Client):
+    def test_review_comment_event_returns_202(self, client: Client) -> None:
         """Review comment events should be acknowledged."""
         payload = json.dumps(
             {
@@ -164,7 +164,7 @@ class TestWebhookEventHandling:
         assert response.status_code == 202
 
     @WH_SETTING
-    def test_missing_pull_request_data_returns_400(self, client: Client):
+    def test_missing_pull_request_data_returns_400(self, client: Client) -> None:
         """A PR event with missing required data should return 400."""
         payload = json.dumps({"action": "opened"})
         sig = _sign_payload(payload.encode())
@@ -186,7 +186,7 @@ class TestWebhookJobEnqueueing:
         CELERY_TASK_EAGER_PROPAGATES=True,
         WEBHOOK_SECRET=TEST_SECRET,
     )
-    def test_pr_opened_enqueues_review(self, client: Client, webhook_payload: dict[str, Any]):
+    def test_pr_opened_enqueues_review(self, client: Client, webhook_payload: dict[str, Any]) -> None:
         """An opened PR event should enqueue a review task (eager)."""
         payload_bytes = json.dumps(webhook_payload).encode("utf-8")
         sig = _sign_payload(payload_bytes)
@@ -212,7 +212,7 @@ class TestWebhookJobEnqueueing:
         CELERY_TASK_EAGER_PROPAGATES=True,
         WEBHOOK_SECRET=TEST_SECRET,
     )
-    def test_pr_synchronize_enqueues_review(self, client: Client, webhook_payload: dict[str, Any]):
+    def test_pr_synchronize_enqueues_review(self, client: Client, webhook_payload: dict[str, Any]) -> None:
         """A synchronize PR event should also enqueue a review."""
         webhook_payload["action"] = "synchronize"
         payload_bytes = json.dumps(webhook_payload).encode("utf-8")

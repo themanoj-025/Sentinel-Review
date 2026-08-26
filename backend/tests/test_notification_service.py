@@ -21,7 +21,7 @@ from sentinel_review.services.notification_service import (
 class TestSlackNotifier:
     """Tests for the Slack webhook notifier."""
 
-    def test_send_message_success(self):
+    def test_send_message_success(self) -> None:
         """A successful POST to Slack should return True."""
         with respx.mock as rm:
             route = rm.post("https://hooks.slack.com/services/T00/B00/xxx").mock(
@@ -32,7 +32,7 @@ class TestSlackNotifier:
             assert result is True
             assert route.called
 
-    def test_send_message_with_attachments(self):
+    def test_send_message_with_attachments(self) -> None:
         """Attachments should be included in the POST payload."""
         with respx.mock as rm:
             route = rm.post("https://hooks.slack.com/services/T00/B00/xxx").mock(
@@ -47,7 +47,7 @@ class TestSlackNotifier:
             assert sent["text"] == "Alert!"
             assert len(sent["attachments"]) == 1
 
-    def test_send_message_http_error(self):
+    def test_send_message_http_error(self) -> None:
         """A non-2xx response should return False (not raise)."""
         with respx.mock as rm:
             rm.post("https://hooks.slack.com/services/T00/B00/xxx").mock(
@@ -57,7 +57,7 @@ class TestSlackNotifier:
             result = notifier.send_message("Hello")
             assert result is False
 
-    def test_send_message_connection_error(self):
+    def test_send_message_connection_error(self) -> None:
         """A connection error should return False (not raise)."""
         with respx.mock as rm:
             rm.post("https://hooks.slack.com/services/T00/B00/xxx").mock(
@@ -67,7 +67,7 @@ class TestSlackNotifier:
             result = notifier.send_message("Hello")
             assert result is False
 
-    def test_close(self):
+    def test_close(self) -> None:
         """close() should not raise."""
         notifier = SlackNotifier("https://hooks.slack.com/services/T00/B00/xxx")
         notifier.close()  # Should not raise
@@ -80,7 +80,7 @@ class TestEmailNotifier:
     """Tests for the SMTP email notifier."""
 
     @patch("smtplib.SMTP")
-    def test_send_message_success(self, mock_smtp):
+    def test_send_message_success(self, mock_smtp) -> None:
         """A successful SMTP send should return True."""
         mock_server = MagicMock()
         mock_smtp.return_value.__enter__.return_value = mock_server
@@ -104,7 +104,7 @@ class TestEmailNotifier:
         mock_server.send_message.assert_called_once()
 
     @patch("smtplib.SMTP")
-    def test_send_message_with_html(self, mock_smtp):
+    def test_send_message_with_html(self, mock_smtp) -> None:
         """HTML alternative should be included when provided."""
         mock_server = MagicMock()
         mock_smtp.return_value.__enter__.return_value = mock_server
@@ -126,7 +126,7 @@ class TestEmailNotifier:
         assert sent_msg["To"] == "admin@example.com"
 
     @patch("smtplib.SMTP")
-    def test_send_message_smtp_failure(self, mock_smtp):
+    def test_send_message_smtp_failure(self, mock_smtp) -> None:
         """An SMTP exception should return False (not raise)."""
         mock_smtp.return_value.__enter__.return_value.send_message.side_effect = (
             smtplib.SMTPException("Server error")
@@ -150,13 +150,13 @@ class TestEmailNotifier:
 class TestNotificationService:
     """Tests for the aggregated NotificationService."""
 
-    def test_is_enabled_false_when_no_backends(self):
+    def test_is_enabled_false_when_no_backends(self) -> None:
         """Without env vars, is_enabled should be False."""
         with patch.dict(os.environ, {}, clear=True):
             service = NotificationService()
             assert service.is_enabled is False
 
-    def test_is_enabled_true_with_slack_url(self):
+    def test_is_enabled_true_with_slack_url(self) -> None:
         """With SLACK_WEBHOOK_URL set, is_enabled should be True."""
         with patch.dict(
             os.environ,
@@ -166,7 +166,7 @@ class TestNotificationService:
             service = NotificationService()
             assert service.is_enabled is True
 
-    def test_is_enabled_true_with_email_config(self):
+    def test_is_enabled_true_with_email_config(self) -> None:
         """With email env vars set, is_enabled should be True."""
         with patch.dict(
             os.environ,
@@ -179,7 +179,7 @@ class TestNotificationService:
             service = NotificationService()
             assert service.is_enabled is True
 
-    def test_notify_failure_slack_only(self):
+    def test_notify_failure_slack_only(self) -> None:
         """notify_failure should send to Slack when configured."""
         with (
             patch.dict(
@@ -202,7 +202,7 @@ class TestNotificationService:
             # Should have sent the Slack message
             assert rm.calls
 
-    def test_notify_failure_no_backends(self):
+    def test_notify_failure_no_backends(self) -> None:
         """notify_failure should be a no-op when no backends configured."""
         with patch.dict(os.environ, {}, clear=True):
             service = NotificationService()
@@ -213,7 +213,7 @@ class TestNotificationService:
                 error_message="Error",
             )
 
-    def test_notify_blocking_findings_slack(self):
+    def test_notify_blocking_findings_slack(self) -> None:
         """notify_blocking_findings should send to Slack when configured."""
         with (
             patch.dict(
@@ -239,7 +239,7 @@ class TestNotificationService:
             )
             assert rm.calls
 
-    def test_notify_blocking_findings_no_backends(self):
+    def test_notify_blocking_findings_no_backends(self) -> None:
         """notify_blocking_findings should be a no-op when no backends."""
         with patch.dict(os.environ, {}, clear=True):
             service = NotificationService()
@@ -252,7 +252,7 @@ class TestNotificationService:
             )
             # No exception means success
 
-    def test_notify_failure_backend_exception_does_not_propagate(self):
+    def test_notify_failure_backend_exception_does_not_propagate(self) -> None:
         """If a backend raises unexpectedly, the error should be logged, not propagated."""
         with (
             patch.dict(
@@ -272,7 +272,7 @@ class TestNotificationService:
             )
             # Exception caught and logged; no propagation
 
-    def test_notify_blocking_findings_backend_exception_does_not_propagate(self):
+    def test_notify_blocking_findings_backend_exception_does_not_propagate(self) -> None:
         """If a backend raises unexpectedly during blocking findings, should not propagate."""
         with (
             patch.dict(
@@ -292,7 +292,7 @@ class TestNotificationService:
             )
             # No propagation
 
-    def test_notify_failure_without_stage_name(self):
+    def test_notify_failure_without_stage_name(self) -> None:
         """notify_failure should work without a stage_name."""
         with (
             patch.dict(
@@ -313,7 +313,7 @@ class TestNotificationService:
             )
             assert rm.calls
 
-    def test_preview_is_truncated_to_10_lines(self):
+    def test_preview_is_truncated_to_10_lines(self) -> None:
         """findings_preview should be truncated to at most 10 lines."""
         with (
             patch.dict(
@@ -338,7 +338,7 @@ class TestNotificationService:
             # Message sent successfully (content truncation is internal)
             assert rm.calls
 
-    def test_no_notification_when_no_backends_configured(self):
+    def test_no_notification_when_no_backends_configured(self) -> None:
         """When no notification backends are configured, no HTTP calls should be made."""
         with patch.dict(os.environ, {}, clear=True):
             service = NotificationService()
@@ -354,7 +354,7 @@ class TestNotificationService:
                 )
                 assert not rm.calls
 
-    def test_no_notification_on_successful_review_no_backends(self):
+    def test_no_notification_on_successful_review_no_backends(self) -> None:
         """A successful review with no blocking findings should NOT send notifications.
 
         This validates the "suppressed on success" requirement — notifications
@@ -373,7 +373,7 @@ class TestNotificationService:
                 # Even with backends, notify_failure is only called on failure path
                 assert not rm.calls
 
-    def test_notification_sent_only_when_blocking_findings_exist(self):
+    def test_notification_sent_only_when_blocking_findings_exist(self) -> None:
         """notify_blocking_findings should only be called when blocking_count > 0.
 
         In the pipeline, PostCommentsStage checks len(blocking_findings) before calling.

@@ -27,7 +27,7 @@ class TestProcessReaction:
     """Tests for the process_reaction Celery task."""
 
     @FEEDBACK_SETTINGS
-    def test_comment_not_found_skipped(self, db):
+    def test_comment_not_found_skipped(self, db) -> None:
         """A comment not in our database should be skipped."""
         result = process_reaction(comment_id=99999, repo_full_name="owner/repo")
         assert result["status"] == "skipped"
@@ -35,7 +35,7 @@ class TestProcessReaction:
 
     @FEEDBACK_SETTINGS
     @patch("sentinel_review.workers.feedback_worker.GitHubClient")
-    def test_fetches_and_stores_reactions(self, mock_client_class, db_comments, db):
+    def test_fetches_and_stores_reactions(self, mock_client_class, db_comments, db) -> None:
         """Reactions from GitHub should be stored as Feedback entries."""
         comment = db_comments[0]
 
@@ -67,7 +67,7 @@ class TestProcessReaction:
 
     @FEEDBACK_SETTINGS
     @patch("sentinel_review.workers.feedback_worker.GitHubClient")
-    def test_duplicate_reactions_skipped(self, mock_client_class, db_comments, db):
+    def test_duplicate_reactions_skipped(self, mock_client_class, db_comments, db) -> None:
         """Repeated processing should not create duplicate Feedback."""
         comment = db_comments[0]
 
@@ -94,7 +94,7 @@ class TestProcessReaction:
 
     @FEEDBACK_SETTINGS
     @patch("sentinel_review.workers.feedback_worker.GitHubClient")
-    def test_api_error_returns_error(self, mock_client_class, db_comments, db):
+    def test_api_error_returns_error(self, mock_client_class, db_comments, db) -> None:
         """A GitHub API error should be caught and returned."""
         comment = db_comments[0]
 
@@ -111,7 +111,7 @@ class TestProcessReaction:
 
     @FEEDBACK_SETTINGS
     @patch("sentinel_review.workers.feedback_worker.GitHubClient")
-    def test_no_installation_id(self, mock_client_class, db):
+    def test_no_installation_id(self, mock_client_class, db) -> None:
         """If the GitHubClient raises on construction, return error."""
         mock_client_class.side_effect = Exception("Auth failed")
 

@@ -22,5 +22,5 @@ class Installation(models.Model):
             models.Index(fields=["github_installation_id"]),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Installation {self.github_installation_id} ({self.account_login})"

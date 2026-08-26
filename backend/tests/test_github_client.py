@@ -39,7 +39,7 @@ def _mock_jwt(monkeypatch):
 class TestGitHubClientJWT:
     """Tests for JWT generation (mocked)."""
 
-    def test_client_initializes(self):
+    def test_client_initializes(self) -> None:
         """Client should initialize without error."""
         client = GitHubClient()
         assert client is not None
@@ -49,7 +49,7 @@ class TestGitHubClientRequests:
     """Tests for GitHub API requests using respx mocks."""
 
     @respx.mock
-    def test_get_diff_success(self):
+    def test_get_diff_success(self) -> None:
         """fetch_diff should return the diff text."""
         diff_text = "diff --git a/file.py b/file.py\nindex abc..def\n--- a/file.py\n+++ b/file.py\n@@ -1 +1 @@\n-foo\n+bar"
         # Mock token exchange
@@ -68,7 +68,7 @@ class TestGitHubClientRequests:
         assert result == diff_text
 
     @respx.mock
-    def test_get_diff_404(self):
+    def test_get_diff_404(self) -> None:
         """A 404 should raise an exception."""
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "inst_token_abc", "expires_at": "2099-01-01T00:00:00Z"}
@@ -80,7 +80,7 @@ class TestGitHubClientRequests:
             client.get_diff(1001, "testowner/testrepo", 42)
 
     @respx.mock
-    def test_get_file_content_success(self):
+    def test_get_file_content_success(self) -> None:
         """get_file_content should decode base64 content."""
         import base64
 
@@ -97,7 +97,7 @@ class TestGitHubClientRequests:
         assert result == "print('hello')"
 
     @respx.mock
-    def test_get_file_content_not_found(self):
+    def test_get_file_content_not_found(self) -> None:
         """A 404 should return None, not crash."""
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "tok", "expires_at": "2099-01-01T00:00:00Z"}
@@ -111,7 +111,7 @@ class TestGitHubClientRequests:
         assert result is None
 
     @respx.mock
-    def test_get_repo_context(self):
+    def test_get_repo_context(self) -> None:
         """get_repo_context should gather repo metadata and file contents."""
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "tok", "expires_at": "2099-01-01T00:00:00Z"}
@@ -153,7 +153,7 @@ class TestGitHubClientRequests:
         assert ctx.has_linter_config is False
 
     @respx.mock
-    def test_post_review_success(self):
+    def test_post_review_success(self) -> None:
         """post_review should create a review with inline comments."""
         comments = [{"path": "app.py", "line": 2, "body": "**BLOCKING** (security)\n\nIssue here."}]
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
@@ -180,7 +180,7 @@ class TestGitHubClientRequests:
         assert len(result["comments"]) == 1
 
     @respx.mock
-    def test_post_review_with_empty_comments(self):
+    def test_post_review_with_empty_comments(self) -> None:
         """post_review should accept an empty list of comments."""
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "tok", "expires_at": "2099-01-01T00:00:00Z"}
@@ -200,7 +200,7 @@ class TestGitHubClientRequests:
         assert result["id"] == 5002
 
     @respx.mock
-    def test_get_comment_reactions(self):
+    def test_get_comment_reactions(self) -> None:
         """get_comment_reactions should return reaction data."""
         reactions = [
             {"id": 1, "content": "+1", "user": {"login": "user1"}},
@@ -220,7 +220,7 @@ class TestGitHubClientRequests:
         assert result[1]["content"] == "-1"
 
     @respx.mock
-    def test_get_comment_reactions_error_returns_empty(self):
+    def test_get_comment_reactions_error_returns_empty(self) -> None:
         """An error fetching reactions should return an empty list."""
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "tok", "expires_at": "2099-01-01T00:00:00Z"}
@@ -234,7 +234,7 @@ class TestGitHubClientRequests:
         assert result == []
 
     @respx.mock
-    def test_repo_context_with_contributing(self):
+    def test_repo_context_with_contributing(self) -> None:
         """get_repo_context should detect CONTRIBUTING.md."""
         respx.post(f"{GITHUB_API}/app/installations/1001/access_tokens").respond(
             201, json={"token": "tok", "expires_at": "2099-01-01T00:00:00Z"}

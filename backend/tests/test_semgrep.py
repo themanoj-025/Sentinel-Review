@@ -24,12 +24,12 @@ from sentinel_review.workers.semgrep_integration import (
 class TestRunSemgrep:
     """Tests for run_semgrep()."""
 
-    def test_empty_contents_returns_empty(self):
+    def test_empty_contents_returns_empty(self) -> None:
         """run_semgrep with no file contents should return an empty list."""
         result = run_semgrep({})
         assert result == []
 
-    def test_returns_empty_if_semgrep_not_installed(self):
+    def test_returns_empty_if_semgrep_not_installed(self) -> None:
         """If Semgrep is not installed, run_semgrep should return [] gracefully."""
         # Use a fake path that definitely doesn't have semgrep
         result = run_semgrep({"test.py": "print(1)"})
@@ -70,7 +70,7 @@ class TestParseSemgrepOutput:
 }
 """
 
-    def test_parse_valid_output(self):
+    def test_parse_valid_output(self) -> None:
         """Valid Semgrep output should parse into Finding objects."""
         file_map = {
             "app.py": "/tmp/sandbox/app.py",
@@ -91,25 +91,25 @@ class TestParseSemgrepOutput:
         assert findings[1].line_number == 3
         assert findings[1].severity == "warning"  # WARNING → warning
 
-    def test_parse_empty_results(self):
+    def test_parse_empty_results(self) -> None:
         """Empty results should return an empty list."""
         output = '{"results": []}'
         findings = _parse_semgrep_output(output, {})
         assert findings == []
 
-    def test_parse_malformed_json(self):
+    def test_parse_malformed_json(self) -> None:
         """Malformed JSON should return an empty list."""
         findings = _parse_semgrep_output("not json", {})
         assert findings == []
 
-    def test_parse_incomplete_result(self):
+    def test_parse_incomplete_result(self) -> None:
         """A result missing required fields should be handled."""
         output = '{"results": [{"path": "test.py"}]}'
         findings = _parse_semgrep_output(output, {"test.py": "test.py"})
         # Should not crash, but the Finding may have defaults for missing fields
         assert isinstance(findings, list)
 
-    def test_severity_mapping(self):
+    def test_severity_mapping(self) -> None:
         """Semgrep severities should map correctly to our severity levels."""
         # Test ERROR
         f = _parse_semgrep_output(
@@ -174,7 +174,7 @@ class TestMergeWithLLMFindings:
             ),
         ]
 
-    def test_llm_only_findings(self, llm_findings: list[Finding]):
+    def test_llm_only_findings(self, llm_findings: list[Finding]) -> None:
         """With no Semgrep findings, all entries should be LLM-only."""
         merged = merge_with_llm_findings(llm_findings, [])
         assert len(merged) == 2
@@ -184,7 +184,7 @@ class TestMergeWithLLMFindings:
 
     def test_agreement_marked_high_confidence(
         self, llm_findings: list[Finding], semgrep_findings: list[Finding]
-    ):
+    ) -> None:
         """When LLM and Semgrep agree, the entry should be high-confidence."""
         merged = merge_with_llm_findings(llm_findings, semgrep_findings)
         # app.py:5 should be matched and marked high confidence
@@ -194,7 +194,7 @@ class TestMergeWithLLMFindings:
 
     def test_unmatched_semgrep_added(
         self, llm_findings: list[Finding], semgrep_findings: list[Finding]
-    ):
+    ) -> None:
         """Unmatched Semgrep findings should be appended."""
         merged = merge_with_llm_findings(llm_findings, semgrep_findings)
         assert len(merged) == 3  # 2 LLM + 1 unmatched Semgrep
@@ -204,18 +204,18 @@ class TestMergeWithLLMFindings:
         assert len(config_finding) == 1
         assert config_finding[0]["source"] == "semgrep"
 
-    def test_no_duplicate_llm(self, llm_findings: list[Finding]):
+    def test_no_duplicate_llm(self, llm_findings: list[Finding]) -> None:
         """LLM findings should not be duplicated."""
         merged = merge_with_llm_findings(llm_findings, [])
         file_paths = [m["file_path"] for m in merged]
         assert file_paths == ["app.py", "utils.py"]
 
-    def test_empty_inputs(self):
+    def test_empty_inputs(self) -> None:
         """Both empty should return empty list."""
         merged = merge_with_llm_findings([], [])
         assert merged == []
 
-    def test_only_semgrep(self, semgrep_findings: list[Finding]):
+    def test_only_semgrep(self, semgrep_findings: list[Finding]) -> None:
         """Only Semgrep findings should be returned."""
         merged = merge_with_llm_findings([], semgrep_findings)
         assert len(merged) == 2

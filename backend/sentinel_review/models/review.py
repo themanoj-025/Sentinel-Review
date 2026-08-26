@@ -42,5 +42,5 @@ class Review(models.Model):
             models.Index(fields=["status"]),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Review #{self.id} for PR #{self.pull_request.github_pr_number}"
