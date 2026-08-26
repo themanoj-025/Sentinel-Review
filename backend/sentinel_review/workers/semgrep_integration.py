@@ -145,7 +145,7 @@ def _parse_semgrep_output(
             file_path=original_path or path,
             line_number=start_line,
             category="security",  # Semgrep findings default to security
-            severity=mapped_severity,  # type: ignore
+            severity=mapped_severity,  # type: ignore[arg-type]
             comment=content,
             suggested_fix=result.get("extra", {}).get("fix", None),
         )

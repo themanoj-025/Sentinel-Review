@@ -175,7 +175,7 @@ def _get_feedback_model():
     CELERY_TASK_ALWAYS_EAGER=True,
     CELERY_TASK_EAGER_PROPAGATES=True,
 )
-def db_installation(db) -> Any:  # type: ignore[no-untyped-def]
+def db_installation(db: Any) -> Any:
     """Create a minimal Installation record."""
     installation_model = _get_installation_model()
     return installation_model.objects.create(
@@ -185,7 +185,7 @@ def db_installation(db) -> Any:  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture
-def db_repo(db_installation, db) -> Any:  # type: ignore[no-untyped-def]
+def db_repo(db_installation: Any, db: Any) -> Any:
     """Create a Repo linked to the installation."""
     repo_model = _get_repo_model()
     return repo_model.objects.create(
@@ -201,7 +201,7 @@ def db_repo(db_installation, db) -> Any:  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture
-def db_pull_request(db_repo, db) -> Any:  # type: ignore[no-untyped-def]
+def db_pull_request(db_repo: Any, db: Any) -> Any:
     """Create a PullRequest."""
     pr_model = _get_pull_request_model()
     return pr_model.objects.create(
@@ -216,7 +216,7 @@ def db_pull_request(db_repo, db) -> Any:  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture
-def db_review(db_pull_request, db) -> Any:  # type: ignore[no-untyped-def]
+def db_review(db_pull_request: Any, db: Any) -> Any:
     """Create a Review."""
     review_model = _get_review_model()
     return review_model.objects.create(
@@ -230,7 +230,7 @@ def db_review(db_pull_request, db) -> Any:  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture
-def db_comments(db_review, db) -> list:  # type: ignore[no-untyped-def]
+def db_comments(db_review: Any, db: Any) -> list[Any]:
     """Create sample comments for a review."""
     comment_model = _get_comment_model()
     c1 = comment_model.objects.create(
@@ -256,7 +256,7 @@ def db_comments(db_review, db) -> list:  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture
-def db_feedback(db_comments, db) -> list:  # type: ignore[no-untyped-def]
+def db_feedback(db_comments: list[Any], db: Any) -> list[Any]:
     """Create sample feedback entries."""
     feedback_model = _get_feedback_model()
     f1 = feedback_model.objects.create(
@@ -278,7 +278,7 @@ def db_feedback(db_comments, db) -> list:  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture
-def seeded_db(db_repo, db_pull_request, db_review, db_comments) -> tuple:  # type: ignore[no-untyped-def]
+def seeded_db(db_repo: Any, db_pull_request: Any, db_review: Any, db_comments: list[Any]) -> tuple[Any, Any, Any]:
     """Convenience fixture: returns (repo, pr, review) for view tests.
     Also creates comments and feedback via db_comments.
     """
