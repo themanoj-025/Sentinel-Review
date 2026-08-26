@@ -1,47 +1,15 @@
-# Dependabot configuration
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
-
 version: 2
 updates:
-  # Python dependencies (requirements.txt)
+  # Python (pip) dependencies
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "09:00"
-      timezone: "UTC"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
-      - "automated"
-    commit-message:
-      prefix: "chore"
-      prefix-development: "chore"
-      include: "scope"
-    ignore:
-      - dependency-name: "django"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "celery"
-        update-types: ["version-update:semver-major"]
-
-  # Python dev dependencies (requirements-dev.txt)
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-      timezone: "UTC"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "automated"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
-    allow:
-      - dependency-type: "development"
+      - "python"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
@@ -49,15 +17,10 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "09:00"
-      timezone: "UTC"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
-      - "automated"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
+      - "ci"
 
   # Docker
   - package-ecosystem: "docker"
@@ -65,26 +28,8 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "09:00"
-      timezone: "UTC"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     labels:
       - "dependencies"
-      - "automated"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
+      - "docker"
 
-  - package-ecosystem: "pre-commit"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-      timezone: "Asia/Kolkata"
-    labels:
-      - "dependencies"
-      - "pre-commit"
-    commit-message:
-      prefix: "chore(deps)"
-      include: "scope"
