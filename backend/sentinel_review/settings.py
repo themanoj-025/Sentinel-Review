@@ -168,6 +168,16 @@ try:
         "DESCRIPTION": "Automated PR review agent powered by LLMs",
         "VERSION": "1.0.0",
         "SERVE_INCLUDE_SCHEMA": False,
+        "TAGS": [
+            {"name": "installations", "description": "GitHub App installation management"},
+            {"name": "repos", "description": "Repository configuration and metadata"},
+            {"name": "pull-requests", "description": "Pull request tracking and status"},
+            {"name": "reviews", "description": "LLM-generated review summaries and findings"},
+            {"name": "comments", "description": "Review comment threads"},
+            {"name": "feedback", "description": "Developer feedback on review quality"},
+            {"name": "stats", "description": "Review analytics and statistics"},
+            {"name": "health", "description": "Liveness and readiness probes"},
+        ],
     }
 except ImportError:
     SPECTACULAR_SETTINGS = {}
