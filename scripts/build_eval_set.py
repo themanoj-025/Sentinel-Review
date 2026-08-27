@@ -208,7 +208,7 @@ def _github_api_get_diff(repo_full_name: str, pr_number: int) -> str | None:
                 return _github_api_get_diff(repo_full_name, pr_number)
             resp.raise_for_status()
             return resp.text
-        except Exception as exc:
+        except (OSError, ValueError) as exc:
             logger.warning("Failed to fetch diff for %s#%d: %s", repo_full_name, pr_number, exc)
             return None
 
@@ -262,7 +262,7 @@ def _discover_zenodo_files() -> list[dict[str, str]]:
             )
         logger.info("Discovered %d files in Zenodo record %s", len(files), ZENODO_RECORD_ID)
         return files
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         logger.warning("Could not query Zenodo API: %s", exc)
         logger.info("Falling back to known file list for record %s", ZENODO_RECORD_ID)
         # Fallback: construct URLs from known filenames
@@ -287,7 +287,7 @@ def _download_codereviewer_archive(file_info: dict[str, str], dest_dir: Path) ->
     try:
         _download_file(file_info["url"], dest)
         return dest
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         logger.warning("Failed to download %s: %s", name, exc)
         return None
 
@@ -355,7 +355,7 @@ def _extract_codereviewer_entries(zip_path: Path) -> list[dict[str, Any]]:
                                 entries.append(parsed)
                         except json.JSONDecodeError:
                             continue
-                except Exception as exc:
+                except (OSError, ValueError) as exc:
                     logger.warning("  Failed to process %s: %s", jsonl_name, exc)
                     continue
 
@@ -444,7 +444,7 @@ def _fetch_merged_prs(repo: str, max_results: int = 10) -> list[dict[str, Any]]:
             if isinstance(pr_data, dict):
                 results.append(pr_data)
         logger.info("  Fetched %d merged PRs from %s", len(results), repo)
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         logger.warning("  Failed to fetch PRs from %s: %s", repo, exc)
 
     return results
@@ -666,7 +666,7 @@ def build_eval_set(
         try:
             entries = build_codereviewer_dataset(max_entries=max_codereviewer)
             all_entries.extend(entries)
-        except Exception as exc:
+        except (OSError, ValueError) as exc:
             logger.error("CodeReviewer source failed: %s", exc)
             logger.info("Continuing without CodeReviewer data.")
 
@@ -674,7 +674,7 @@ def build_eval_set(
         try:
             entries = build_github_dataset(max_prs=max_github_prs)
             all_entries.extend(entries)
-        except Exception as exc:
+        except (OSError, ValueError) as exc:
             logger.error("GitHub source failed: %s", exc)
             logger.info("Continuing without GitHub data.")
 
@@ -682,7 +682,7 @@ def build_eval_set(
         try:
             entries = build_fixture_dataset()
             all_entries.extend(entries)
-        except Exception as exc:
+        except (OSError, ValueError) as exc:
             logger.error("Fixtures source failed: %s", exc)
 
     # Summary statistics

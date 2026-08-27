@@ -96,7 +96,7 @@ def _send_request(
     except httpx.TimeoutException:
         elapsed = (time.monotonic() - start) * 1000
         return {"status": 0, "elapsed_ms": round(elapsed, 1), "error": "timeout"}
-    except Exception as e:
+    except (OSError, ValueError) as e:
         elapsed = (time.monotonic() - start) * 1000
         return {"status": 0, "elapsed_ms": round(elapsed, 1), "error": str(e)}
 

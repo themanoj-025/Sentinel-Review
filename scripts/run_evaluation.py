@@ -357,7 +357,7 @@ def _live_review_diff(
         print(f"  ⚠ Missing dependency for live mode: {e}")
         print("  → Falling back to mock provider")
         return _mock_review_diff(diff)
-    except Exception as e:
+    except (OSError, ValueError) as e:
         print(f"  ⚠ LLM API error in live mode: {e}")
         print("  → Falling back to mock provider")
         return _mock_review_diff(diff)
