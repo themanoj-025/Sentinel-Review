@@ -73,7 +73,7 @@ class CircuitBreaker:
             result = fn(*args, **kwargs)
             self._on_success()
             return result
-        except Exception as e:
+        except (OSError, RuntimeError, ValueError) as e:
             self._on_failure(e)
             raise
 

@@ -94,7 +94,7 @@ def run_semgrep(
     except subprocess.TimeoutExpired:
         logger.warning("Semgrep timed out — skipping")
         return []
-    except Exception as e:
+    except OSError as e:
         logger.error("Semgrep execution error: %s", e)
         return []
 

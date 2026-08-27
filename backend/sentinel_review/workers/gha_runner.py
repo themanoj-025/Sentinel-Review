@@ -146,7 +146,7 @@ def get_file_contents(diff: str) -> dict[str, str]:
         if full_path.exists() and full_path.is_file():
             try:
                 contents[file_path] = full_path.read_text(encoding="utf-8", errors="replace")
-            except Exception as e:
+            except OSError as e:
                 logger.warning("Failed to read %s: %s", file_path, e)
     logger.info("Read %d file contents", len(contents))
     return contents
@@ -271,7 +271,7 @@ def parse_findings(raw_output: str) -> list[dict[str, Any]]:
 
     try:
         review_output = ReviewOutput(**data)
-    except Exception as e:
+    except (ValueError, TypeError) as e:
         logger.error("Pydantic validation failed: %s", e)
         return []
 
@@ -399,7 +399,7 @@ def run(repo: str, event: dict[str, Any]) -> int:
                         encoding="utf-8", errors="replace"
                     )
                     logger.info("Read .sentinel-ignore from working directory")
-                except Exception as e:
+                except OSError as e:
                     logger.warning("Failed to read .sentinel-ignore: %s", e)
 
         # Step 3: Run LLM review
@@ -502,7 +502,7 @@ def run(repo: str, event: dict[str, Any]) -> int:
         logger.info("Review complete: %d findings in %dms", len(findings), elapsed_ms)
         return 0
 
-    except Exception as e:
+    except (RuntimeError, OSError, ValueError, TypeError) as e:
         elapsed_ms = int((time.time() - start_time) * 1000)
         logger.error("Review failed: %s", e)
         report["status"] = "failed"

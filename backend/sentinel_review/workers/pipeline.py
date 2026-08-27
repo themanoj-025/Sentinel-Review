@@ -294,7 +294,7 @@ class LLMReviewStage(PipelineStage):
             if ctx.llm_result.validation_success:
                 cache_set(ctx.diff, ctx.llm_result, repo_context_str)
 
-        except Exception as e:
+        except (RuntimeError, ValueError, OSError) as e:
             raise PipelineError(f"LLM review failed: {e}", context=ctx)
 
         return ctx
@@ -338,7 +338,7 @@ class SemgrepStage(PipelineStage):
                 ctx.repo_full_name,
                 task.id,
             )
-        except Exception as e:
+        except (OSError, RuntimeError) as e:
             logger.warning("Failed to dispatch async Semgrep (non-fatal): %s", e)
 
         return ctx
@@ -369,7 +369,7 @@ class DedupeStage(PipelineStage):
                         )
                     else:
                         ctx.semgrep_findings = []
-                except Exception as e:
+                except (TimeoutError, OSError, RuntimeError) as e:
                     logger.warning("Async Semgrep timed out or failed (non-fatal): %s", e)
                     ctx.semgrep_findings = []
 
@@ -559,7 +559,7 @@ class PostCommentsStage(PipelineStage):
                 json={"body": summary_body},
             )
             logger.info("Posted summary comment to %s#%d", ctx.repo_full_name, ctx.pr_number)
-        except Exception as e:
+        except (OSError, RuntimeError) as e:
             logger.warning("Failed to post summary comment (non-fatal): %s", e)
 
 
@@ -594,7 +594,7 @@ class ReviewPipeline:
             except PipelineError as e:
                 ctx = self._handle_stage_failure(ctx, stage, e)
                 return ctx
-            except Exception as e:
+            except (RuntimeError, OSError, ValueError, TypeError) as e:
                 error_msg = f"Unexpected error in {stage.__class__.__name__}: {e}"
                 ctx = self._handle_stage_failure(ctx, stage, e, error_msg)
                 return ctx

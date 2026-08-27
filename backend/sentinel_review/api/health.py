@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import os
 
-from django.db import connection
+from django.db import OperationalError, DatabaseError, connection
 from django.http import HttpRequest, JsonResponse
 
 SENTINEL_VERSION = os.environ.get("SENTINEL_VERSION", "1.0.0")
@@ -29,7 +29,7 @@ def readiness(request: HttpRequest) -> JsonResponse:
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             checks["checks"]["database"] = "connected"
-    except Exception as e:
+    except (OperationalError, DatabaseError) as e:
         checks["status"] = "degraded"
         checks["checks"]["database"] = f"error: {e}"
 
@@ -42,7 +42,7 @@ def readiness(request: HttpRequest) -> JsonResponse:
             r = redis_lib.from_url(redis_url, socket_connect_timeout=3.0, decode_responses=True)
             r.ping()
             checks["checks"]["redis"] = "connected"
-        except Exception as e:
+        except (redis_lib.RedisError, OSError) as e:
             checks["checks"]["redis"] = f"error: {e}"
             checks["status"] = "degraded"
     else:
