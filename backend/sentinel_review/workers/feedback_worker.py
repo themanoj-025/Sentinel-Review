@@ -55,7 +55,7 @@ def process_reaction(
     try:
         client = GitHubClient()
         reactions = client.get_comment_reactions(installation_id, repo_full_name, comment_id)
-    except Exception as e:
+    except (OSError, RuntimeError) as e:
         logger.error("Failed to fetch reactions: %s", e)
         return {"status": "error", "error": str(e)}
 

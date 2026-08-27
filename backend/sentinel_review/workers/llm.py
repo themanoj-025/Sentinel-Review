@@ -180,7 +180,7 @@ class AnthropicProvider(LLMProvider):
             logger.error("Anthropic API connection error: %s", e)
             llm_errors.labels(provider=self.provider_name).inc()
             return LLMResult(error_message=str(e), latency_ms=latency_ms, validation_success=False)
-        except Exception as e:
+        except (RuntimeError, ValueError) as e:
             latency_ms = int((time.time() - start_time) * 1000)
             logger.error("Anthropic API error: %s", e)
             llm_errors.labels(provider=self.provider_name).inc()
@@ -270,7 +270,7 @@ class OpenAIProvider(LLMProvider):
             logger.error("OpenAI API connection error: %s", e)
             llm_errors.labels(provider=self.provider_name).inc()
             return LLMResult(error_message=str(e), latency_ms=latency_ms, validation_success=False)
-        except Exception as e:
+        except (RuntimeError, ValueError) as e:
             latency_ms = int((time.time() - start_time) * 1000)
             logger.error("OpenAI API error: %s", e)
             llm_errors.labels(provider=self.provider_name).inc()
