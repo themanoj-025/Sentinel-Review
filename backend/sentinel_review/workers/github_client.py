@@ -41,18 +41,18 @@ class GitHubClient:
     pooling for performance.
     """
 
-    def __init__(self):
+    def __init__(self) -> Any:
         self._token_manager = TokenManager()
         self._transport = HTTPTransport()
 
-    def close(self):
+    def close(self) -> Any:
         """Close the underlying httpx client."""
         self._transport.close()
 
-    def __enter__(self):
+    def __enter__(self) -> Any:
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args) -> Any:
         self.close()
 
     def _request(

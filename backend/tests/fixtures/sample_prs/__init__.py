@@ -16,7 +16,7 @@ SQL_INJECTION_DIFF = """diff --git a/users.py b/users.py
 --- a/users.py
 +++ b/users.py
 @@ -5,7 +5,8 @@
- def get_user(email):
+ def get_user(email) -> Any:
 -    query = "SELECT * FROM users WHERE email = %s" % email
 +    query = f"SELECT * FROM users WHERE email = '{email}'"
      cursor.execute(query)
@@ -91,7 +91,7 @@ UNSAFE_DESERIALIZATION_DIFF = """diff --git a/api.py b/api.py
 +def load_session(data):
 +    return pickle.loads(base64.b64decode(data))
 
- def load_config(path):
+ def load_config(path) -> Any:
      with open(path) as f:
 """
 
@@ -111,7 +111,7 @@ OFF_BY_ONE_DIFF = """diff --git a/processor.py b/processor.py
 --- a/processor.py
 +++ b/processor.py
 @@ -7,8 +7,9 @@
- def process_items(items):
+ def process_items(items) -> Any:
 -    for i in range(1, len(items)):
 +    for i in range(1, len(items) + 1):
          item = items[i]
@@ -159,7 +159,7 @@ MISSING_TEST_DIFF = """diff --git a/calculator.py b/calculator.py
 --- a/calculator.py
 +++ b/calculator.py
 @@ -1,7 +1,10 @@
- def divide(a, b):
+ def divide(a, b) -> Any:
 +    return a / b
 +```
 +

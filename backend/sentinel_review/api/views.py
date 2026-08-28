@@ -66,7 +66,7 @@ class PullRequestViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ["created_at", "github_pr_number", "status"]
     ordering = ["-created_at"]
 
-    def get_queryset(self):
+    def get_queryset(self) -> Any:
         qs = super().get_queryset()
         repo_id = self.request.query_params.get("repo_id")
         if repo_id:
@@ -85,7 +85,7 @@ class ReviewViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ["created_at", "status", "findings_count", "latency_ms"]
     ordering = ["-created_at"]
 
-    def get_queryset(self):
+    def get_queryset(self) -> Any:
         qs = super().get_queryset()
         pr_id = self.request.query_params.get("pull_request_id")
         if pr_id:
@@ -103,7 +103,7 @@ class CommentViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ["created_at", "severity", "category"]
     ordering = ["-created_at"]
 
-    def get_queryset(self):
+    def get_queryset(self) -> Any:
         qs = super().get_queryset()
         review_id = self.request.query_params.get("review_id")
         if review_id:

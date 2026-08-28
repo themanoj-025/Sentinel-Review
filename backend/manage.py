@@ -5,7 +5,7 @@ import os
 import sys
 
 
-def main():
+def main() -> Any:
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sentinel_review.settings")
     try:

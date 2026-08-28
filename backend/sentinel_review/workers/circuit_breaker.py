@@ -39,7 +39,7 @@ class CircuitBreaker:
         name: str = "default",
         failure_threshold: int = 5,
         recovery_timeout: float = 30.0,
-    ):
+    ) -> Any:
         self.name = name
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
@@ -49,7 +49,7 @@ class CircuitBreaker:
         self.total_calls = 0
         self.rejected_calls = 0
 
-    def call(self, fn, *args, **kwargs):
+    def call(self, fn, *args, **kwargs) -> Any:
         """Execute fn(*args, **kwargs) with circuit breaker protection."""
         self.total_calls += 1
 
@@ -84,7 +84,7 @@ class CircuitBreaker:
         self.state = CircuitState.CLOSED
         self.failure_count = 0
 
-    def _on_failure(self, exception: Exception):
+    def _on_failure(self, exception: Exception) -> Any:
         """Handle a failed call — increment counter, possibly open circuit."""
         self.failure_count += 1
         self.last_failure_time = time.time()
