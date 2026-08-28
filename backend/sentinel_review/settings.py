@@ -57,12 +57,13 @@ if DEBUG:
     INSTALLED_APPS += ["django_extensions"]
 
 # Conditionally add drf-spectacular if available
+drf_spectacular = None
 try:
-    import drf_spectacular
+    import drf_spectacular  # noqa: F401
 
     INSTALLED_APPS += ["drf_spectacular"]
 except ImportError:
-    drf_spectacular = None  # type: ignore[assignment]
+    pass
 
 
 MIDDLEWARE = [
@@ -220,15 +221,16 @@ METRICS_ENABLED = os.environ.get("METRICS_ENABLED", "False").lower() in ("true",
 # Sentry — optional error tracking
 SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
 _HAS_SENTRY = False
+sentry_sdk = None
 try:
-    import sentry_sdk
+    import sentry_sdk  # noqa: F401
     from sentry_sdk.integrations.celery import CeleryIntegration
     from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.logging import LoggingIntegration
 
     _HAS_SENTRY = True
 except ImportError:
-    sentry_sdk = None  # type: ignore[assignment]
+    pass
 
 
 if SENTRY_DSN and _HAS_SENTRY:
