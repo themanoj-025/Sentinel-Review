@@ -39,7 +39,7 @@ class LLMResult:
 class LLMProvider:
     """Abstract base for LLM providers."""
 
-    def __init__(self):
+    def __init__(self) -> Any:
         self.provider_name = "unknown"
 
     def review_diff(
@@ -132,7 +132,7 @@ class LLMProvider:
 class AnthropicProvider(LLMProvider):
     """Anthropic Claude provider using structured output (tool use)."""
 
-    def __init__(self):
+    def __init__(self) -> Any:
         super().__init__()
         self.provider_name = "anthropic"
         self.api_key = settings.ANTHROPIC_API_KEY
@@ -221,7 +221,7 @@ class AnthropicProvider(LLMProvider):
 class OpenAIProvider(LLMProvider):
     """OpenAI-compatible provider with structured output."""
 
-    def __init__(self):
+    def __init__(self) -> Any:
         super().__init__()
         self.provider_name = "openai"
         self.api_key = settings.OPENAI_API_KEY

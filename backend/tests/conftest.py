@@ -21,7 +21,7 @@ index abc123..def456 100644
 --- a/app.py
 +++ b/app.py
 @@ -1,5 +1,7 @@
- def get_user(email):
+ def get_user(email) -> Any:
 -    query = "SELECT * FROM users WHERE email = %s" % email
 +    query = f"SELECT * FROM users WHERE email = '{email}'"
      cursor.execute(query)

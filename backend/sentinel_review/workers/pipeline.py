@@ -109,7 +109,7 @@ class PipelineStage:
 class PipelineError(Exception):
     """Raised when a pipeline stage fails catastrophically."""
 
-    def __init__(self, message: str, context: ReviewContext | None = None):
+    def __init__(self, message: str, context: ReviewContext | None = None) -> Any:
         super().__init__(message)
         self.context = context
 
@@ -569,7 +569,7 @@ class PostCommentsStage(PipelineStage):
 class ReviewPipeline:
     """Orchestrates the execution of pipeline stages."""
 
-    def __init__(self):
+    def __init__(self) -> Any:
         self.stages: list[PipelineStage] = [
             UpsertStage(),
             FetchDiffStage(),
