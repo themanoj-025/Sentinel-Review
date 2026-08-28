@@ -177,7 +177,7 @@ def build_fixture_dataset() -> list[dict[str, Any]]:
     # Load fixtures from the test helpers
     sys.path.insert(0, str(PROJECT_ROOT / "backend"))
     try:
-        from tests.fixtures.sample_prs import FIXTURES  # type: ignore[import-untyped]
+        from tests.fixtures.sample_prs import FIXTURES
     except ImportError as imp_err:
         logger.error(
             "Could not import planted-bug fixtures from backend/tests/fixtures/sample_prs/: %s",
