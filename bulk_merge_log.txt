@@ -1,0 +1,11 @@
+sentinel-review - PR #15 - Merged
+sentinel-review - PR #14 - Merge Failed: Post "https://api.github.com/graphql": unexpected EOF
+sentinel-review - PR #13 - Merged
+sentinel-review - PR #12 - Merged
+sentinel-review - PR #11 - Merged
+sentinel-review - PR #10 - Merged
+sentinel-review - PR #9 - Merged
+sentinel-review - PR #8 - Merge Failed: X Pull request themanoj-025/Sentinel-Review#8 is not mergeable: the merge commit cannot be cleanly created. To have the pull request merged after all the requirements have been met, add the `--auto` flag. Run the following to resolve the merge conflicts locally:   gh pr checkout 8 && git fetch origin main && git merge origin/main
+sentinel-review - PR #7 - Merge Failed: X Pull request themanoj-025/Sentinel-Review#7 is not mergeable: the merge commit cannot be cleanly created. To have the pull request merged after all the requirements have been met, add the `--auto` flag. Run the following to resolve the merge conflicts locally:   gh pr checkout 7 && git fetch origin main && git merge origin/main
+sentinel-review - PR #6 - Merge Failed: X Pull request themanoj-025/Sentinel-Review#6 is not mergeable: the merge commit cannot be cleanly created. To have the pull request merged after all the requirements have been met, add the `--auto` flag. Run the following to resolve the merge conflicts locally:   gh pr checkout 6 && git fetch origin main && git merge origin/main
+sentinel-review - PR #5 - Merged
