@@ -58,11 +58,12 @@ if DEBUG:
 
 # Conditionally add drf-spectacular if available
 try:
-    import drf_spectacular  # noqa: F401
+    import drf_spectacular
 
     INSTALLED_APPS += ["drf_spectacular"]
 except ImportError:
-    pass
+    drf_spectacular = None  # type: ignore[assignment]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -160,7 +161,7 @@ REST_FRAMEWORK = {
 
 # drf-spectacular (OpenAPI)
 try:
-    import drf_spectacular  # noqa: F401
+    import drf_spectacular  # noqa: F811
 
     REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"
     SPECTACULAR_SETTINGS = {
@@ -220,14 +221,15 @@ METRICS_ENABLED = os.environ.get("METRICS_ENABLED", "False").lower() in ("true",
 SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
 _HAS_SENTRY = False
 try:
-    import sentry_sdk  # noqa: F401
+    import sentry_sdk
     from sentry_sdk.integrations.celery import CeleryIntegration
     from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.logging import LoggingIntegration
 
     _HAS_SENTRY = True
 except ImportError:
-    pass
+    sentry_sdk = None  # type: ignore[assignment]
+
 
 if SENTRY_DSN and _HAS_SENTRY:
     sentry_sdk.init(
