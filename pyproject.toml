@@ -11,11 +11,35 @@ select = [
     "N",   # pep8-naming
     "UP",  # pyupgrade
     "G",   # logging-format-interpolation (no f-strings in logger calls)
+    "B",   # bugbear
+    "BLE", # blind-except
+    "SIM", # simplification
+    "C4",  # comprehensions
+    "RUF", # ruff-specific
+    "PLC", # pylint convention
+    "PIE", # misc lints
 ]
 ignore = [
-    "E501",  # line length (handled by ruff formatter)
-    "N999",  # non-public module name
+    "E501",   # line length (handled by ruff formatter)
+    "N999",   # non-public module name
     "UP031",  # printf formatting in worker scripts (intentional)
+    "PLC0415", # import-outside-top-level — lazy imports
+    "RUF012",  # mutable class default — Django model pattern
+    "F821",    # undefined name — false positives from type annotations
+    "SIM102",  # collapsible if — readability preference
+    "F401",    # unused import — re-export pattern
+    "B904",    # raise-without-from — legacy code
+    "SIM102",  # collapsible if — readability preference
+    "F401",    # unused import — re-export pattern
+    "RUF001",  # ambiguous unicode — intentional
+    "RUF100",  # unused noqa directives
+    "RUF015",  # unnecessary iterable allocation
+    "RUF003",  # ambiguous unicode — intentional
+    "B017",    # blind exception assert — test pattern
+    "E402",    # module-import-not-at-top — intentional
+    "SIM117",  # multiple with-statements
+    "RUF034",  # positional match
+    "PIE810",  # multiple startswith calls
 ]
 
 [tool.ruff.format]

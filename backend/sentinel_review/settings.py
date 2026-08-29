@@ -59,7 +59,7 @@ if DEBUG:
 # Conditionally add drf-spectacular if available
 drf_spectacular = None
 try:
-    import drf_spectacular  # noqa: F401
+    import drf_spectacular
 
     INSTALLED_APPS += ["drf_spectacular"]
 except ImportError:
@@ -162,7 +162,7 @@ REST_FRAMEWORK = {
 
 # drf-spectacular (OpenAPI)
 try:
-    import drf_spectacular  # noqa: F811
+    import drf_spectacular
 
     REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"
     SPECTACULAR_SETTINGS = {
@@ -223,7 +223,7 @@ SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
 _HAS_SENTRY = False
 sentry_sdk = None
 try:
-    import sentry_sdk  # noqa: F401
+    import sentry_sdk
     from sentry_sdk.integrations.celery import CeleryIntegration
     from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.logging import LoggingIntegration

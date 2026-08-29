@@ -6,10 +6,10 @@ from .repo import Repo
 from .review import Review
 
 __all__ = [
-    "Installation",
-    "Repo",
-    "PullRequest",
-    "Review",
     "Comment",
     "Feedback",
+    "Installation",
+    "PullRequest",
+    "Repo",
+    "Review",
 ]

@@ -73,7 +73,7 @@ class TestWebhookSignatureRejection:
             WEBHOOK_URL,
             data=json.dumps({"action": "opened"}),
             content_type="application/json",
-            **{"HTTP_X_GITHUB_EVENT": "pull_request"},
+            HTTP_X_GITHUB_EVENT="pull_request",
         )
         assert response.status_code == 401
 

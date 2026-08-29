@@ -22,13 +22,11 @@ Output:
 
 from __future__ import annotations
 
-import argparse
 import gzip
 import json
 import logging
 import os
 import random
-import shutil
 import sys
 import time
 import zipfile
