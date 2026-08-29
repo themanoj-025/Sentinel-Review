@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import os
 
-from django.db import OperationalError, DatabaseError, connection
+from django.db import DatabaseError, OperationalError, connection
 from django.http import HttpRequest, JsonResponse
 
 SENTINEL_VERSION = os.environ.get("SENTINEL_VERSION", "1.0.0")
