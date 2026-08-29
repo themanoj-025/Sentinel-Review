@@ -440,7 +440,7 @@ def run(repo: str, event: dict[str, Any]) -> int:
         # Step 5b: Apply .sentinel-ignore patterns
         ignore_content = file_contents.get(".sentinel-ignore")
         if ignore_content:
-            from sentinel_review.workers.ignore_rules import (  # noqa: E402
+            from sentinel_review.workers.ignore_rules import (
                 filter_ignored_findings,
                 parse_ignore_file,
             )
