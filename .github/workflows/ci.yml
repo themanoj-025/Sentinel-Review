@@ -93,7 +93,7 @@ jobs:
 
       - name: Run tests with pytest
         run: |
-          pytest -v --cov=. --cov-report=term --cov-report=xml -x
+          pytest -v --cov=. --cov-report=term --cov-report=xml --cov-fail-under=65 -x
         env:
           DATABASE_URL: postgres://sentinel:sentinel@localhost:5432/sentinel_review
 
