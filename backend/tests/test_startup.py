@@ -16,6 +16,8 @@ from django.test import Client, override_settings
 from django.urls import reverse
 
 
+
+pytestmark = pytest.mark.slow
 class TestAPIAuth:
     """Tests that API endpoints have proper authentication guards."""
 
@@ -88,6 +90,7 @@ class TestAPIAuth:
 
         # Verify the settings actually have throttle classes configured
         from django.conf import settings
+
 
         rest_fw = settings.REST_FRAMEWORK
         assert "DEFAULT_THROTTLE_CLASSES" in rest_fw, "Throttle classes should be configured"

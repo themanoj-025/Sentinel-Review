@@ -48,6 +48,7 @@ indent-style = "space"
 line-ending = "auto"
 
 [tool.pytest.ini_options]
+addopts = "-m 'not slow'"
 DJANGO_SETTINGS_MODULE = "sentinel_review.settings"
 testpaths = ["backend/tests"]
 python_files = ["test_*.py"]

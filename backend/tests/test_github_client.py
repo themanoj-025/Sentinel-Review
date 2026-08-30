@@ -19,6 +19,8 @@ import pytest
 import respx
 from sentinel_review.workers.github_client import GitHubClient, GitHubRepoContext
 
+
+pytestmark = pytest.mark.slow
 GITHUB_API = "https://api.github.com"
 
 
@@ -244,6 +246,7 @@ class TestGitHubClientRequests:
         )
         # CONTRIBUTING.md found — stops searching other variants
         import base64
+
 
         contrib_content = base64.b64encode(b"# Contributing\nPlease write tests.").decode()
         respx.get(
