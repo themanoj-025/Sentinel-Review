@@ -250,3 +250,38 @@ jobs:
       - name: Run dive (efficiency check)
         run: |
           CI=true dive dive-audit:latest --ci-image-size-threshold=1024 --ci-wasted-bytes-threshold=51200000
+
+  lighthouse:
+    name: "Frontend — Lighthouse CI (performance budgets)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build frontend
+        working-directory: frontend
+        run: npm ci && npm run build
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install backend deps
+        run: pip install -r backend/requirements.txt
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli
+      - name: Start Django + run Lighthouse
+        run: |
+          cd backend && python manage.py migrate --run-syncdb 2>/dev/null || true
+          cd backend && python manage.py runserver 0.0.0.0:8000 &
+          sleep 5
+          lhci autorun --config=lighthouserc.json
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-reports
+          path: ./lhci-reports
