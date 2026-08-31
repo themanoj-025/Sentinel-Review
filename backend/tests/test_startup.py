@@ -15,8 +15,6 @@ import pytest
 from django.test import Client, override_settings
 from django.urls import reverse
 
-
-
 pytestmark = pytest.mark.slow
 class TestAPIAuth:
     """Tests that API endpoints have proper authentication guards."""

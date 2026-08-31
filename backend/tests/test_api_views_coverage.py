@@ -5,9 +5,6 @@ from __future__ import annotations
 from django.contrib.auth.models import User
 from django.test import Client
 
-
-
-
 pytestmark = pytest.mark.slow
 class TestViewsReturnOk:
     def test_installation_list(self, seeded_db) -> None:

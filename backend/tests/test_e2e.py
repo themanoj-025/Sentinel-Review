@@ -28,7 +28,6 @@ from sentinel_review.workers.cache import cache_clear_all
 from sentinel_review.workers.github_client import GitHubRepoContext
 from sentinel_review.workers.llm import LLMResult
 
-
 pytestmark = pytest.mark.slow
 WEBHOOK_URL = reverse("github-webhook")
 TEST_SECRET = "test-secret-key"

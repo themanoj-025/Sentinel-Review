@@ -24,8 +24,6 @@ import pytest
 from django.test import Client, override_settings
 from django.urls import reverse
 
-
-
 pytestmark = pytest.mark.slow
 WEBHOOK_URL = reverse("github-webhook")
 TEST_SECRET = "test-secret-key"
