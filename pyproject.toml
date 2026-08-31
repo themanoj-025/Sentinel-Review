@@ -48,7 +48,7 @@ indent-style = "space"
 line-ending = "auto"
 
 [tool.pytest.ini_options]
-addopts = "-m 'not slow' --nomigrations --strict-markers -p no:cacheprovider"
+addopts = "-m 'not slow' --nomigrations --strict-markers -p no:cacheprovider --cov --cov-fail-under=50"
 DJANGO_SETTINGS_MODULE = "sentinel_review.settings"
 testpaths = ["backend/tests"]
 python_files = ["test_*.py"]
