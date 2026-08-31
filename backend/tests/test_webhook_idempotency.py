@@ -19,8 +19,6 @@ from sentinel_review.models.installation import Installation
 from sentinel_review.models.repo import Repo
 from sentinel_review.models.review import Review
 
-
-
 pytestmark = pytest.mark.slow
 WEBHOOK_URL = "/webhooks/github/"
 TEST_SECRET = "test-webhook-secret"

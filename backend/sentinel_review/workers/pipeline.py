@@ -29,14 +29,14 @@ from .cache import cache_get, cache_set
 from .github_client import GitHubClient, GitHubRepoContext
 from .llm import LLMResult, get_llm_provider
 from .pipeline_stages import (
-    PipelineStage,
-    UpsertStage,
-    FetchDiffStage,
-    FetchContextStage,
-    LLMReviewStage,
-    SemgrepStage,
     DedupeStage,
+    FetchContextStage,
+    FetchDiffStage,
+    LLMReviewStage,
+    PipelineStage,
     PostCommentsStage,
+    SemgrepStage,
+    UpsertStage,
 )
 from .schemas import Finding
 

@@ -23,7 +23,7 @@ from sentinel_review.models.review import Review
 from .cache import cache_get, cache_set
 from .github_client import GitHubClient, GitHubRepoContext
 from .llm import LLMResult, get_llm_provider
-from .pipeline import PipelineError, ReviewContext
+from .pipeline import ReviewContext
 from .schemas import Finding
 
 logger = logging.getLogger(__name__)

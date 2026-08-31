@@ -19,7 +19,6 @@ import pytest
 import respx
 from sentinel_review.workers.github_client import GitHubClient, GitHubRepoContext
 
-
 pytestmark = pytest.mark.slow
 GITHUB_API = "https://api.github.com"
 
