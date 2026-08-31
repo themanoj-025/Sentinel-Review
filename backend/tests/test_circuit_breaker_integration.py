@@ -39,7 +39,7 @@ class TestCircuitBreakerStateMachine:
         """Crossing failure_threshold transitions from CLOSED to OPEN."""
         call_count = [0]
 
-        def failing_fn():
+        def failing_fn() -> None:
             call_count[0] += 1
             raise ConnectionError("Simulated 5xx")
 
@@ -62,7 +62,7 @@ class TestCircuitBreakerStateMachine:
         # Track whether fn was called — it shouldn't be when OPEN
         fn_called = [False]
 
-        def should_not_be_called():
+        def should_not_be_called() -> None:
             fn_called[0] = True
             return "should not reach"
 
@@ -117,7 +117,7 @@ class TestCircuitBreakerStateMachine:
 
         outbound_count = [0]
 
-        def track_outbound():
+        def track_outbound() -> None:
             outbound_count[0] += 1
             return "data"
 

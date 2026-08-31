@@ -73,7 +73,7 @@ def client() -> Client:
 
 
 @pytest.fixture
-def e2e_mocks():
+def e2e_mocks() -> None:
     """Set up mocks for GitHubClient and LLM provider.
 
     Returns the mock objects for additional assertions.

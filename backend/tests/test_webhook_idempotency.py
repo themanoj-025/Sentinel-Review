@@ -68,7 +68,7 @@ def _ensure_installation_exists(db):
 class TestWebhookIdempotency:
     """Idempotency: same delivery ID → one Review; different ID → new Review."""
 
-    def _deliver(self, client, body: bytes, sig: str, delivery_id: str):
+    def _deliver(self, client, body: bytes, sig: str, delivery_id: str) -> None:
         """POST a webhook and return the response."""
         return client.post(
             WEBHOOK_URL,
