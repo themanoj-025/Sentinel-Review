@@ -18,7 +18,7 @@ THROTTLED_PATH = "/api/v1/stats/"
 class TestAnonRateLimiting:
     """Test AnonRateThrottle directly — rate limiting logic."""
 
-    def _make_request(self):
+    def _make_request(self) -> None:
         """Create a request with a unique IP to avoid cache conflicts with other tests."""
         request = RequestFactory().get(THROTTLED_PATH, REMOTE_ADDR="127.0.0.9")
         request.user = AnonymousUser()
@@ -99,7 +99,7 @@ class TestAnonRateLimiting:
 
             rate = "1/second"
 
-            def __init__(self):
+            def __init__(self) -> None:
                 self.rate = "1/second"
                 self.num_requests, self.duration = self.parse_rate(self.rate)
 
@@ -107,7 +107,7 @@ class TestAnonRateLimiting:
             throttle_classes = [_BurstThrottle]
             permission_classes = []
 
-            def get(self, request):
+            def get(self, request) -> None:
                 return HttpResponse("ok")
 
         view = _TestView.as_view()
