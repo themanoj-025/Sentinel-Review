@@ -230,9 +230,11 @@ class TestReviewPullRequestTask:
         assert "private_repo_not_opted_in" in result["reason"]
 
     @SETTINGS
+    @patch("sentinel_review.workers.pipeline_stages.get_llm_provider")
+    @patch("sentinel_review.workers.pipeline_stages.GitHubClient")
     @patch("sentinel_review.workers.pipeline.GitHubClient")
     @patch("sentinel_review.workers.pipeline.get_llm_provider")
-    def test_github_error_propagates(self, mock_get_llm, mock_github_client, db) -> None:
+    def test_github_error_propagates(self, mock_get_llm, mock_pipe_gh, mock_stages_gh, mock_stages_llm, db) -> None:
         """An error in the review pipeline should be caught."""
         # Setup: mock GitHub client to succeed, mock LLM to fail
         mock_client = MagicMock()
@@ -241,11 +243,13 @@ class TestReviewPullRequestTask:
             full_name="test/error", default_branch="main"
         )
         mock_client.get_file_content.return_value = None
-        mock_github_client.return_value = mock_client
+        mock_pipe_gh.return_value = mock_client
+        mock_stages_gh.return_value = mock_client
 
         mock_provider = MagicMock()
-        mock_provider.review_diff.side_effect = Exception("LLM API unavailable")
+        mock_provider.review_diff.side_effect = RuntimeError("LLM API unavailable")
         mock_get_llm.return_value = mock_provider
+        mock_stages_llm.return_value = mock_provider
 
         result = review_pull_request(
             installation_id=999999,
@@ -257,12 +261,16 @@ class TestReviewPullRequestTask:
         assert result["status"] == "error"
 
     @SETTINGS
+    @patch("sentinel_review.workers.pipeline_stages.get_llm_provider")
+    @patch("sentinel_review.workers.pipeline_stages.GitHubClient")
     @patch("sentinel_review.workers.pipeline.GitHubClient")
     @patch("sentinel_review.workers.pipeline.get_llm_provider")
     def test_full_pipeline(
         self,
         mock_get_llm,
-        mock_github_client,
+        mock_pipe_gh,
+        mock_stages_gh,
+        mock_stages_llm,
         db_installation,
         db,
         sample_diff: str,
@@ -279,7 +287,8 @@ class TestReviewPullRequestTask:
             "id": 5001,
             "comments": [{"id": 3001}, {"id": 3002}],
         }
-        mock_github_client.return_value = mock_client
+        mock_pipe_gh.return_value = mock_client
+        mock_stages_gh.return_value = mock_client
 
         from sentinel_review.workers.llm import LLMResult
         from sentinel_review.workers.schemas import Finding
@@ -307,6 +316,7 @@ class TestReviewPullRequestTask:
             latency_ms=1500,
         )
         mock_get_llm.return_value = mock_provider
+        mock_stages_llm.return_value = mock_provider
 
         result = review_pull_request(
             installation_id=1001,
@@ -341,10 +351,12 @@ class TestReviewPullRequestTask:
         assert review.token_cost == 500
 
     @SETTINGS
+    @patch("sentinel_review.workers.pipeline_stages.get_llm_provider")
+    @patch("sentinel_review.workers.pipeline_stages.GitHubClient")
     @patch("sentinel_review.workers.pipeline.GitHubClient")
     @patch("sentinel_review.workers.pipeline.get_llm_provider")
     def test_no_findings_posts_clean_review(
-        self, mock_get_llm, mock_github_client, db_installation, db, sample_diff_safe: str
+        self, mock_get_llm, mock_pipe_gh, mock_stages_gh, mock_stages_llm, db_installation, db, sample_diff_safe: str
     ) -> None:
         """When no issues are found, a clean review should be posted."""
         mock_client = MagicMock()
@@ -354,7 +366,8 @@ class TestReviewPullRequestTask:
         )
         mock_client.get_file_content.return_value = "def foo(): pass"
         mock_client.post_review.return_value = {"id": 5002, "comments": []}
-        mock_github_client.return_value = mock_client
+        mock_pipe_gh.return_value = mock_client
+        mock_stages_gh.return_value = mock_client
 
         from sentinel_review.workers.llm import LLMResult
 
@@ -363,6 +376,7 @@ class TestReviewPullRequestTask:
             findings=[], total_tokens=100, latency_ms=500
         )
         mock_get_llm.return_value = mock_provider
+        mock_stages_llm.return_value = mock_provider
 
         result = review_pull_request(
             installation_id=1001,
@@ -380,12 +394,14 @@ class TestReviewPullRequestTask:
         assert "No issues found" in call_kwargs.get("review_body", "")
 
     @SETTINGS
+    @patch("sentinel_review.workers.pipeline_stages.GitHubClient")
     @patch("sentinel_review.workers.pipeline.GitHubClient")
-    def test_github_error_handled(self, mock_github_client, db_installation, db) -> None:
+    def test_github_error_handled(self, mock_pipe_gh, mock_stages_gh, db_installation, db) -> None:
         """A GitHub API error should be recorded as failed."""
         mock_client = MagicMock()
-        mock_client.get_diff.side_effect = Exception("GitHub API timeout")
-        mock_github_client.return_value = mock_client
+        mock_client.get_diff.side_effect = OSError("GitHub API timeout")
+        mock_pipe_gh.return_value = mock_client
+        mock_stages_gh.return_value = mock_client
 
         result = review_pull_request(
             installation_id=1001,

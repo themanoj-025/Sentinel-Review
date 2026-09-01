@@ -99,7 +99,7 @@ class TestProcessReaction:
         comment = db_comments[0]
 
         mock_client = MagicMock()
-        mock_client.get_comment_reactions.side_effect = Exception("GitHub API timeout")
+        mock_client.get_comment_reactions.side_effect = OSError("GitHub API timeout")
         mock_client_class.return_value = mock_client
 
         result = process_reaction(
@@ -113,7 +113,7 @@ class TestProcessReaction:
     @patch("sentinel_review.workers.feedback_worker.GitHubClient")
     def test_no_installation_id(self, mock_client_class, db) -> None:
         """If the GitHubClient raises on construction, return error."""
-        mock_client_class.side_effect = Exception("Auth failed")
+        mock_client_class.side_effect = RuntimeError("Auth failed")
 
         # Create a minimal comment via fixture chain
         from sentinel_review.models.comment import Comment

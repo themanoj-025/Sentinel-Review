@@ -22,11 +22,22 @@ from sentinel_review.models.review import Review
 
 from .cache import cache_get, cache_set
 from .github_client import GitHubClient, GitHubRepoContext
+from .context import ReviewContext
+from .helpers import _build_context_str, _build_review_body, _deduplicate, _parse_changed_files
 from .llm import LLMResult, get_llm_provider
-from .pipeline import ReviewContext
 from .schemas import Finding
 
 logger = logging.getLogger(__name__)
+
+
+def _get_notification_service():
+    """Stub notification service — returns a no-op notifier."""
+    class _NoopNotifier:
+        is_enabled = False
+        def notify_failure(self, **kwargs): pass
+        def notify_blocking_findings(self, **kwargs): pass
+    return _NoopNotifier()
+
 
 class PipelineStage:
     """Base class for pipeline stages."""
@@ -42,7 +53,7 @@ class PipelineStage:
 class PipelineError(Exception):
     """Raised when a pipeline stage fails catastrophically."""
 
-    def __init__(self, message: str, context: ReviewContext | None = None) -> Any:
+    def __init__(self, message: str, context: ReviewContext | None = None) -> None:
         super().__init__(message)
         self.context = context
 
