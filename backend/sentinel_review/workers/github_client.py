@@ -86,7 +86,7 @@ class GitHubClient:
 
     def get_file_content(
         self, installation_id: int, repo_full_name: str, file_path: str, ref: str
-    ) -> str | None:
+    ) -> str | None -> None:
         """Fetch the full content of a file at a specific ref."""
         path = f"/repos/{repo_full_name}/contents/{file_path}?ref={ref}"
         try:
@@ -169,7 +169,7 @@ class GitHubClient:
         pr_number: int,
         comments: list[dict[str, Any]],
         review_body: str = "### 🔍 Sentinel Review\n\nAutomated review complete. See inline comments for details.",
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] -> None:
         """Post a review with inline comments to a pull request."""
         path = f"/repos/{repo_full_name}/pulls/{pr_number}/reviews"
         payload = {
@@ -190,7 +190,7 @@ class GitHubClient:
 
     def get_comment_reactions(
         self, installation_id: int, repo_full_name: str, comment_id: int
-    ) -> list[dict]:
+    ) -> list[dict] -> None:
         """Get reactions for a specific review comment."""
         path = f"/repos/{repo_full_name}/pulls/comments/{comment_id}/reactions"
         try:

@@ -32,7 +32,7 @@ DEFAULT_RULES = [
 def run_semgrep(
     file_contents: dict[str, str],
     rules: list[str] | None = None,
-) -> list[Finding]:
+) -> list[Finding] -> None:
     """
     Run Semgrep on the provided file contents and return findings.
 
@@ -170,7 +170,7 @@ def run_semgrep_async(self, file_contents: dict[str, str]) -> list[dict]:
 def merge_with_llm_findings(
     llm_findings: list[Finding],
     semgrep_findings: list[Finding],
-) -> list[dict[str, Any]]:
+) -> list[dict[str, Any]] -> None:
     """
     Merge LLM and Semgrep findings, marking agreements as high-confidence.
 

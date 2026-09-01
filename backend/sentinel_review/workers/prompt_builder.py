@@ -40,7 +40,7 @@ class PromptBuilder:
         file_contents: dict[str, str] | None = None,
         corrective_hint: str | None = None,
         custom_instructions: str | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> list[dict[str, Any]] -> None:
         """Build the full prompt with system prompt, few-shot examples, and diff.
 
         Args:
