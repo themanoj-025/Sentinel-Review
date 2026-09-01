@@ -19,6 +19,9 @@ import pytest
 from django.test.utils import override_settings
 from sentinel_review.webhooks.signature import verify_signature
 
+pytestmark = pytest.mark.slow
+pytestmark = pytest.mark.integration
+
 TEST_SECRET = b"test-secret-key"
 
 

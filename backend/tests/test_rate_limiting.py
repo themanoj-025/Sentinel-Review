@@ -11,6 +11,9 @@ from django.core.cache import cache
 from django.test.client import RequestFactory
 from rest_framework.throttling import AnonRateThrottle
 
+pytestmark = pytest.mark.slow
+pytestmark = pytest.mark.integration
+
 THROTTLED_PATH = "/api/v1/stats/"
 
 

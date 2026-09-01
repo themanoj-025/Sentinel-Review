@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from sentinel_review.workers.feature_flags import FeatureFlags, FeatureFlagService
 
+pytestmark = pytest.mark.unit
 
 class TestFeatureFlags:
     """Tests for the FeatureFlags typed container."""
