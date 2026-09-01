@@ -120,7 +120,7 @@ def is_ignored(file_path: str, patterns: Sequence[str]) -> bool:
 def filter_ignored_findings(
     findings: list[dict],
     patterns: Sequence[str],
-) -> list[dict] -> None:
+) -> list[dict]:
     """Remove findings whose file_path matches any ignore pattern.
 
     Returns a new list with ignored findings removed.

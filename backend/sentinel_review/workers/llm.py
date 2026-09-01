@@ -48,7 +48,7 @@ class LLMProvider:
         repo_context: str | None = None,
         file_contents: dict[str, str] | None = None,
         custom_instructions: str | None = None,
-    ) -> LLMResult -> None:
+    ) -> LLMResult:
         """Review a diff and return structured findings."""
         raise NotImplementedError
 
@@ -140,7 +140,7 @@ class AnthropicProvider(LLMProvider):
 
     def review_diff(
         self, diff, repo_context=None, file_contents=None, custom_instructions=None
-    ) -> LLMResult -> None:
+    ) -> LLMResult:
         """Review a diff with automatic retry on validation failures."""
         return self._review_with_retry(
             diff, repo_context, file_contents, custom_instructions=custom_instructions
@@ -229,7 +229,7 @@ class OpenAIProvider(LLMProvider):
 
     def review_diff(
         self, diff, repo_context=None, file_contents=None, custom_instructions=None
-    ) -> LLMResult -> None:
+    ) -> LLMResult:
         """Review a diff with automatic retry on validation failures."""
         return self._review_with_retry(
             diff, repo_context, file_contents, custom_instructions=custom_instructions
