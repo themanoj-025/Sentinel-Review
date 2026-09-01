@@ -36,7 +36,7 @@ def review_pull_request(
     is_private: bool = False,
     account_login: str = "",
     action: str = "opened",
-) -> dict -> None:
+) -> dict:
     """
     Review a pull request: fetch diff, analyze with LLM, post comments.
 

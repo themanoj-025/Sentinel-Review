@@ -36,7 +36,7 @@ class HTTPTransport:
         path: str,
         token: str,
         **kwargs: Any,
-    ) -> httpx.Response -> None:
+    ) -> httpx.Response:
         """Make an authenticated request to the GitHub API.
 
         Args:
