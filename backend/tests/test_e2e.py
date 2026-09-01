@@ -135,13 +135,21 @@ def e2e_mocks() -> None:
         latency_ms=1500,
     )
 
-    # Apply patches
+    # Apply patches — both pipeline.py and pipeline_stages.py import these directly
     patcher_github = patch(
         "sentinel_review.workers.pipeline.GitHubClient",
         return_value=mock_client,
     )
+    patcher_stages_github = patch(
+        "sentinel_review.workers.pipeline_stages.GitHubClient",
+        return_value=mock_client,
+    )
     patcher_llm = patch(
         "sentinel_review.workers.pipeline.get_llm_provider",
+        return_value=mock_provider,
+    )
+    patcher_stages_llm = patch(
+        "sentinel_review.workers.pipeline_stages.get_llm_provider",
         return_value=mock_provider,
     )
 
@@ -149,7 +157,9 @@ def e2e_mocks() -> None:
     cache_clear_all()
 
     mock_github_cls = patcher_github.start()
+    patcher_stages_github.start()
     mock_llm_fn = patcher_llm.start()
+    patcher_stages_llm.start()
 
     yield {
         "mock_client": mock_client,
@@ -158,8 +168,10 @@ def e2e_mocks() -> None:
         "mock_llm_fn": mock_llm_fn,
     }
 
-    patcher_github.stop()
+    patcher_stages_llm.stop()
     patcher_llm.stop()
+    patcher_stages_github.stop()
+    patcher_github.stop()
 
 
 class TestE2EPipeline:

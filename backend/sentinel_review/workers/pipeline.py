@@ -7,7 +7,6 @@ a typed ReviewContext. The ReviewPipeline orchestrates stage execution.
 
 import logging
 import time
-from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Any
 
@@ -26,13 +25,21 @@ from sentinel_review.models.repo import Repo
 from sentinel_review.models.review import Review
 
 from .cache import cache_get, cache_set
+from .context import ReviewContext
 from .github_client import GitHubClient, GitHubRepoContext
+from .helpers import (
+    _build_context_str,
+    _build_review_body,
+    _deduplicate,
+    _parse_changed_files,
+)
 from .llm import LLMResult, get_llm_provider
 from .pipeline_stages import (
     DedupeStage,
     FetchContextStage,
     FetchDiffStage,
     LLMReviewStage,
+    PipelineError,
     PipelineStage,
     PostCommentsStage,
     SemgrepStage,
@@ -42,51 +49,14 @@ from .schemas import Finding
 
 logger = logging.getLogger(__name__)
 
-class ReviewContext:
-    """Typed context object passed through pipeline stages."""
 
-    # Input params
-    installation_id: int
-    repo_id: int
-    repo_full_name: str
-    pr_number: int
-    pr_title: str = ""
-    pr_author: str = ""
-    head_sha: str = ""
-    base_sha: str = ""
-    is_private: bool = False
-    account_login: str = ""
-    action: str = "opened"
-
-    # DB objects (populated by UpsertStage)
-    review_obj: Review | None = None
-    repo_obj: Repo | None = None
-    pr_obj: PullRequest | None = None
-    install: Installation | None = None
-
-    # Fetched data (populated by FetchDiffStage, FetchContextStage)
-    diff: str = ""
-    repo_ctx: GitHubRepoContext | None = None
-    file_contents: dict[str, str] = field(default_factory=dict)
-
-    # Results (populated by LLMReviewStage, SemgrepStage, DedupeStage)
-    llm_result: LLMResult | None = None
-    llm_findings: list = field(default_factory=list)
-    semgrep_findings: list = field(default_factory=list)
-    merged_findings: list[dict[str, Any]] = field(default_factory=list)
-    posted_comments: list[dict[str, Any]] = field(default_factory=list)
-
-    # Metrics
-    start_time: float = 0.0
-    elapsed_ms: int = 0
-    errors: list[str] = field(default_factory=list)
-    skip_reason: str = ""
-
-    # GitHub client (shared across stages)
-    client: GitHubClient | None = None
-
-    # Async Semgrep task reference (populated by SemgrepStage)
-    _semgrep_task: Any | None = None
+def _get_notification_service():
+    """Stub notification service — returns a no-op notifier."""
+    class _NoopNotifier:
+        is_enabled = False
+        def notify_failure(self, **kwargs): pass
+        def notify_blocking_findings(self, **kwargs): pass
+    return _NoopNotifier()
 
 
 # Base Stage
@@ -95,7 +65,7 @@ class ReviewContext:
 class ReviewPipeline:
     """Orchestrates the execution of pipeline stages."""
 
-    def __init__(self) -> Any:
+    def __init__(self) -> None:
         self.stages: list[PipelineStage] = [
             UpsertStage(),
             FetchDiffStage(),
@@ -228,76 +198,4 @@ def estimate_cost_usd(
     return round(cost, 4)
 
 
-# Helper Functions
 
-
-def _parse_changed_files(diff: str) -> list[str]:
-    """Parse diff to extract list of changed file paths."""
-    files = []
-    seen = set()
-    for line in diff.split("\n"):
-        if line.startswith("+++ b/") and not line.startswith("+++ b/dev/null"):
-            file_path = line[6:].strip()
-            if file_path and file_path not in seen:
-                seen.add(file_path)
-                files.append(file_path)
-    return files
-
-
-def _build_context_str(repo_ctx) -> str:
-    """Build a context string from repo metadata."""
-    if not repo_ctx:
-        return ""
-    parts = []
-    if repo_ctx.default_branch:
-        parts.append(f"Default branch: {repo_ctx.default_branch}")
-    if repo_ctx.has_contributing and repo_ctx.contributing_content:
-        parts.append(f"\nCONTRIBUTING.md:\n{repo_ctx.contributing_content[:3000]}")
-    if repo_ctx.has_linter_config and repo_ctx.linter_config_content:
-        cfg_str = "\n".join(
-            f"--- {path} ---\n{content[:1000]}"
-            for path, content in repo_ctx.linter_config_content.items()
-        )
-        parts.append(f"\nLinter/Config files:\n{cfg_str[:2000]}")
-    return "\n".join(parts)
-
-
-# Default categories when no repo config is available
-_DEFAULT_CATEGORIES = {"bug", "security", "style", "suggestion"}
-
-
-def _deduplicate(findings: list[dict]) -> list[dict]:
-    """Deduplicate near-identical findings (same file, same line, category)."""
-    seen: set[tuple[str, int | None, str]] = set()
-    unique: list[dict] = []
-
-    for finding in findings:
-        key = (
-            finding.get("file_path", ""),
-            finding.get("line_number"),
-            finding.get("category", ""),
-        )
-        if key not in seen:
-            seen.add(key)
-            unique.append(finding)
-
-    return unique
-
-
-def _build_review_body(findings: list[dict], total_comments: int) -> str:
-    """Build the review summary body from findings."""
-    blocking = sum(1 for m in findings if m.get("severity") == "blocking")
-    warnings = sum(1 for m in findings if m.get("severity") == "warning")
-    nits = sum(1 for m in findings if m.get("severity") == "nit")
-    categories = sorted({m.get("category", "unknown") for m in findings})
-    cat_rows = "\n".join(
-        "| %s | %d |" % (cat, sum(1 for m in findings if m.get("category") == cat))
-        for cat in categories
-    )
-
-    return (
-        "### 🔍 Sentinel Review Complete\n\n"
-        "Found **%d** issue(s) "
-        "(%d blocking, %d warnings, %d nits)\n\n"
-        "| Category | Count |\n|----------|------|\n%s"
-    ) % (total_comments, blocking, warnings, nits, cat_rows)
