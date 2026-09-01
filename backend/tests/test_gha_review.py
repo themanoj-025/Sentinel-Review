@@ -24,6 +24,9 @@ from sentinel_review.workers.gha_runner import (
     save_report,
 )
 
+pytestmark = pytest.mark.slow
+pytestmark = pytest.mark.integration
+
 SAMPLE_DIFF = """diff --git a/app.py b/app.py
 index abc123..def456 100644
 --- a/app.py

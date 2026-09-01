@@ -27,6 +27,9 @@ from sentinel_review.workers.pipeline import (
 )
 from sentinel_review.workers.review_worker import review_pull_request
 
+pytestmark = pytest.mark.slow
+pytestmark = pytest.mark.integration
+
 # Unit Tests: Helper Functions
 
 

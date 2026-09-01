@@ -23,6 +23,8 @@ from sentinel_review.workers.cache import (
 from sentinel_review.workers.llm import LLMResult
 from sentinel_review.workers.schemas import Finding
 
+pytestmark = pytest.mark.unit
+
 SAMPLE_DIFF = (
     "diff --git a/app.py b/app.py\n@@ -1,3 +1,4 @@\n def foo():\n-    pass\n+    return 42\n"
 )

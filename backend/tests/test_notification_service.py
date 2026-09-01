@@ -15,6 +15,9 @@ from sentinel_review.services.notification_service import (
     SlackNotifier,
 )
 
+pytestmark = pytest.mark.slow
+pytestmark = pytest.mark.integration
+
 # SlackNotifier Tests
 
 

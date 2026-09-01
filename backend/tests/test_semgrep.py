@@ -20,6 +20,7 @@ from sentinel_review.workers.semgrep_integration import (
     run_semgrep,
 )
 
+pytestmark = pytest.mark.unit
 
 class TestRunSemgrep:
     """Tests for run_semgrep()."""

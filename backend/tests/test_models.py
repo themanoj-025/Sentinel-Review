@@ -23,6 +23,7 @@ from sentinel_review.models.repo import Repo
 from sentinel_review.models.review import Review
 from sentinel_review.services.stats_service import StatsService
 
+pytestmark = pytest.mark.unit
 
 class TestInstallationModel:
     """Tests for the Installation model."""
