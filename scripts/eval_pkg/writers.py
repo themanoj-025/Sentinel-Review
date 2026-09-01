@@ -215,7 +215,7 @@ def build_eval_set(
     max_github_prs: int = 50,
     max_codereviewer: int = 5000,
     force: bool = False,
-) -> list[dict[str, Any]]:
+) -> list[dict[str, Any]] -> None:
     """Build the complete evaluation dataset from all configured sources.
 
     Args:

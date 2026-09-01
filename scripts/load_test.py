@@ -107,7 +107,7 @@ def run_load_test(
     concurrent: int,
     total: int,
     timeout: float = 10.0,
-) -> list[dict[str, Any]]:
+) -> list[dict[str, Any]] -> None:
     """Run the load test with concurrent requests."""
     results: list[dict[str, Any]] = []
 

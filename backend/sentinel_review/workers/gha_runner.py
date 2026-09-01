@@ -72,7 +72,7 @@ class GHAClient:
         pr_number: int,
         comments: list[dict[str, Any]],
         review_body: str = "### 🔍 Sentinel Review\n\nAutomated review complete. See inline comments for details.",
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] -> None:
         """Post a review with inline comments to a pull request."""
         payload = {
             "body": review_body,

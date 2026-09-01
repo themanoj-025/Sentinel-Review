@@ -34,8 +34,8 @@ def _get_notification_service():
     """Stub notification service — returns a no-op notifier."""
     class _NoopNotifier:
         is_enabled = False
-        def notify_failure(self, **kwargs): pass
-        def notify_blocking_findings(self, **kwargs): pass
+        def notify_failure(self, **kwargs) -> None:
+        def notify_blocking_findings(self, **kwargs) -> Any:
     return _NoopNotifier()
 
 
