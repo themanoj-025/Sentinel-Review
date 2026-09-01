@@ -24,6 +24,7 @@ from sentinel_review.workers.llm import (
     get_llm_provider,
 )
 
+pytestmark = pytest.mark.unit
 
 class TestLLMResult:
     """Tests for the LLMResult dataclass."""
