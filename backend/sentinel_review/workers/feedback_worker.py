@@ -28,7 +28,7 @@ def process_reaction(
     self,
     comment_id: int,
     repo_full_name: str,
-) -> dict -> None:
+) -> dict:
     """
     Process reactions on a review comment.
 

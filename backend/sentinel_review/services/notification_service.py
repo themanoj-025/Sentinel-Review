@@ -93,7 +93,7 @@ class EmailNotifier:
         subject: str,
         body_text: str,
         body_html: str | None = None,
-    ) -> bool -> None:
+    ) -> bool:
         """Send an email notification. Returns True on success."""
         try:
             msg = EmailMessage()
@@ -174,7 +174,7 @@ class NotificationService:
         pr_number: int,
         error_message: str,
         stage_name: str | None = None,
-    ) -> None -> None:
+    ) -> None:
         """Send a notification that a pipeline review failed.
 
         Args:
@@ -221,7 +221,7 @@ class NotificationService:
         pr_title: str,
         blocking_count: int,
         findings_preview: list[str],
-    ) -> None -> None:
+    ) -> None:
         """Send a notification that blocking-severity findings were posted.
 
         Args:

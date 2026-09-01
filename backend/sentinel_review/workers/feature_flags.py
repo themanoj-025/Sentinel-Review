@@ -97,7 +97,7 @@ class FeatureFlagService:
     def filter_findings(
         findings: list[dict[str, Any]],
         flags: FeatureFlags,
-    ) -> list[dict[str, Any]] -> None:
+    ) -> list[dict[str, Any]]:
         """Filter a list of findings based on active feature flags.
 
         Applies:
