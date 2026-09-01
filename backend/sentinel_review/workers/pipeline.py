@@ -54,8 +54,8 @@ def _get_notification_service():
     """Stub notification service — returns a no-op notifier."""
     class _NoopNotifier:
         is_enabled = False
-        def notify_failure(self, **kwargs): pass
-        def notify_blocking_findings(self, **kwargs): pass
+        def notify_failure(self, **kwargs) -> None:
+        def notify_blocking_findings(self, **kwargs) -> Any:
     return _NoopNotifier()
 
 
@@ -176,7 +176,7 @@ _MODEL_PRICING: dict[str, tuple[float, float]] = {
 
 def estimate_cost_usd(
     provider: str, model: str, total_tokens: int, input_tokens: int | None = None
-) -> float:
+) -> float -> None:
     """Estimate the USD cost of an LLM call based on token count and model pricing.
 
     Uses a rough 3:1 input-to-output ratio if input_tokens is not provided.
