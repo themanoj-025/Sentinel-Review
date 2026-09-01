@@ -21,8 +21,8 @@ from sentinel_review.models.repo import Repo
 from sentinel_review.models.review import Review
 
 from .cache import cache_get, cache_set
-from .github_client import GitHubClient, GitHubRepoContext
 from .context import ReviewContext
+from .github_client import GitHubClient, GitHubRepoContext
 from .helpers import _build_context_str, _build_review_body, _deduplicate, _parse_changed_files
 from .llm import LLMResult, get_llm_provider
 from .schemas import Finding
