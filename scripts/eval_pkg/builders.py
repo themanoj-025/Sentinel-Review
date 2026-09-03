@@ -225,11 +225,37 @@ def _build_known_issue_from_comment(comment: dict[str, Any]) -> dict[str, Any]:
 def _load_cached_evaluation_results(cache_path: str) -> dict:
     """Load cached evaluation results from a pickle file.
 
-    WARNING: Uses pickle.load() on user-controlled input.
-    This is intentionally vulnerable — it is a planted bug for the
-    Sentinel Review self-review demo (see docs/demo/README.md).
+    WARNING: This function contains a pickle.load() on caller-supplied input
+    (CWE-502). It is a deliberately planted demo fixture for the Sentinel
+    Review self-review demo (see docs/demo/README.md) — the call below is
+    what the bot is supposed to flag. It has no production callers.
+
+    FAIL-CLOSED GUARD: even as a demo, this function refuses to run unless
+    BOTH conditions hold, so it can never be wired into a real code path or
+    pointed at attacker-controlled files by accident:
+      1. the env opt-in ``SENTINEL_EVAL_ALLOW_PICKLE_DEMO=1`` is set, AND
+      2. ``cache_path`` resolves inside the repo-controlled eval cache dir
+         (``data/codereviewer``).
+    Otherwise it raises before any file is opened or unpickled.
     """
+    import os
     import pickle
+
+    if os.environ.get("SENTINEL_EVAL_ALLOW_PICKLE_DEMO") != "1":
+        raise RuntimeError(
+            "Refusing pickle cache load: demo opt-in "
+            "SENTINEL_EVAL_ALLOW_PICKLE_DEMO=1 is not set "
+            f"(path: {cache_path}). This is an intentionally vulnerable demo "
+            "fixture and must never run outside the self-review demo."
+        )
+
+    cache_dir = Path(CACHEDIR).resolve()
+    target = Path(cache_path).resolve()
+    if not target.is_relative_to(cache_dir):
+        raise RuntimeError(
+            "Refusing pickle cache load outside the repo-controlled eval "
+            f"cache dir ({CACHEDIR}): {cache_path}"
+        )
 
     with open(cache_path, "rb") as f:
         return pickle.load(f)
