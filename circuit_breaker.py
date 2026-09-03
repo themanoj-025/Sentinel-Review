@@ -1,5 +1,10 @@
 """Lightweight circuit breaker for external API calls.
 
+CANONICAL COPY — this file is the single source of truth. It is synced
+verbatim into every portfolio repo by ``tools/sync_circuit_breaker.py``
+(see ``shared/README.md``). Make changes HERE, then re-run the sync;
+do not edit the per-repo copies directly.
+
 Usage:
     from circuit_breaker import CircuitBreaker
 
