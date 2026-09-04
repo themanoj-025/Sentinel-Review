@@ -41,18 +41,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-# Add backend/ to path so we can import from sentinel_review if needed for live mode
-_BACKEND_DIR = Path(__file__).resolve().parent.parent / "backend"
-sys.path.insert(0, str(_BACKEND_DIR))
-
 # Import shared evaluation logic from run_evaluation.py
-_SELF_DIR = Path(__file__).resolve().parent
-if str(_SELF_DIR) not in sys.path:
-    sys.path.insert(0, str(_SELF_DIR))
-
-# These functions are shared with run_evaluation.py to avoid code duplication.
-# They must be kept in sync — if you change mock rules or matching logic,
-# update both files or refactor into a shared module.
 from eval_pkg.runners import (
     Finding,
     _compute_metrics,
