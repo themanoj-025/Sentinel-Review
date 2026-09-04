@@ -104,7 +104,7 @@ class TestFindingSchema:
     def test_missing_required_fields(self) -> None:
         """Missing required fields should raise ValidationError."""
         with pytest.raises(ValidationError):
-            Finding()  # type: ignore[call-arg]
+            Finding()  # intentionally missing required fields
 
     @pytest.mark.parametrize("category", ["bug", "style", "security", "suggestion"])
     def test_all_valid_categories(self, category: str) -> None:
