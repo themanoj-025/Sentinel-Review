@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-If you find a security vulnerability in this project, **do not open a public issue**. Please report it privately through GitHub's [Security Advisory feature](https://github.com/themanoj-025/sentinel-review/security/advisories) or a private message to the maintainers.
+If you find a security vulnerability in this project, **do not open a public issue**. Please report it privately through GitHub's [Security Advisory feature](https://github.com/themanoj-025/Sentinel-Review/security/advisories) or a private message to the maintainers.
 
 Please include:
 
