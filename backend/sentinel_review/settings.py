@@ -33,6 +33,13 @@ if not DEBUG:
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
+# Security headers — Django's SecurityMiddleware emits nosniff and
+# XFrameOptionsMiddleware emits X-Frame-Options; these flags make the
+# defaults explicit and add Referrer-Policy.
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+X_FRAME_OPTIONS = "DENY"
+
 # Applications
 
 INSTALLED_APPS = [
@@ -68,6 +75,7 @@ except ImportError:
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "sentinel_review.middleware.SecurityHeadersMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
