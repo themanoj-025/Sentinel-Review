@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+import pytest
 from django.test import override_settings
 from sentinel_review.models.feedback import Feedback
 from sentinel_review.workers.feedback_worker import process_reaction

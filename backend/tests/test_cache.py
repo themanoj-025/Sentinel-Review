@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import time
 
+import pytest
 from sentinel_review.workers.cache import (
     _deserialize,
     _in_memory_expiry,

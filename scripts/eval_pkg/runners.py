@@ -1,3 +1,24 @@
+"""Evaluation runners — run the review pipeline over eval fixtures."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+import time
+from pathlib import Path
+from typing import Any
+
+from eval_pkg.analyzers import (
+    EVAL_SET_PATH,
+    EvalEntry,
+    _compute_metrics,
+    _live_review_diff,
+    _mock_review_diff,
+)
+
+
 def _format_results_table(
     entries: list[EvalEntry],
     mode: str,
