@@ -13,6 +13,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
 from sentinel_review.workers.gha_runner import (
     build_review_body,
     deduplicate,

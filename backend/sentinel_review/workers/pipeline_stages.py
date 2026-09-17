@@ -19,6 +19,7 @@ from sentinel_review.models.installation import Installation
 from sentinel_review.models.pull_request import PullRequest
 from sentinel_review.models.repo import Repo
 from sentinel_review.models.review import Review
+from sentinel_review.workers.helpers import _DEFAULT_CATEGORIES
 
 from .cache import cache_get, cache_set
 from .context import ReviewContext

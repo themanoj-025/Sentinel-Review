@@ -6,6 +6,7 @@ Covers parsing, pattern matching, and finding filtering.
 
 from __future__ import annotations
 
+import pytest
 from sentinel_review.workers.ignore_rules import (
     filter_ignored_findings,
     is_ignored,
