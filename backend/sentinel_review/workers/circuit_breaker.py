@@ -1,3 +1,6 @@
+
+from typing import Any
+
 """
 Simple circuit breaker for external service resilience.
 

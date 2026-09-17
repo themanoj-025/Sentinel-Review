@@ -1,3 +1,30 @@
+"""Result writers — persist eval reports and publish summaries to GitHub."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+import os
+import shutil
+import sys
+import time
+from typing import Any
+
+from eval_pkg.builders import (
+    CACHEDIR,
+    EVAL_SET_PATH,
+    FIXTURES_PATH,
+    GITHUB_REPOS,
+    GITHUB_TOKEN,
+    _build_known_issue_from_comment,
+    _github_api_get,
+    _github_api_get_diff,
+    _save_json,
+    build_codereviewer_dataset,
+)
+
+logger = logging.getLogger("build_eval_set")
 def _fetch_merged_prs(repo: str, max_results: int = 10) -> list[dict[str, Any]]:
     """Fetch merged PRs from a repository using the GitHub Search API.
 

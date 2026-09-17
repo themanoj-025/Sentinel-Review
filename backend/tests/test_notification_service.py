@@ -8,6 +8,7 @@ import smtplib
 from unittest.mock import MagicMock, patch
 
 import httpx
+import pytest
 import respx
 from sentinel_review.services.notification_service import (
     EmailNotifier,

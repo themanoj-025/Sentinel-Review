@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from sentinel_review.workers.feature_flags import FeatureFlags, FeatureFlagService
 
 pytestmark = pytest.mark.unit
