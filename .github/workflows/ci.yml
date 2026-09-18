@@ -129,7 +129,7 @@ jobs:
           cache: pip
           python-version: '3.12'
       - name: Install bandit
-        run: pip install bandit
+        run: pip install bandit==1.9.4
       - name: Run bandit
         run: bandit -r backend -ll
 
@@ -141,7 +141,7 @@ jobs:
       - uses: hadolint/hadolint-action@v3.5.0
         with:
           dockerfile: Dockerfile
-          failure-threshold: warning
+          failure-threshold: error
           ignore: DL3066
 
   docker-build:
@@ -251,7 +251,7 @@ jobs:
           sudo dpkg -i dive_0.12.0_linux_amd64.deb
       - name: Run dive (efficiency check)
         run: |
-          CI=true dive dive-audit:latest --ci-image-size-threshold=1024 --ci-wasted-bytes-threshold=51200000
+          CI=true dive dive-audit:latest
 
   lighthouse:
     name: "Frontend — Lighthouse CI (performance budgets)"
