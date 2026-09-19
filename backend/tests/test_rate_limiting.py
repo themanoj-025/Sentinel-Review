@@ -34,9 +34,9 @@ class TestAnonRateLimiting:
         throttle.num_requests, throttle.duration = throttle.parse_rate(throttle.rate)
         request = self._make_request()
         for i in range(3):
-            assert throttle.allow_request(
-                request, None
-            ), f"Request {i + 1} should be allowed within 3/minute limit"
+            assert throttle.allow_request(request, None), (
+                f"Request {i + 1} should be allowed within 3/minute limit"
+            )
 
     def test_request_beyond_limit_is_blocked(self) -> None:
         """The 4th request after exhausting 3/minute limit should be blocked."""
@@ -46,9 +46,9 @@ class TestAnonRateLimiting:
         request = self._make_request()
         for _ in range(3):
             throttle.allow_request(request, None)
-        assert not throttle.allow_request(
-            request, None
-        ), "4th request should be blocked by throttle"
+        assert not throttle.allow_request(request, None), (
+            "4th request should be blocked by throttle"
+        )
 
     def test_throttle_resets_after_duration(self) -> None:
         """After clearing the cache (simulating duration expiry), requests allowed again."""
@@ -63,9 +63,9 @@ class TestAnonRateLimiting:
         if throttle.key:
             cache.delete(throttle.key)
         throttle.history = []
-        assert throttle.allow_request(
-            request, None
-        ), "After cache cleared (simulating duration expiry), throttle should allow requests"
+        assert throttle.allow_request(request, None), (
+            "After cache cleared (simulating duration expiry), throttle should allow requests"
+        )
 
     def test_wait_time_returned_on_block(self) -> None:
         """When blocked, throttle.wait() should return a positive number."""
