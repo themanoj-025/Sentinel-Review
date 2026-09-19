@@ -170,7 +170,7 @@ REST_FRAMEWORK = {
 
 # drf-spectacular (OpenAPI)
 try:
-    import drf_spectacular
+    import drf_spectacular  # noqa: F401 -- availability probe: gates the drf-spectacular settings below
 
     REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"
     SPECTACULAR_SETTINGS = {
