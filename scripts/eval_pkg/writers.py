@@ -23,6 +23,8 @@ from eval_pkg.builders import (
 )
 
 logger = logging.getLogger("build_eval_set")
+
+
 def _fetch_merged_prs(repo: str, max_results: int = 10) -> list[dict[str, Any]]:
     """Fetch merged PRs from a repository using the GitHub Search API.
 
