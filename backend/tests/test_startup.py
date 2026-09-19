@@ -61,9 +61,9 @@ class TestAPIAuth:
         response = client.get(url)
 
         # Should be readable
-        assert (
-            response.status_code == 200
-        ), f"Expected 200 for public stats read, got {response.status_code}"
+        assert response.status_code == 200, (
+            f"Expected 200 for public stats read, got {response.status_code}"
+        )
 
     @pytest.mark.django_db
     @override_settings(

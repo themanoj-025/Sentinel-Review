@@ -193,9 +193,9 @@ class TestE2EPipeline:
             HTTP_X_GITHUB_DELIVERY="e2e-test-delivery-1",
         )
 
-        assert (
-            response.status_code == 202
-        ), f"Expected 202 Accepted, got {response.status_code}: {response.content[:200]}"
+        assert response.status_code == 202, (
+            f"Expected 202 Accepted, got {response.status_code}: {response.content[:200]}"
+        )
 
         install = Installation.objects.filter(github_installation_id=1001).first()
         assert install is not None, "Installation should have been created"
@@ -213,9 +213,9 @@ class TestE2EPipeline:
 
         review = Review.objects.filter(pull_request=pr).first()
         assert review is not None, "Review should have been created"
-        assert (
-            review.status == Review.Status.COMPLETED
-        ), f"Expected COMPLETED status, got {review.status}"
+        assert review.status == Review.Status.COMPLETED, (
+            f"Expected COMPLETED status, got {review.status}"
+        )
         assert review.triggered_by == "opened"
         assert review.findings_count == 2, f"Expected 2 findings, got {review.findings_count}"
         assert review.latency_ms > 0, "Latency should be recorded"
@@ -248,9 +248,9 @@ class TestE2EPipeline:
         call_kwargs = mock_client.post_review.call_args[1]
         assert call_kwargs["repo_full_name"] == "testowner/testrepo"
         assert call_kwargs["pr_number"] == 42
-        assert (
-            len(call_kwargs["comments"]) == 2
-        ), f"Expected 2 posted comments, got {len(call_kwargs['comments'])}"
+        assert len(call_kwargs["comments"]) == 2, (
+            f"Expected 2 posted comments, got {len(call_kwargs['comments'])}"
+        )
         # Verify review body contains summary info
         assert "Sentinel Review Complete" in call_kwargs.get("review_body", "")
         assert "blocking" in call_kwargs.get("review_body", "")
@@ -316,9 +316,9 @@ class TestE2EPipeline:
         assert "duplicate" in response2.content.decode().lower()
 
         # No additional review should be created
-        assert (
-            Review.objects.count() == review_count_after_first
-        ), "Duplicate delivery should not create additional Review records"
+        assert Review.objects.count() == review_count_after_first, (
+            "Duplicate delivery should not create additional Review records"
+        )
 
     @E2E_SETTINGS
     @pytest.mark.django_db(transaction=True)
