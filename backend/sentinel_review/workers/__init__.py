@@ -12,9 +12,11 @@ if TYPE_CHECKING:
 def __getattr__(name: str) -> object:
     if name == "ReviewContext":
         from .context import ReviewContext
+
         return ReviewContext
     if name == "PipelineError":
         from .pipeline_stages import PipelineError
+
         return PipelineError
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 

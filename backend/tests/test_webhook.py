@@ -91,7 +91,9 @@ class TestWebhookSignatureRejection:
         assert response.status_code == 401
 
     @override_settings(WEBHOOK_SECRET=TEST_SECRET, CELERY_TASK_ALWAYS_EAGER=True)
-    def test_valid_signature_returns_202(self, client: Client, webhook_payload: dict[str, Any]) -> None:
+    def test_valid_signature_returns_202(
+        self, client: Client, webhook_payload: dict[str, Any]
+    ) -> None:
         """A validly-signed webhook should be accepted with 202."""
         payload_bytes = json.dumps(webhook_payload).encode("utf-8")
         sig = _sign_payload(payload_bytes)
@@ -187,7 +189,9 @@ class TestWebhookJobEnqueueing:
         CELERY_TASK_EAGER_PROPAGATES=True,
         WEBHOOK_SECRET=TEST_SECRET,
     )
-    def test_pr_opened_enqueues_review(self, client: Client, webhook_payload: dict[str, Any]) -> None:
+    def test_pr_opened_enqueues_review(
+        self, client: Client, webhook_payload: dict[str, Any]
+    ) -> None:
         """An opened PR event should enqueue a review task (eager)."""
         payload_bytes = json.dumps(webhook_payload).encode("utf-8")
         sig = _sign_payload(payload_bytes)
@@ -213,7 +217,9 @@ class TestWebhookJobEnqueueing:
         CELERY_TASK_EAGER_PROPAGATES=True,
         WEBHOOK_SECRET=TEST_SECRET,
     )
-    def test_pr_synchronize_enqueues_review(self, client: Client, webhook_payload: dict[str, Any]) -> None:
+    def test_pr_synchronize_enqueues_review(
+        self, client: Client, webhook_payload: dict[str, Any]
+    ) -> None:
         """A synchronize PR event should also enqueue a review."""
         webhook_payload["action"] = "synchronize"
         payload_bytes = json.dumps(webhook_payload).encode("utf-8")

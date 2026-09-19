@@ -25,6 +25,7 @@ from sentinel_review.services.stats_service import StatsService
 
 pytestmark = pytest.mark.unit
 
+
 class TestInstallationModel:
     """Tests for the Installation model."""
 

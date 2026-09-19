@@ -246,7 +246,6 @@ class TestGitHubClientRequests:
         # CONTRIBUTING.md found — stops searching other variants
         import base64
 
-
         contrib_content = base64.b64encode(b"# Contributing\nPlease write tests.").decode()
         respx.get(
             f"{GITHUB_API}/repos/testowner/testrepo/contents/CONTRIBUTING.md?ref=main"

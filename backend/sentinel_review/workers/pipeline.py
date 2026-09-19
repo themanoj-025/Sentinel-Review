@@ -52,10 +52,16 @@ logger = logging.getLogger(__name__)
 
 def _get_notification_service():
     """Stub notification service — returns a no-op notifier."""
+
     class _NoopNotifier:
         is_enabled = False
-        def notify_failure(self, **kwargs): pass
-        def notify_blocking_findings(self, **kwargs): pass
+
+        def notify_failure(self, **kwargs):
+            pass
+
+        def notify_blocking_findings(self, **kwargs):
+            pass
+
     return _NoopNotifier()
 
 
@@ -196,6 +202,3 @@ def estimate_cost_usd(
 
     cost = (input_tokens / 1000 * input_price) + (output_tokens / 1000 * output_price)
     return round(cost, 4)
-
-
-
