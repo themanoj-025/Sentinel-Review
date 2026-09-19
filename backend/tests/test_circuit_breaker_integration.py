@@ -19,6 +19,7 @@ from sentinel_review.workers.circuit_breaker import (
 pytestmark = pytest.mark.slow
 pytestmark = pytest.mark.integration
 
+
 class TestCircuitBreakerStateMachine:
     """Full state machine: CLOSED → OPEN → HALF_OPEN → CLOSED."""
 

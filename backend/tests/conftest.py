@@ -278,7 +278,9 @@ def db_feedback(db_comments: list[Any], db: Any) -> list[Any]:
 
 
 @pytest.fixture
-def seeded_db(db_repo: Any, db_pull_request: Any, db_review: Any, db_comments: list[Any]) -> tuple[Any, Any, Any]:
+def seeded_db(
+    db_repo: Any, db_pull_request: Any, db_review: Any, db_comments: list[Any]
+) -> tuple[Any, Any, Any]:
     """Convenience fixture: returns (repo, pr, review) for view tests.
     Also creates comments and feedback via db_comments.
     """

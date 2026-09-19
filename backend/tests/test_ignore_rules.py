@@ -15,6 +15,7 @@ from sentinel_review.workers.ignore_rules import (
 
 pytestmark = pytest.mark.unit
 
+
 class TestParsing:
     """Tests for parse_ignore_file."""
 
