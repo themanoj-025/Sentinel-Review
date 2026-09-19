@@ -3,16 +3,12 @@
 from __future__ import annotations
 
 import logging
-import time
-from typing import Any
 
 from django.db import IntegrityError
 
 from sentinel_review.api.metrics import (
     llm_cache_hits,
     llm_cache_misses,
-    review_latency,
-    reviews_total,
 )
 from sentinel_review.models.comment import Comment
 from sentinel_review.models.installation import Installation
@@ -25,7 +21,7 @@ from .cache import cache_get, cache_set
 from .context import ReviewContext
 from .github_client import GitHubClient, GitHubRepoContext
 from .helpers import _build_context_str, _build_review_body, _deduplicate, _parse_changed_files
-from .llm import LLMResult, get_llm_provider
+from .llm import get_llm_provider
 from .schemas import Finding
 
 logger = logging.getLogger(__name__)
