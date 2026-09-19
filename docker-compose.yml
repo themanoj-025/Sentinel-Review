@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: sentinel_review
       POSTGRES_USER: sentinel
-      POSTGRES_PASSWORD: sentinel
+      POSTGRES_PASSWORD: sentinel  # pragma: allowlist secret
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -55,7 +55,7 @@ services:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,web}
-      DATABASE_URL: postgres://sentinel:sentinel@db:5432/sentinel_review
+      DATABASE_URL: postgres://sentinel:sentinel@db:5432/sentinel_review  # pragma: allowlist secret
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
@@ -86,7 +86,7 @@ services:
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
-      DATABASE_URL: postgres://sentinel:sentinel@db:5432/sentinel_review
+      DATABASE_URL: postgres://sentinel:sentinel@db:5432/sentinel_review  # pragma: allowlist secret
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
