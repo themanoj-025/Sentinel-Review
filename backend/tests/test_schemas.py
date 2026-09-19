@@ -26,6 +26,7 @@ from sentinel_review.workers.schemas import (
 
 pytestmark = pytest.mark.unit
 
+
 class TestFindingSchema:
     """Tests for the Finding Pydantic model."""
 

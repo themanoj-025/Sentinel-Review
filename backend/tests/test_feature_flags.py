@@ -7,6 +7,7 @@ from sentinel_review.workers.feature_flags import FeatureFlags, FeatureFlagServi
 
 pytestmark = pytest.mark.unit
 
+
 class TestFeatureFlags:
     """Tests for the FeatureFlags typed container."""
 

@@ -20,6 +20,7 @@ from sentinel_review.dashboard.views import (
 pytestmark = pytest.mark.slow
 pytestmark = pytest.mark.integration
 
+
 class TestDashboardHome:
     """dashboard_home — KPI cards, recent reviews, status distribution."""
 

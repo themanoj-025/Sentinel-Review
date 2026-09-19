@@ -81,7 +81,6 @@ def e2e_mocks() -> None:
     from sentinel_review.workers.llm import LLMResult
     from sentinel_review.workers.schemas import Finding
 
-
     # Mock GitHub client
     mock_client = MagicMock()
     mock_client.get_diff.return_value = (

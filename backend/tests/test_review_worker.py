@@ -238,7 +238,9 @@ class TestReviewPullRequestTask:
     @patch("sentinel_review.workers.pipeline_stages.GitHubClient")
     @patch("sentinel_review.workers.pipeline.GitHubClient")
     @patch("sentinel_review.workers.pipeline.get_llm_provider")
-    def test_github_error_propagates(self, mock_get_llm, mock_pipe_gh, mock_stages_gh, mock_stages_llm, db) -> None:
+    def test_github_error_propagates(
+        self, mock_get_llm, mock_pipe_gh, mock_stages_gh, mock_stages_llm, db
+    ) -> None:
         """An error in the review pipeline should be caught."""
         # Setup: mock GitHub client to succeed, mock LLM to fail
         mock_client = MagicMock()
@@ -360,7 +362,14 @@ class TestReviewPullRequestTask:
     @patch("sentinel_review.workers.pipeline.GitHubClient")
     @patch("sentinel_review.workers.pipeline.get_llm_provider")
     def test_no_findings_posts_clean_review(
-        self, mock_get_llm, mock_pipe_gh, mock_stages_gh, mock_stages_llm, db_installation, db, sample_diff_safe: str
+        self,
+        mock_get_llm,
+        mock_pipe_gh,
+        mock_stages_gh,
+        mock_stages_llm,
+        db_installation,
+        db,
+        sample_diff_safe: str,
     ) -> None:
         """When no issues are found, a clean review should be posted."""
         mock_client = MagicMock()

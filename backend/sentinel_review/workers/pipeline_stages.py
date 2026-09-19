@@ -33,10 +33,16 @@ logger = logging.getLogger(__name__)
 
 def _get_notification_service():
     """Stub notification service — returns a no-op notifier."""
+
     class _NoopNotifier:
         is_enabled = False
-        def notify_failure(self, **kwargs): pass
-        def notify_blocking_findings(self, **kwargs): pass
+
+        def notify_failure(self, **kwargs):
+            pass
+
+        def notify_blocking_findings(self, **kwargs):
+            pass
+
     return _NoopNotifier()
 
 
@@ -509,5 +515,3 @@ class PostCommentsStage(PipelineStage):
 
 
 # Pipeline Orchestrator
-
-
