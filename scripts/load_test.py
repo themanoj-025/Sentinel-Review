@@ -253,7 +253,7 @@ def main() -> int:
     args = parser.parse_args()
 
     secret = args.secret or _find_webhook_secret()
-    if not secret or secret == "change-me":
+    if not secret or secret == "change-me":  # pragma: allowlist secret
         print("⚠️  Could not determine WEBHOOK_SECRET. Use --secret to provide it.")
         return 1
 
