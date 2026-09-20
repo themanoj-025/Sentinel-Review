@@ -62,6 +62,7 @@
 - [Deployment](#-deployment)
 - [Roadmap](#️-roadmap)
 - [Contributing](#-contributing)
+- [📬 Support](#-support)
 - [License](#-license)
 
 ---
@@ -781,6 +782,14 @@ jobs:
 - Write tests for new functionality
 - Follow existing conventions (type hints, docstrings, `from __future__ import annotations`)
 - Update docs if you change behavior
+
+---
+
+## 📬 Support
+
+- 🐛 [Report a bug](https://github.com/themanoj-025/Sentinel-Review/issues)
+- 💡 [Request a feature](https://github.com/themanoj-025/Sentinel-Review/issues)
+- ⭐ [Star the repository](https://github.com/themanoj-025/Sentinel-Review)
 
 ---
 
