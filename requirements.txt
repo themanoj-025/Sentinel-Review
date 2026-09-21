@@ -23,7 +23,7 @@ mcp>=2.1.1,<2.2
 protobuf>=5.29.6,<5.30
 
 # Structured output
-pydantic>=2.13.4,<3.0
+pydantic>=2.13.5,<3.0
 
 # Semgrep was removed to avoid dependency conflicts with protobuf
 # Monitoring
