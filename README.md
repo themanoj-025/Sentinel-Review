@@ -15,20 +15,20 @@
   <p>
     <a href="https://github.com/themanoj-025/Sentinel-Review/actions/workflows/ci.yml">
       <img src="https://img.shields.io/github/actions/workflow/status/themanoj-025/Sentinel-Review/ci.yml?branch=main&label=CI&logo=github&style=flat-square" alt="CI Status"/>
-    </a><a href="#">
+    </a><a href="https://github.com/themanoj-025/Sentinel-Review/actions/workflows/ci.yml">
       <img src="https://img.shields.io/badge/tests-352%20passing-brightgreen?style=flat-square&logo=pytest" alt="Tests"/></a>
-    <a href="#">
+    <a href="https://www.python.org/">
       <img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python" alt="Python"/>
     </a>
-    <a href="#">
+    <a href="https://www.djangoproject.com/">
       <img src="https://img.shields.io/badge/django-5.1-success?style=flat-square&logo=django" alt="Django"/>
     </a>
-    <a href="#">
+    <a href="LICENSE">
       <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License"/>
     </a>
     <a href="https://www.docker.com/">
       <img src="https://img.shields.io/badge/docker-compose-2496ED?style=flat-square&logo=docker" alt="Docker"/>
-    </a><a href="#">
+    </a><a href="#-case-study-the-audit--beforeafter-story">
       <img src="https://img.shields.io/badge/audit-5.7%E2%9E%A19.0-blue?style=flat-square" alt="Audit Score"/></a>
   </p>
 
@@ -139,7 +139,7 @@ Code review is the highest-leverage quality practice in software engineering —
 
 The core review pipeline is a **staged, modular** design. Each stage is independently testable, receives and returns a typed `ReviewContext` object, and can fail without crashing the entire pipeline:
 
-```
+```text
                     ┌─────────────────────────────┐
                     │           GitHub             │
                     │  (PR events + reactions)     │
@@ -199,14 +199,14 @@ The core review pipeline is a **staged, modular** design. Each stage is independ
 ```
 
 **Also available as a GitHub Action (no server needed):**
-```
+```text
   PR event → actions/checkout@v4 → setup-python@v5 → scripts/gha_review.py
   → git diff → LLM call → inline review comments → JSON report artifact
 ```
 
 ### Data Flow — A Review in 14 Steps
 
-```
+```text
  1.  🔔 GitHub sends POST /webhooks/github (pull_request opened/synchronize)
  2.  🔐 HMAC-SHA256 signature verified (constant-time)
  3.  🔁 Idempotency check — same delivery_id? → 200 OK (skip)
@@ -411,7 +411,7 @@ jobs:
 
 ## 📁 Project Structure
 
-```
+```text
 sentinel-review/
 ├── backend/
 │   ├── sentinel_review/
@@ -606,7 +606,7 @@ The ultimate proof: **the bot reviewed its own code.**
 
 We planted a deliberately vulnerable function — an unsafe `pickle.load()` on user-controlled input (CWE-502) — and documented the pipeline:
 
-```
+```text
  1. GitHub webhook fires (pull_request opened)
  2. HMAC verified → idempotency check → Celery task enqueued
  3. Worker fetches diff + full file content
@@ -668,7 +668,7 @@ ruff check . --fix
 
 ### CI Pipeline (6 Jobs)
 
-```
+```text
 ┌──────────┐    ┌──────────────────────┐    ┌──────────────┐    ┌───────────┐
 │ Ruff Lint │──▶│ Type Check (mypy)   │──▶│ pytest (PG)   │──▶│ Docker    │
 │ (3s)      │    │ (10s)               │    │ (10s, 352     │    │ Build     │
