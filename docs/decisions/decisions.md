@@ -152,7 +152,7 @@
 
 **Decision:** Use a single Django project with logical sub-packages rather than multiple Django apps.
 
-```
+```text
 sentinel_review/
 ├── models/          # Database models
 ├── webhooks/        # GitHub webhook receiver

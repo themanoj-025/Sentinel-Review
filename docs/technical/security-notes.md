@@ -20,7 +20,7 @@
 
 ### Attack Surface
 
-```
+```text
 Internet-facing:
   POST /webhooks/github  ← HMAC-protected, rate-limited (100/hr anon)
   GET/POST /api/*        ← Throttled (100/hr anon, 1000/hr auth)
@@ -71,7 +71,7 @@ def verify_signature(payload_body: bytes, signature_header: str | None) -> bool:
 
 ### 3. GitHub App Authentication
 
-```
+```text
 GitHub App Private Key (loaded from env/mounted file)
   → JWT (RS256, 10min expiry, 60s clock drift tolerance)
     → Installation Access Token (1hr, cached, auto-refreshed)

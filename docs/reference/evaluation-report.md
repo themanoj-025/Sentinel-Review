@@ -115,7 +115,7 @@
 
 ### Metric Definitions
 
-```
+```text
 Precision = TP / (TP + FP)   — How many of our findings are correct?
 Recall    = TP / (TP + FN)   — How many real issues did we catch?
 F1        = 2 × P × R / (P + R) — Harmonic mean of precision and recall

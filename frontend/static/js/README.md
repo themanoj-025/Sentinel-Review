@@ -31,7 +31,7 @@ byte-for-byte identical to the committed one (the CI job below enforces this).
 
 Current SHA-256 (of the committed file):
 
-```
+```text
 8b440509b6d2d7b0d88d4620ce582899a9f66d779f7a248c2462ecffd02e223f  bundle.js
 ```
 
