@@ -53,7 +53,8 @@ services:
       # ║  Set all secrets via .env file (gitignored) or CI secrets   ║
       # ╚══════════════════════════════════════════════════════════════╝
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
-      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      # Secure default: DEBUG off unless explicitly opted in via .env (DJANGO_DEBUG=True)
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-False}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,web}
       DATABASE_URL: postgres://sentinel:sentinel@db:5432/sentinel_review  # pragma: allowlist secret
       REDIS_URL: redis://redis:6379/0
@@ -85,7 +86,8 @@ services:
     command: celery -A sentinel_review worker -l info -Q reviews,feedback,default -c 2
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
-      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      # Secure default: DEBUG off unless explicitly opted in via .env (DJANGO_DEBUG=True)
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-False}
       DATABASE_URL: postgres://sentinel:sentinel@db:5432/sentinel_review  # pragma: allowlist secret
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
