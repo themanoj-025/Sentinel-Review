@@ -1,6 +1,6 @@
 # sentinel-review — Folder Structure
 
-```
+```text
 sentinel-review/
 ├── backend/                      # Django project (all backend code)
 │   ├── manage.py                 # Django management entry
