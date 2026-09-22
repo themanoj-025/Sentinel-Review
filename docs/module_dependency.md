@@ -2,7 +2,7 @@
 
 ## Django apps → layers (backend/sentinel_review)
 
-```
+```text
 settings.py          ← imported by everything (env config)
 celery_app.py        ← imports settings; task modules import celery_app
 urls.py / wsgi.py    ← routes to api, dashboard, webhooks, health urls
@@ -47,7 +47,7 @@ services/notification_service.py → models, settings
 
 ## Frontend → backend
 
-```
+```text
 frontend/src/app.js + chart-loader.js → fetch Django dashboard/API endpoints
 frontend/static/*  (built)            → served via Django collectstatic
 ```

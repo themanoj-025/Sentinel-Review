@@ -25,7 +25,7 @@
 - Linter: Ruff (strict); typecheck: mypy strict.
 - Structure:
 
-```
+```text
 backend/
   sentinel_review/
     models/       # 6 ORM models

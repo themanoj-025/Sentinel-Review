@@ -69,7 +69,7 @@
 
 ## 3. High-Level Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    GitHub Platform                                   │
 │  ┌──────────┐    ┌──────────────┐    ┌────────────────────────┐    │
@@ -134,7 +134,7 @@
 
 ## 4. Complete Folder Structure Tree
 
-```
+```text
 sentinel-review/
 ├── .dockerignore
 ├── .gitattributes
@@ -398,7 +398,7 @@ docker compose up --build
 
 ## 11. Dependency Graph Summary
 
-```
+```text
 webhooks/views.py → workers/pipeline.py → workers/* (7 stages)
 workers/llm.py → workers/cache.py → Redis
 workers/semgrep_integration.py → semgrep CLI

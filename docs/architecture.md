@@ -6,7 +6,7 @@ comments, tracks feedback, and exposes a Django dashboard + REST API.
 
 ## High-level components
 
-```
+```text
                 ┌───────────────────────────────────────────────┐
                 │        GitHub (webhooks + App tokens)         │
                 └──────────────────────┬────────────────────────┘

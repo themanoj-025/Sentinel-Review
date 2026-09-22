@@ -61,7 +61,7 @@ When a developer opens this PR (or pushes to it), the following happens:
 
 ### Step 1 — Webhook fires
 
-```
+```text
 GitHub sends POST /webhooks/github
   Event: pull_request
   Action: opened
@@ -152,13 +152,13 @@ function addition with proper docstrings).
 
 GitHub API call:
 
-```
+```text
 POST /repos/sentinel-review/sentinel-review/pulls/42/reviews
 ```
 
 The posted comment appears as an inline review on line 83 of the diff:
 
-```
+```text
 ══════════════════════════════════════════════════════════════════
 BLOCKING (security) 🔒 High confidence (LLM + Semgrep agreement)
 
@@ -176,7 +176,7 @@ HMAC before deserialization.
 
 The review summary shows:
 
-```
+```text
 ### 🔍 Sentinel Review Complete
 
 Found 1 issue(s) (1 blocking, 0 warnings, 0 nits)
@@ -283,7 +283,7 @@ The changes touched 48 files, added 2,119 lines, and included:
 When the remediation PR was opened, the bot reviewed its own improvement —
 creating a recursive validation loop:
 
-```
+```text
 Bot's original code → audit found 31 gaps → engineer fixed all 31 →
 remediation PR opened → bot reviews the diff → confirms no regressions →
 bot's own pipeline is now the thing being reviewed by the bot

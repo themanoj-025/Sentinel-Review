@@ -53,7 +53,7 @@
 
 **Comment card:**
 
-```
+```text
 ┌──────────────────────────────────┐
 │ [blocking] [security] line 42   │
 │ pickle.load() on untrusted input │

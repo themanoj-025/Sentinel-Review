@@ -27,7 +27,7 @@ inline review comments on the PR diff.
 
 ## Architecture at a Glance
 
-```
+```text
 GitHub PR Event → Webhook (HMAC verified) → Celery Queue → 7-Stage Pipeline
                                                              ├─ Upsert DB Records
                                                              ├─ Fetch Diff + Context
