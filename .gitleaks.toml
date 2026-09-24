@@ -1,0 +1,17 @@
+# Gitleaks configuration
+# Extends gitleaks' default ruleset with repository-specific allowlists.
+# NOTE: allowlists here are for NON-PRODUCTION test fixtures only.
+title = "gitleaks config for sentinel-review"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Sample-PR fixtures (dummy values by design)"
+regexes = [
+  # backend/tests/fixtures/sample_prs/__init__.py embedded-diff fixture:
+  # intentionally key-shaped dummies the review pipeline must redact.
+  '''sk-live-abcdef1234567890''',
+  '''password123''',
+  '''super-secret-key-12345''',
+]
