@@ -15,8 +15,7 @@
   <p>
     <a href="https://github.com/themanoj-025/Sentinel-Review/actions/workflows/ci.yml">
       <img src="https://img.shields.io/github/actions/workflow/status/themanoj-025/Sentinel-Review/ci.yml?branch=main&label=CI&logo=github&style=flat-square" alt="CI Status"/>
-    </a><a href="https://github.com/themanoj-025/Sentinel-Review/actions/workflows/ci.yml">
-      <img src="https://img.shields.io/badge/tests-352%20passing-brightgreen?style=flat-square&logo=pytest" alt="Tests"/></a>
+    </a>
     <a href="https://www.python.org/">
       <img src="https://img.shields.io/badge/python-3.12-blue?style=flat-square&logo=python" alt="Python"/>
     </a>
