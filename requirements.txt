@@ -14,7 +14,7 @@ celery[redis]>=5.6.3,<5.7
 redis>=5.0.0,<6.5
 
 # GitHub integration
-PyJWT>=2.13.0,<3.0
+PyJWT>=2.15.0,<3.0
 httpx>=0.28.1,<0.29
 httpx-sse>=0.4.3,<0.5
 
