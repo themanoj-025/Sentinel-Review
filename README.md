@@ -44,6 +44,10 @@
 
 ---
 
+# 🛡️ Sentinel Review
+
+---
+
 ## 📋 Table of Contents
 
 - [Why Sentinel Review?](#-why-sentinel-review)
