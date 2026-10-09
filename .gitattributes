@@ -1,0 +1,70 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Python source files
+*.py text diff=python
+*.pyw text
+*.pyx text
+*.pxd text
+*.pxi text
+
+# Shell scripts
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+
+# Batch scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Documentation
+*.md text diff=markdown
+*.rst text
+*.txt text
+*.json text
+*.yaml text
+*.yml text
+*.toml text
+*.cfg text
+*.ini text
+*.conf text
+
+# Web
+*.html text diff=html
+*.css text
+*.js text
+*.ts text
+
+# Docker
+Dockerfile text
+docker-compose.yml text
+docker-compose.yaml text
+Dockerfile.* text
+
+# Git
+.gitignore text
+.gitattributes text
+.gitmodules text
+
+# Binary files (never modify)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.ttf binary
+*.otf binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+*.gz binary
+*.pem binary
+*.key binary
+
+# Lock files
+*.lock binary

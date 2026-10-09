@@ -1,0 +1,45 @@
+site_name: Sentinel Review
+site_description: Automated PR review agent powered by LLMs — Django, Celery, HTMX, and GitHub App integration
+repo_url: https://github.com/sentinel-review/sentinel-review
+site_url: https://sentinel-review.github.io/
+edit_uri: edit/main/docs/
+copyright: MIT License
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: blue
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.path
+    - navigation.indexes
+    - toc.follow
+    - toc.integrate
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: reference/index.md
+  - Architecture: technical/TechSpec.md
+  - Decisions: decisions/decisions.md
+  - Evaluation: reference/evaluation-report.md
+  - Security: technical/security-notes.md
+  - Limitations: reference/limitations.md
+  - Demo:
+      - Overview: assets/demo/README.md

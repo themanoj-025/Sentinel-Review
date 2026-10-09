@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Severity indicators */
+  .severity-blocking {
+    @apply border-l-4 border-red-500 bg-red-900/30;
+  }
+  .severity-warning {
+    @apply border-l-4 border-amber-500 bg-amber-900/30;
+  }
+  .severity-nit {
+    @apply border-l-4 border-sky-500 bg-sky-900/30;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-blocking {
+    @apply bg-red-900/50 text-red-300;
+  }
+  .badge-warning {
+    @apply bg-amber-900/50 text-amber-200;
+  }
+  .badge-nit {
+    @apply bg-sky-900/50 text-sky-300;
+  }
+  .badge-bug {
+    @apply bg-red-900/50 text-red-300;
+  }
+  .badge-security {
+    @apply bg-purple-900/50 text-purple-300;
+  }
+  .badge-style {
+    @apply bg-emerald-900/50 text-emerald-300;
+  }
+  .badge-suggestion {
+    @apply bg-blue-900/50 text-blue-300;
+  }
+
+  /* HTMX loading skeleton */
+  .skeleton {
+    @apply animate-pulse bg-gray-700/50 rounded;
+  }
+  .skeleton-text {
+    @apply skeleton h-4 w-full;
+  }
+  .skeleton-text-sm {
+    @apply skeleton h-3 w-2/3;
+  }
+  .skeleton-card {
+    @apply skeleton h-32 w-full rounded-xl;
+  }
+  .skeleton-badge {
+    @apply skeleton h-5 w-16 rounded-full;
+  }
+
+  /* HTMX loading indicator */
+  .htmx-indicator {
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+  }
+  .htmx-request .htmx-indicator,
+  .htmx-request.htmx-indicator {
+    opacity: 1;
+  }
+  .htmx-request [data-htmx-default] {
+    display: none;
+  }
+
+  /* Alpine.js cloak */
+  [x-cloak] {
+    display: none !important;
+  }
+}

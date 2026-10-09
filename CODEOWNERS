@@ -1,0 +1,42 @@
+# Code owners — each line specifies which users/teams own a path.
+#
+# Format:
+#   pattern @user-or-team
+#
+# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+* @sentinel-review/maintainers
+
+# Core pipeline and workers
+/backend/sentinel_review/workers/ @sentinel-review/maintainers
+/backend/sentinel_review/webhooks/ @sentinel-review/maintainers
+
+# API layer
+/backend/sentinel_review/api/ @sentinel-review/maintainers
+
+# Dashboard
+/backend/sentinel_review/dashboard/ @sentinel-review/maintainers
+
+# Data models
+/backend/sentinel_review/models/ @sentinel-review/maintainers
+
+# Tests
+/backend/tests/ @sentinel-review/maintainers
+
+# Configuration
+/backend/sentinel_review/settings.py @sentinel-review/maintainers
+/requirements*.txt @sentinel-review/maintainers
+/Dockerfile @sentinel-review/maintainers
+/docker-compose.yml @sentinel-review/maintainers
+
+# CI/CD
+/.github/workflows/ @sentinel-review/maintainers
+/render.yaml @sentinel-review/maintainers
+/fly.toml @sentinel-review/maintainers
+
+# Documentation
+/docs/ @sentinel-review/maintainers
+/README.md @sentinel-review/maintainers
+/CHANGELOG.md @sentinel-review/maintainers
+/CONTRIBUTING.md @sentinel-review/maintainers

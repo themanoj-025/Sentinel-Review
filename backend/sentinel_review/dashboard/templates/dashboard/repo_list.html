@@ -1,0 +1,44 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Repositories — Sentinel Review{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-white">Repositories</h1>
+            <p class="mt-2 text-gray-400">Configured repositories and their review settings.</p>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="relative">
+        <input
+            type="text"
+            name="search"
+            hx-get="{% url 'repo-list' %}"
+            hx-trigger="keyup changed delay:300ms"
+            hx-target="#repo-table"
+            hx-indicator="#repo-table-loading"
+            hx-push-url="true"
+            placeholder="Search repositories..."
+            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 pl-10 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sentinel-500 focus:border-transparent"
+            aria-label="Search repositories"
+        >
+        <span class="absolute left-3 top-3.5 text-gray-500" aria-hidden="true">🔍</span>
+    </div>
+
+    <!-- Repo Table with loading skeleton -->
+    <div id="repo-table" class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        {% include "dashboard/partials/repo_table.html" %}
+    </div>
+
+    <!-- Loading skeleton for HTMX updates -->
+    <div id="repo-table-loading" class="htmx-indicator space-y-3">
+        <div class="skeleton-text mb-2"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+    </div>
+</div>
+{% endblock %}

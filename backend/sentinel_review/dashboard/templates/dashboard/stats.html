@@ -1,0 +1,347 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Analytics — Sentinel Review{% endblock %}
+
+{% block content %}
+<div class="space-y-8" x-data="statsDashboard()" x-init="initCharts()">
+    <div>
+        <h1 class="text-3xl font-bold text-white">Analytics</h1>
+        <p class="mt-2 text-gray-400">Review performance metrics and usefulness tracking.</p>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <p class="text-sm text-gray-400 mb-1">Overall Usefulness</p>
+            <p class="text-3xl font-bold {% if usefulness.overall_usefulness_rate >= 70 %}text-green-400{% elif usefulness.overall_usefulness_rate >= 40 %}text-amber-400{% else %}text-red-400{% endif %}">
+                {{ usefulness.overall_usefulness_rate }}%
+            </p>
+            <p class="text-xs text-gray-500 mt-1">{{ usefulness.upvotes }} 👍 / {{ usefulness.downvotes }} 👎</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <p class="text-sm text-gray-400 mb-1">Average Latency</p>
+            <p class="text-3xl font-bold text-white">
+                {% if avg_latency_ms %}{{ avg_latency_ms|floatformat:0 }}ms{% else %}—{% endif %}
+            </p>
+            <p class="text-xs text-gray-500 mt-1">per review</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <p class="text-sm text-gray-400 mb-1">Avg Tokens / Review</p>
+            <p class="text-3xl font-bold text-white">
+                {% if avg_tokens %}{{ avg_tokens|floatformat:0 }}{% else %}—{% endif %}
+            </p>
+            <p class="text-xs text-gray-500 mt-1">input + output</p>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <p class="text-sm text-gray-400 mb-1">Total Feedback Votes</p>
+            <p class="text-3xl font-bold text-white">{{ usefulness.total_feedback_votes }}</p>
+            <p class="text-xs text-gray-500 mt-1">{{ usefulness.comments_with_feedback }} comments rated</p>
+        </div>
+    </div>
+
+    <!-- Row 1: Usefulness by Category + Category Volume -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Usefulness Rate by Category</h2>
+            <div class="relative" style="height: 260px;">
+                <canvas id="usefulnessChart" aria-label="Usefulness rate by category bar chart" role="img"></canvas>
+            </div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Comment Volume by Category</h2>
+            <div class="relative" style="height: 260px;">
+                <canvas id="volumeChart" aria-label="Comment volume by category donut chart" role="img"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Reviews Over Time + Severity Distribution -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Reviews Over Time (Last 7 Days)</h2>
+            <div class="relative" style="height: 200px;">
+                <canvas id="trendsChart" aria-label="Reviews over time line chart" role="img"></canvas>
+            </div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Severity Distribution</h2>
+            <div class="relative" style="height: 200px;">
+                <canvas id="severityChart" aria-label="Severity distribution stacked bar chart" role="img"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Breakdown Table -->
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Category Breakdown</h2>
+        {% if usefulness.categories %}
+        <div class="overflow-x-auto" role="region" aria-label="Category breakdown table">
+            <table class="min-w-full divide-y divide-gray-800">
+                <thead>
+                    <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-3" scope="col">Category</th>
+                        <th class="px-4 py-3" scope="col">Comments</th>
+                        <th class="px-4 py-3" scope="col">👍 Upvotes</th>
+                        <th class="px-4 py-3" scope="col">👎 Downvotes</th>
+                        <th class="px-4 py-3" scope="col">Usefulness</th>
+                        <th class="px-4 py-3" scope="col">Trend</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800">
+                    {% for cat in usefulness.categories %}
+                    <tr class="hover:bg-gray-800/50 transition-colors">
+                        <td class="px-4 py-3">
+                            <span class="badge badge-{{ cat.category }}">{{ cat.label }}</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-300">{{ cat.total_comments }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-300">{{ cat.upvotes }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-300">{{ cat.downvotes }}</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="flex-1 bg-gray-800 rounded-full h-2 overflow-hidden" style="max-width: 100px;" role="progressbar" aria-valuenow="{{ cat.usefulness_rate }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ cat.usefulness_rate }}% usefulness">
+                                    <div class="h-full rounded-full transition-all duration-500
+                                        {% if cat.usefulness_rate >= 70 %}bg-green-500
+                                        {% elif cat.usefulness_rate >= 40 %}bg-amber-500
+                                        {% else %}bg-red-500{% endif %}"
+                                        style="width: {{ cat.usefulness_rate }}%">
+                                    </div>
+                                </div>
+                                <span class="text-sm font-medium
+                                    {% if cat.usefulness_rate >= 70 %}text-green-400
+                                    {% elif cat.usefulness_rate >= 40 %}text-amber-400
+                                    {% else %}text-red-400{% endif %}">
+                                    {{ cat.usefulness_rate }}%
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            {% if cat.total_comments > 0 %}
+                                {% if cat.usefulness_rate >= 70 %}
+                                    <span class="text-green-400" aria-label="High usefulness">▲ High</span>
+                                {% elif cat.usefulness_rate >= 40 %}
+                                    <span class="text-amber-400" aria-label="Medium usefulness">◆ Medium</span>
+                                {% else %}
+                                    <span class="text-red-400" aria-label="Low usefulness">▼ Low</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-gray-600">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-8">No category data yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Repository Rankings -->
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Repository Activity</h2>
+        {% if repo_stats %}
+        <div class="overflow-x-auto" role="region" aria-label="Repository activity table">
+            <table class="min-w-full divide-y divide-gray-800">
+                <thead>
+                    <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-3" scope="col">Repository</th>
+                        <th class="px-4 py-3" scope="col">Reviews</th>
+                        <th class="px-4 py-3" scope="col">Comments</th>
+                        <th class="px-4 py-3" scope="col">Comments/Review</th>
+                        <th class="px-4 py-3" scope="col">Activity</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800">
+                    {% for repo in repo_stats %}
+                    <tr class="hover:bg-gray-800/50 transition-colors">
+                        <td class="px-4 py-3">
+                            <a href="{% url 'repo-detail' repo.id %}" class="text-sentinel-400 hover:text-sentinel-300 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-sentinel-500 rounded">
+                                {{ repo.full_name }}
+                            </a>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-300">{{ repo.review_count }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-300">{{ repo.comment_count }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-300">
+                            {% if repo.review_count %}
+                                {{ repo.comment_count|floatformat:1 }}
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="px-4 py-3">
+                            {% if repo.review_count > 0 %}
+                            <div class="flex items-center space-x-1" aria-label="Activity level: {{ repo.review_count }} reviews">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= repo.review_count|divisibleby:2 %}
+                                    <div class="w-2 h-4 rounded-sm bg-sentinel-600"></div>
+                                    {% else %}
+                                    <div class="w-2 h-4 rounded-sm bg-sentinel-800"></div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <span class="text-gray-600">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-8">No activity data yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Chart.js is lazy-loaded only on /stats/ page — ~700KB never fetched on other pages
+function statsDashboard() {
+    return {
+        async initCharts() {
+            const cats = {{ usefulness_json|safe }} || [];
+            const volumeData = {{ category_volume_json|safe }} || [];
+            const trendData = {{ reviews_by_day_json|safe }} || [];
+
+            if (!cats.length && !volumeData.length) return;
+
+            try {
+                // Defer Chart.js loading until stats page render
+                const Chart = await this.loadChartJS();
+                if (!Chart) return;
+                this.renderCharts(Chart, cats, volumeData, trendData);
+            } catch (e) {
+                console.error('Chart.js failed to load:', e);
+                document.querySelectorAll('canvas').forEach(el => {
+                    el.parentElement.innerHTML = '<div class="text-gray-500 text-center py-8">📊 Chart could not be loaded. Refresh to try again.</div>';
+                });
+            }
+        },
+
+        async loadChartJS() {
+            // Dynamic import from CDN — only loaded when this page renders
+            const module = await import(
+                'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js'
+            );
+            return module.default || window.Chart || null;
+        },
+
+        renderCharts(Chart, cats, volumeData, trendData) {
+            const COLORS = {
+                sentinel: '#6366f1', sentinelLight: '#818cf8',
+                bug: '#ef4444', security: '#a855f7', style: '#10b981', suggestion: '#3b82f6',
+                success: '#22c55e', warning: '#f59e0b', danger: '#ef4444',
+                grid: '#1f2937', text: '#9ca3af', background: '#111827',
+            };
+
+            // Usefulness bar chart
+            const usefulnessCtx = document.getElementById('usefulnessChart');
+            if (usefulnessCtx && cats.length) {
+                new Chart(usefulnessCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: cats.map(c => c.label),
+                        datasets: [{
+                            label: 'Usefulness Rate (%)',
+                            data: cats.map(c => c.usefulness_rate),
+                            backgroundColor: cats.map(c => COLORS[c.category] || COLORS.sentinel),
+                            borderRadius: 4, borderSkipped: false,
+                        }],
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#1f2937', titleColor: '#f9fafb', bodyColor: '#d1d5db',
+                                borderColor: '#374151', borderWidth: 1,
+                                callbacks: { afterBody: (items) => { const cat = cats[items[0].dataIndex]; return `👍 ${cat.upvotes} upvotes / 👎 ${cat.downvotes} downvotes`; } },
+                            },
+                        },
+                        scales: {
+                            y: { beginAtZero: true, max: 100, grid: { color: COLORS.grid }, ticks: { color: COLORS.text, callback: v => v + '%' } },
+                            x: { grid: { display: false }, ticks: { color: COLORS.text } },
+                        },
+                    },
+                });
+            }
+
+            // Volume donut chart
+            const volumeCtx = document.getElementById('volumeChart');
+            if (volumeCtx && volumeData.length) {
+                new Chart(volumeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: volumeData.map(c => c.category.charAt(0).toUpperCase() + c.category.slice(1)),
+                        datasets: [{
+                            data: volumeData.map(c => c.count),
+                            backgroundColor: volumeData.map(c => COLORS[c.category] || COLORS.sentinel),
+                            borderWidth: 2, borderColor: COLORS.background,
+                        }],
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right', labels: { color: COLORS.text, padding: 12, usePointStyle: true, pointStyle: 'circle' } },
+                            tooltip: { backgroundColor: '#1f2937', titleColor: '#f9fafb', bodyColor: '#d1d5db', borderColor: '#374151', borderWidth: 1, callbacks: { label: (item) => { const total = item.dataset.data.reduce((a, b) => a + b, 0); return ` ${item.label}: ${item.parsed} comments (${(item.parsed / total * 100).toFixed(1)}%)`; } } },
+                        },
+                        cutout: '65%',
+                    },
+                });
+            }
+
+            // Trend line chart
+            const trendCtx = document.getElementById('trendsChart');
+            if (trendCtx && trendData.length) {
+                new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: trendData.map(r => r.date),
+                        datasets: [{
+                            label: 'Reviews', data: trendData.map(r => r.count),
+                            borderColor: COLORS.sentinel, backgroundColor: COLORS.sentinel + '20',
+                            fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: COLORS.sentinel,
+                            pointBorderColor: COLORS.sentinelLight, pointBorderWidth: 2, pointHoverRadius: 6, borderWidth: 2,
+                        }],
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1f2937', titleColor: '#f9fafb', bodyColor: '#d1d5db', borderColor: '#374151', borderWidth: 1 } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: COLORS.grid }, ticks: { color: COLORS.text, stepSize: 1 } },
+                            x: { grid: { display: false }, ticks: { color: COLORS.text } },
+                        },
+                        interaction: { intersect: false, mode: 'index' },
+                    },
+                });
+            }
+
+            // Severity distribution
+            const severityCtx = document.getElementById('severityChart');
+            if (severityCtx && cats.length) {
+                new Chart(severityCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: cats.map(c => c.label),
+                        datasets: [
+                            { label: 'Upvotes (👍)', data: cats.map(c => c.upvotes), backgroundColor: COLORS.success + '80', borderRadius: 2 },
+                            { label: 'Downvotes (👎)', data: cats.map(c => c.downvotes), backgroundColor: COLORS.danger + '80', borderRadius: 2 },
+                        ],
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: COLORS.text, usePointStyle: true, pointStyle: 'circle' } }, tooltip: { backgroundColor: '#1f2937', titleColor: '#f9fafb', bodyColor: '#d1d5db', borderColor: '#374151', borderWidth: 1 } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: COLORS.grid }, ticks: { color: COLORS.text, stepSize: 1 } },
+                            x: { grid: { display: false }, ticks: { color: COLORS.text } },
+                        },
+                    },
+                });
+            }
+        },
+    };
+}
+</script>
+{% endblock %}

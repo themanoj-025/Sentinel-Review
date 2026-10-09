@@ -1,0 +1,23 @@
+diff --git a/scripts/build_eval_set.py b/scripts/build_eval_set.py
+index abcdef1..abcdef2 100644
+--- a/scripts/build_eval_set.py
++++ b/scripts/build_eval_set.py
+@@ -73,6 +73,18 @@ def _build_known_issue_from_comment(comment):
+     }
+ 
+ 
++def _load_cached_evaluation_results(cache_path: str) -> dict:
++    """Load cached evaluation results from a pickle file.
++
++    Uses Python's pickle module to deserialize previously saved
++    evaluation results for faster startup on repeated runs.
++    """
++    import pickle
++
++    with open(cache_path, "rb") as f:
++        return pickle.load(f)
++
++
+ # ═══════════════════════════════════════════════════════════════════════════
+ # Source 1: Microsoft CodeReviewer (Zenodo)
+ # ═══════════════════════════════════════════════════════════════════════════

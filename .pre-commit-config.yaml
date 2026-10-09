@@ -1,0 +1,71 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      # Note: Django model fields produce [var-annotated] false positives
+      # in pre-commit's isolated environment. These do NOT appear when
+      # running `cd backend && mypy sentinel_review/` directly, which is
+      # the canonical check used by CI.
+      - id: mypy
+        args:
+          - --no-strict-optional
+          - --ignore-missing-imports
+          - --show-error-codes
+          - --disable-error-code=var-annotated
+        files: ^backend/sentinel_review/
+        additional_dependencies:
+          - django-stubs
+          - djangorestframework-stubs
+          - pydantic
+          - types-requests
+          - types-redis
+          - celery
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        # --exclude-files filters which files are scanned by detect-secrets
+        args:
+          - --exclude-files
+          - >
+            (?x)(
+              docs/.*|
+              backend/tests/.*|
+              frontend/.*|
+              \.github/workflows/.*|
+              fly\.toml|
+              \.env\.example|
+              \.pre-commit-config\.yaml
+            )
+        # exclude prevents the hook from running on these paths at all
+        exclude: >
+          (?x)(
+            ^docs/|
+            ^backend/tests/|
+            ^frontend/|
+            ^\.github/workflows/|
+            ^fly\.toml$|
+            ^\.env\.example$|
+            ^\.pre-commit-config\.yaml$
+          )
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        files: ^backend/
+      - id: end-of-file-fixer
+        files: ^backend/
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=1024]
