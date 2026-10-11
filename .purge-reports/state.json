@@ -1,0 +1,14 @@
+{
+  "repository": "sentinel-review",
+  "mode": "AUDIT_ONLY",
+  "aggressiveness": 3,
+  "phase": 9,
+  "status": "COMPLETED_AUDIT",
+  "baseline_sha": "0f1b0def9e6e609b9a37248261980e7063da66ba",
+  "total_candidates": 82,
+  "t0_count": 46,
+  "t1_count": 0,
+  "t2_count": 33,
+  "t3_count": 3,
+  "updated_at": "2026-10-11T07:39:43.420Z"
+}
