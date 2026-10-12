@@ -830,3 +830,4 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more informa
 [![Contributors](https://img.shields.io/github/contributors/themanoj-025/Sentinel-Review?style=flat-square)](https://github.com/themanoj-025/Sentinel-Review/graphs/contributors)
 
 [![Star History Chart](https://api.star-history.com/svg?repos=themanoj-025/Sentinel-Review&type=Date)](https://star-history.com/#Sentinel-Review&Date)
+
