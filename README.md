@@ -44,33 +44,29 @@
 
 ---
 
-# 🛡️ Sentinel Review
+## Table of Contents
+
+- [Why Sentinel Review?](#why-sentinel-review)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Configuration](#configuration)
+- [Dashboard & API](#dashboard--api)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Case Study: The Audit → Before/After Story](#case-study-the-audit--beforeafter-story)
+- [Demo: Self-Review](#demo-self-review)
+- [Development](#development)
+- [Testing & CI](#testing--ci)
+- [Deployment](#deployment)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Support](#support)
+- [License](#license)
 
 ---
 
-## 📋 Table of Contents
-
-- [Why Sentinel Review?](#-why-sentinel-review)
-- [Features](#-features)
-- [Architecture](#️-architecture)
-- [Quick Start](#-quick-start)
-- [Configuration](#-configuration)
-- [Dashboard & API](#️-dashboard--api)
-- [Tech Stack](#️-tech-stack)
-- [Project Structure](#-project-structure)
-- [Case Study: The Audit → Before/After Story](#-case-study-the-audit--beforeafter-story)
-- [Demo: Self-Review](#-demo-self-review)
-- [Development](#-development)
-- [Testing & CI](#-testing--ci)
-- [Deployment](#-deployment)
-- [Roadmap](#️-roadmap)
-- [Contributing](#-contributing)
-- [📬 Support](#-support)
-- [License](#-license)
-
----
-
-## 🎯 Why Sentinel Review?
+## Why Sentinel Review?
 
 Code review is the highest-leverage quality practice in software engineering — and the hardest to scale.
 
