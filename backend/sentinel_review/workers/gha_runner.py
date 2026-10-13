@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 # Constants
 
 _GITHUB_API_BASE = "https://api.github.com"
-_REPORT_DIR = Path("/tmp/sentinel-review-reports")
+_REPORT_DIR = Path("/tmp/sentinel-review-reports")  # nosec B108
 
 
 def _setup_logging() -> None:

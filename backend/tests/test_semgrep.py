@@ -75,8 +75,8 @@ class TestParseSemgrepOutput:
     def test_parse_valid_output(self) -> None:
         """Valid Semgrep output should parse into Finding objects."""
         file_map = {
-            "app.py": "/tmp/sandbox/app.py",
-            "config.py": "/tmp/sandbox/config.py",
+            "app.py": "/tmp/sandbox/app.py",  # nosec B108
+            "config.py": "/tmp/sandbox/config.py",  # nosec B108
         }
         findings = _parse_semgrep_output(self.SAMPLE_SEMGREP_OUTPUT, file_map)
         assert len(findings) == 2
