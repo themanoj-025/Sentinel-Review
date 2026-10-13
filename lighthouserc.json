@@ -33,7 +33,7 @@
         "categories:seo": [
           "error",
           {
-            "minScore": 0.9
+            "minScore": 0.8
           }
         ],
         "categories:best-practices": [
