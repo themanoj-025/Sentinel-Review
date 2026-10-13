@@ -297,8 +297,8 @@ jobs:
         run: npm install -g @lhci/cli
       - name: Start Django + run Lighthouse
         run: |
-          cd backend && python manage.py migrate --run-syncdb 2>/dev/null || true
-          cd backend && python manage.py runserver 0.0.0.0:8000 &
+          python backend/manage.py migrate --run-syncdb 2>/dev/null || true
+          python backend/manage.py runserver 0.0.0.0:8000 &
           sleep 5
           lhci autorun --config=lighthouserc.json
       - name: Upload Lighthouse reports
