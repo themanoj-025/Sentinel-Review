@@ -292,7 +292,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install backend deps
-        run: pip install -r backend/requirements.txt
+        run: pip install -r requirements.txt
       - name: Install Lighthouse CI
         run: npm install -g @lhci/cli
       - name: Start Django + run Lighthouse

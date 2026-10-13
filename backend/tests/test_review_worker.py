@@ -237,9 +237,8 @@ class TestReviewPullRequestTask:
     @patch("sentinel_review.workers.pipeline_stages.get_llm_provider")
     @patch("sentinel_review.workers.pipeline_stages.GitHubClient")
     @patch("sentinel_review.workers.pipeline.GitHubClient")
-    @patch("sentinel_review.workers.pipeline.get_llm_provider")
     def test_github_error_propagates(
-        self, mock_get_llm, mock_pipe_gh, mock_stages_gh, mock_stages_llm, db
+        self, mock_pipe_gh, mock_stages_gh, mock_stages_llm, db
     ) -> None:
         """An error in the review pipeline should be caught."""
         # Setup: mock GitHub client to succeed, mock LLM to fail
@@ -254,7 +253,6 @@ class TestReviewPullRequestTask:
 
         mock_provider = MagicMock()
         mock_provider.review_diff.side_effect = RuntimeError("LLM API unavailable")
-        mock_get_llm.return_value = mock_provider
         mock_stages_llm.return_value = mock_provider
 
         result = review_pull_request(
