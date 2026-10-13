@@ -15,6 +15,7 @@ from sentinel_review.api.metrics import (
 from sentinel_review.models.review import Review
 
 from .context import ReviewContext
+from .github_client import GitHubClient
 from .helpers import (
     _build_context_str,
     _deduplicate,

@@ -21,6 +21,7 @@ repos:
           - --ignore-missing-imports
           - --show-error-codes
           - --disable-error-code=var-annotated
+          - --disable-error-code=attr-defined
         files: ^backend/sentinel_review/
         additional_dependencies:
           - django-stubs

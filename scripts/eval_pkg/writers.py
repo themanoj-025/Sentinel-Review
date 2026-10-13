@@ -376,7 +376,7 @@ def main() -> None:
             logger.info("Fixtures file exists: %s", fixtures_ok)
 
         if args.sources is None or ("github" in args.sources and GITHUB_TOKEN):
-            logger.info("GitHub token configured: %s", "yes" if GITHUB_TOKEN else "no")
+            logger.info("GitHub auth configured: %s", "yes" if GITHUB_TOKEN else "no")
 
         return
 
