@@ -127,7 +127,9 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     ordering = ["-created_at"]
 
     def perform_create(self, serializer) -> None:
-        reactor_login = self.request.data.get("reactor_login", "")
+        reactor_login = ""
+        if isinstance(self.request.data, dict):
+            reactor_login = self.request.data.get("reactor_login", "")
         if not reactor_login and self.request.user.is_authenticated:
             reactor_login = self.request.user.username
         serializer.save(reactor_login=reactor_login)
