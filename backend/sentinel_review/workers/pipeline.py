@@ -16,12 +16,12 @@ from sentinel_review.models.review import Review
 
 from .context import ReviewContext
 from .github_client import GitHubClient
-from .llm import get_llm_provider
 from .helpers import (
     _build_context_str,
     _deduplicate,
     _parse_changed_files,
 )
+from .llm import get_llm_provider
 from .pipeline_stages import (
     DedupeStage,
     FetchContextStage,
