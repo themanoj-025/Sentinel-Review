@@ -1,8 +1,74 @@
-# ── Python ──────────────────────────────────────────────────────────
+# ==============================================================================
+# sentinel-review - Security & Production .gitignore
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. SECRETS & ENVIRONMENT (CRITICAL)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+*.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.staging
+.env.production
+!.env.example
+!.env.template
+!.env.sample
+.secrets/
+local_settings.py
+
+# Private keys, certificates & credentials
+*.pem
+*.key
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.pkcs12
+*.cer
+*.crt
+*.der
+*.id_rsa
+id_rsa*
+id_ed25519*
+id_ecdsa*
+id_dsa*
+
+# Cloud & service credentials
+credentials.json
+client_secret*.json
+service-account*.json
+service_account*.json
+serviceAccountKey*.json
+google-services.json
+GoogleService-Info.plist
+.aws/
+.azure/
+.gcp/
+gcloud/
+.act-secrets
+*.publishsettings
+
+# Authentication tokens & configs
+.netrc
+.pypirc
+.npmrc
+*token*.json
+token.pickle
+auth*.json
+
+# ------------------------------------------------------------------------------
+# 2. PYTHON RUNTIME, BUILDS & VIRTUAL ENVIRONMENTS
+# ------------------------------------------------------------------------------
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.so
+.Python
 *.egg-info/
 dist/
 build/
@@ -16,12 +82,14 @@ venv/
 .venv/
 env/
 .env/
-.venv/
 virtualenv/
+.venv*/
+env.bak/
+venv.bak/
 
-# ── Django ──────────────────────────────────────────────────────────
-*.log
-local_settings.py
+# ------------------------------------------------------------------------------
+# 3. DJANGO & FRAMEWORK ASSETS
+# ------------------------------------------------------------------------------
 db.sqlite3
 db.sqlite3-journal
 media/
@@ -29,22 +97,59 @@ staticfiles/
 *.pot
 *.mo
 
-# ── Environment & Secrets ──────────────────────────────────────────
-.env
-.env.local
-.env.production
-.env.staging
-.env.development
-.env.test
-.secrets/
-*.pem
-*.key
+# ------------------------------------------------------------------------------
+# 4. LOGS & DATABASES
+# ------------------------------------------------------------------------------
+logs/
+*.log
+*.dump
+*.stackdump
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite
+*.sqlite3
 
-# ── IDE & Editors ───────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
+# 5. TESTING, COVERAGE & PROFILING
+# ------------------------------------------------------------------------------
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+.coverage.lcov
+*.cover
+coverage/
+.cache/
+coverage-html/
+test-results/
+reports/
+.pytest_cache/
+radar_balance.txt
+*.prof
+*.pstats
+
+# ------------------------------------------------------------------------------
+# 6. LINTERS & CODE ANALYSIS CACHES
+# ------------------------------------------------------------------------------
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# ------------------------------------------------------------------------------
+# 7. IDE, EDITORS & OS ARTIFACTS
+# ------------------------------------------------------------------------------
 .idea/
-.vscode/
-.vscode/settings.json
-.vscode/launch.json
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.vscode/*.local.*
+.vscode/mcp.json
 *.swp
 *.swo
 *.swn
@@ -59,73 +164,46 @@ Icon
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+desktop.ini
 $RECYCLE.BIN/
+*.tmp
+*.temp
+*.bak
 
-# ── Docker ──────────────────────────────────────────────────────────
+# ------------------------------------------------------------------------------
+# 8. DOCKER & CELERY
+# ------------------------------------------------------------------------------
 docker-data/
 docker-compose.override.yml
-
-# ── Data (large, gitignored) ────────────────────────────────────────
-data/codereviewer/
-data/*.json
-!data/.gitkeep
-
-# ── Celery ──────────────────────────────────────────────────────────
 celerybeat-schedule*
 celerybeat.pid
 
-# ── Lint & Tool Caches ─────────────────────────────────────────────
-.ruff_cache/
-.mypy_cache/
-.dmypy.json
-dmypy.json
-.pytype/
+# ------------------------------------------------------------------------------
+# 9. DATASETS & DOC BUILDS
+# ------------------------------------------------------------------------------
+data/codereviewer/
+data/*.json
+!data/.gitkeep
+docs/_build/
+docs/_static/
+docs/build/
 
-# ── Coverage & Reports ──────────────────────────────────────────────
-htmlcov/
-.coverage
-.coverage.*
-coverage.xml
-.coverage.lcov
-*.cover
-coverage/
-.cache/
-coverage-html/
-test-results/
-reports/
-
-# ── Pytest ──────────────────────────────────────────────────────────
-.pytest_cache/
-
-# ── Static / Node (if any) ──────────────────────────────────────────
+# ------------------------------------------------------------------------------
+# 10. FRONTEND & NODE
+# ------------------------------------------------------------------------------
 node_modules/
 package-lock.json
 !frontend/package-lock.json
 yarn.lock
 *.js.map
 assets/webpack/
-
-# ── Sphinx / Docs builds ───────────────────────────────────────────
-docs/_build/
-docs/_static/
-docs/build/
-
-# ── Profiling ──────────────────────────────────────────────────────
-*.prof
-*.pstats
-
-# ── Portfolio-standard ignores (sweep 2026-09) ──────────────
-radar_balance.txt
-.venv*/
-*.db
-*.db-shm
-*.db-wal
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # =====================================================================
-# KEEP: AI provenance & transparency files — these must remain
-# visible to any repository viewer. Do not add rules above this block
-# that would shadow a directory these files live in without also
-# adding a negation here. Verified with `git check-ignore -v`.
+# KEEP: AI provenance & transparency files — must remain visible
 # =====================================================================
 !AI_DISCLOSURE.md
 !AI_USAGE.md
