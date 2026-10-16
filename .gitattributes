@@ -1,5 +1,5 @@
 # Auto-detect text files and normalize line endings
-* text=auto
+* text=auto eol=lf
 
 # Python source files
 *.py text diff=python
@@ -35,17 +35,29 @@
 *.css text
 *.js text
 *.ts text
+*.jsx text
+*.tsx text
 
 # Docker
 Dockerfile text
 docker-compose.yml text
 docker-compose.yaml text
 Dockerfile.* text
+.dockerignore text
 
 # Git
 .gitignore text
 .gitattributes text
 .gitmodules text
+
+# Security: prevent secret files from appearing in diffs if accidentally created
+*.env -diff
+*.pem -diff
+*.key -diff
+*.cert -diff
+*.p12 -diff
+*.pfx -diff
+*.pkcs12 -diff
 
 # Binary files (never modify)
 *.png binary
@@ -63,8 +75,9 @@ Dockerfile.* text
 *.zip binary
 *.tar.gz binary
 *.gz binary
-*.pem binary
-*.key binary
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
 
 # Lock files
 *.lock binary
