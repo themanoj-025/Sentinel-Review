@@ -46,7 +46,8 @@ repos:
               \.github/workflows/.*|
               fly\.toml|
               \.env\.example|
-              \.pre-commit-config\.yaml
+              \.pre-commit-config\.yaml|
+              PROJECT_OVERVIEW\.md
             )
         # exclude prevents the hook from running on these paths at all
         exclude: >
@@ -57,7 +58,8 @@ repos:
             ^\.github/workflows/|
             ^fly\.toml$|
             ^\.env\.example$|
-            ^\.pre-commit-config\.yaml$
+            ^\.pre-commit-config\.yaml$|
+            ^PROJECT_OVERVIEW\.md$
           )
 
   - repo: https://github.com/pre-commit/pre-commit-hooks

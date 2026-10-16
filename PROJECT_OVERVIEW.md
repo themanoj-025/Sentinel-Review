@@ -163,7 +163,7 @@ journey
 graph TD
     Developer["Software Developer"] -->|"Git Push & PR Open"| GitHub["GitHub Enterprise / GitHub.com"]
     GitHub -->|"Webhook (pull_request event)"| Sentinel["Sentinel Review System Boundary"]
-    
+
     Sentinel -->|"Semantic Analysis Prompts"| LLM["Anthropic Claude / OpenAI GPT-4o API"]
     Sentinel -->|"Deterministic Rules"| Semgrep["Semgrep Static Analysis Engine"]
     Sentinel -->|"Posts Inline Comments"| GitHub
@@ -669,55 +669,55 @@ Production deployment is achieved via Docker Compose or Kubernetes manifests run
 
 ## <a id="exam"></a>§EXAM — Cold-Reader Verification Exam (25 Questions)
 
-1. **Q: What is the primary domain focus of Sentinel Review?**  
+1. **Q: What is the primary domain focus of Sentinel Review?**
    *A:* Autonomous GitHub PR code review, security analysis, and developer feedback tracking. Reference: [§TLDR](#tldr).
-2. **Q: How many total tracked files exist in the sentinel-review repository?**  
+2. **Q: How many total tracked files exist in the sentinel-review repository?**
    *A:* 229 files. Reference: [§APP](#app).
-3. **Q: How many automated test functions exist across how many test files?**  
+3. **Q: How many automated test functions exist across how many test files?**
    *A:* 345 test functions across 27 test files. Reference: [`backend/tests/`](backend/tests/).
-4. **Q: What web framework serves the backend and webhook endpoints?**  
+4. **Q: What web framework serves the backend and webhook endpoints?**
    *A:* Django 5.1 and Django REST Framework. Reference: [`README.md`](README.md).
-5. **Q: What task queue handles asynchronous background PR analysis?**  
+5. **Q: What task queue handles asynchronous background PR analysis?**
    *A:* Celery with Redis as the message broker. Reference: [`README.md`](README.md).
-6. **Q: How many stages make up the Celery analysis worker pipeline?**  
+6. **Q: How many stages make up the Celery analysis worker pipeline?**
    *A:* 7 stages. Reference: [§WHAT](#what).
-7. **Q: What static analysis tool provides deterministic security checking?**  
+7. **Q: What static analysis tool provides deterministic security checking?**
    *A:* Semgrep SAST (`semgrep >= 1.70.0`). Reference: [`requirements.txt`](requirements.txt).
-8. **Q: What LLM providers are supported for code reasoning?**  
+8. **Q: What LLM providers are supported for code reasoning?**
    *A:* Anthropic Claude (Claude 3.5 Sonnet) and OpenAI (GPT-4o). Reference: [`README.md`](README.md).
-9. **Q: What cryptographic algorithm verifies incoming GitHub webhooks?**  
+9. **Q: What cryptographic algorithm verifies incoming GitHub webhooks?**
    *A:* HMAC-SHA256 signature verification. Reference: [`backend/apps/webhooks/`](backend/apps/).
-10. **Q: How does Sentinel Review prevent posting duplicate inline comments?**  
+10. **Q: How does Sentinel Review prevent posting duplicate inline comments?**
     *A:* By computing SHA-256 hashes of comment content and line anchors. Reference: [§WHAT](#what).
-11. **Q: What total lines of code exist across the codebase?**  
+11. **Q: What total lines of code exist across the codebase?**
     *A:* 26,055 lines of code. Reference: [§META](#meta).
-12. **Q: What git commit hash was verified for this documentation?**  
+12. **Q: What git commit hash was verified for this documentation?**
     *A:* `788dc4f` (`788dc4f76c55f6f468c259d73fce3dcc2841a0ca`). Reference: [§META](#meta).
-13. **Q: What git tree hash represents the verified repository state?**  
+13. **Q: What git tree hash represents the verified repository state?**
     *A:* `12c998a8bda0d76243f29c0b12454a39aef8d46d`. Reference: [§META](#meta).
-14. **Q: What Python runtime requirement is specified?**  
+14. **Q: What Python runtime requirement is specified?**
     *A:* Python >= 3.12. Reference: [`pyproject.toml`](pyproject.toml).
-15. **Q: What test file executes GitHub Actions review integration tests?**  
+15. **Q: What test file executes GitHub Actions review integration tests?**
     *A:* `backend/tests/test_gha_review.py`. Reference: [`backend/tests/test_gha_review.py`](backend/tests/test_gha_review.py).
-16. **Q: What endpoint exposes Prometheus operational telemetry?**  
+16. **Q: What endpoint exposes Prometheus operational telemetry?**
     *A:* `/metrics/`. Reference: [§API](#api).
-17. **Q: What configuration file defines ignore patterns for review suppression?**  
+17. **Q: What configuration file defines ignore patterns for review suppression?**
     *A:* `.sentinelignore`. Reference: [§TLDR](#tldr).
-18. **Q: What linter is configured for the codebase?**  
+18. **Q: What linter is configured for the codebase?**
     *A:* Ruff. Reference: [`pyproject.toml`](pyproject.toml).
-19. **Q: What happens if an external LLM call fails during a PR review?**  
+19. **Q: What happens if an external LLM call fails during a PR review?**
     *A:* The pipeline falls back to posting deterministic Semgrep SAST findings, maintaining security coverage. Reference: [§RESILIENCE](#resilience).
-20. **Q: What is the benchmark delivery time for an end-to-end PR review?**  
+20. **Q: What is the benchmark delivery time for an end-to-end PR review?**
     *A:* 34 seconds (target SLA < 60 s). Reference: [§PERF](#perf).
-21. **Q: How are ephemeral GitHub App installation tokens authenticated?**  
+21. **Q: How are ephemeral GitHub App installation tokens authenticated?**
     *A:* Using RSA private key pairs associated with the GitHub App ID. Reference: [§AUTH](#auth).
-22. **Q: Where are environment variable templates stored?**  
+22. **Q: Where are environment variable templates stored?**
     *A:* In `.env.example`. Reference: [`.env.example`](.env.example).
-23. **Q: Does Sentinel Review permanently store pull request source code?**  
+23. **Q: Does Sentinel Review permanently store pull request source code?**
     *A:* No, diffs are held ephemerally in worker memory and discarded after comment publication. Reference: [§PRIVACY](#privacy).
-24. **Q: What command launches the Celery review worker?**  
+24. **Q: What command launches the Celery review worker?**
     *A:* `celery -A backend.config worker --loglevel=info`. Reference: [§CLI](#cli).
-25. **Q: How many files are cataloged with 100% manifest coverage in Appendix A?**  
+25. **Q: How many files are cataloged with 100% manifest coverage in Appendix A?**
     *A:* All 229 tracked files. Reference: [§APP](#app).
 
 ---
