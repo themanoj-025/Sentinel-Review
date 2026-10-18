@@ -7,10 +7,13 @@ Health check endpoints for liveness and readiness probes.
 
 from __future__ import annotations
 
+import logging
 import os
 
 from django.db import DatabaseError, OperationalError, connection
 from django.http import HttpRequest, JsonResponse
+
+logger = logging.getLogger(__name__)
 
 SENTINEL_VERSION = os.environ.get("SENTINEL_VERSION", "1.0.0")
 
@@ -30,8 +33,9 @@ def readiness(request: HttpRequest) -> JsonResponse:
             cursor.execute("SELECT 1")
             checks["checks"]["database"] = "connected"
     except (OperationalError, DatabaseError) as e:
+        logger.warning("Database connectivity check failed: %s", e)
         checks["status"] = "degraded"
-        checks["checks"]["database"] = f"error: {e}"
+        checks["checks"]["database"] = "error: database connection failed"
 
     # Check Redis / Celery broker connectivity
     redis_url = os.environ.get("CELERY_BROKER_URL", "")
@@ -43,7 +47,8 @@ def readiness(request: HttpRequest) -> JsonResponse:
             r.ping()
             checks["checks"]["redis"] = "connected"
         except (redis_lib.RedisError, OSError) as e:
-            checks["checks"]["redis"] = f"error: {e}"
+            logger.warning("Redis connectivity check failed: %s", e)
+            checks["checks"]["redis"] = "error: redis connection failed"
             checks["status"] = "degraded"
     else:
         checks["checks"]["redis"] = "not configured"
