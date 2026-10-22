@@ -111,16 +111,14 @@ kombu==5.6.2
     # via celery
 mcp==2.3.0
     # via -r requirements.txt
-mcp-types==2.1.1
+mcp-types==2.3.0
     # via mcp
-openai==3.26.1
+openai==3.31.0
     # via -r requirements.txt
 opentelemetry-api==1.45.0
     # via mcp
 packaging==26.3
-    # via
-    #   gunicorn
-    #   kombu
+    # via kombu
 prometheus-client==0.26.0
     # via -r requirements.txt
 prompt-toolkit==3.0.53
@@ -133,14 +131,14 @@ psycopg-binary==3.3.6
     # via psycopg
 pycparser==3.0
     # via cffi
-pydantic==2.14.0
+pydantic==2.14.1
     # via
     #   -r requirements.txt
     #   anthropic
     #   mcp
     #   mcp-types
     #   openai
-pydantic-core==2.46.5
+pydantic-core==2.50.1
     # via pydantic
 pyjwt==2.15.1
     # via
@@ -193,7 +191,6 @@ typing-extensions==4.16.0
     #   anthropic
     #   anyio
     #   click-repl
-    #   dj-database-url
     #   httpx2
     #   mcp
     #   mcp-types
