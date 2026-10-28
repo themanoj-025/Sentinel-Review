@@ -40,6 +40,7 @@ jobs:
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           skip-dirs: /app/staticfiles
+          trivyignores: .trivyignore
           # Known accepted risks — document with date and reason:
           # aquasecurity/trivy-action supports --ignore-unfixed to suppress
           # OS package CVEs without available fixes. Accept only with
@@ -61,6 +62,7 @@ jobs:
           exit-code: "1"
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          trivyignores: .trivyignore
 
       - name: Upload Trivy report
         if: always()
