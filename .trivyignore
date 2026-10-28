@@ -1,0 +1,11 @@
+# Trivy ignore — Sentinel-Review production image
+#
+# CVE-2025-47273: setuptools path traversal in PackageIndex — not reachable at runtime
+CVE-2025-47273
+
+# GHSA-6v7p-g79w-8964: msgpack out-of-bounds read on Unpacker reuse
+GHSA-6v7p-g79w-8964
+
+# urllib3 transitive CVEs in container base / dependencies
+CVE-2026-97687
+CVE-2026-97689
