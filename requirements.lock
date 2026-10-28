@@ -2,7 +2,7 @@ amqp==5.4.0
     # via kombu
 annotated-types==0.8.0
     # via pydantic
-anthropic==1.12.1
+anthropic==2.1.0
     # via -r requirements.txt
 anyio==4.15.1
     # via
@@ -17,8 +17,6 @@ asgiref==3.12.1
     # via
     #   django
     #   django-cors-headers
-async-timeout==5.0.1
-    # via redis
 attrs==26.1.0
     # via
     #   jsonschema
@@ -113,10 +111,12 @@ mcp==2.3.0
     # via -r requirements.txt
 mcp-types==2.3.0
     # via mcp
-openai==3.31.0
+openai==3.37.0
     # via -r requirements.txt
 opentelemetry-api==1.45.0
-    # via mcp
+    # via
+    #   anthropic
+    #   mcp
 packaging==26.3
     # via kombu
 prometheus-client==0.26.0
@@ -144,13 +144,15 @@ pyjwt==2.15.1
     # via
     #   -r requirements.txt
     #   mcp
-python-dateutil==2.9.0.post0
+python-dateutil==3.0.0
     # via
     #   -r requirements.txt
     #   celery
 python-dotenv==1.2.4
     # via -r requirements.txt
 python-multipart==0.0.32
+    # via mcp
+pywin32==312
     # via mcp
 pyyaml==6.0.3
     # via drf-spectacular
@@ -166,7 +168,7 @@ rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-setuptools==83.0.0
+setuptools==84.2.1
     # via -r requirements.txt
 six==1.17.0
     # via python-dateutil
@@ -207,7 +209,12 @@ typing-inspection==0.4.4
     #   mcp
     #   pydantic
 tzdata==2026.4
-    # via kombu
+    # via
+    #   django
+    #   kombu
+    #   psycopg
+    #   python-dateutil
+    #   tzlocal
 tzlocal==5.4.4
     # via celery
 uritemplate==4.2.0
