@@ -15,6 +15,11 @@ from sentinel_review.api.metrics import (
 from sentinel_review.models.review import Review
 
 from .context import ReviewContext
+from .helpers import (
+    _build_context_str,
+    _deduplicate,
+    _parse_changed_files,
+)
 from .pipeline_stages import (
     DedupeStage,
     FetchContextStage,

@@ -997,4 +997,3 @@ Production deployment is achieved via Docker Compose or Kubernetes manifests run
 | [`scripts/run_comparison.py`](scripts/run_comparison.py) | `.py` | 392 | 13856 | Python backend or pipeline script |
 | [`scripts/run_evaluation.py`](scripts/run_evaluation.py) | `.py` | 4 | 77 | Python backend or pipeline script |
 | [`uv.lock`](uv.lock) | `.lock` | 8 | 136 | Dependency manifest or lockfile |
-
