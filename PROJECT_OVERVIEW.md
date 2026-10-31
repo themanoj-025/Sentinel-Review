@@ -818,7 +818,7 @@ Production deployment is achieved via Docker Compose or Kubernetes manifests run
 | [`PROJECT_ANALYSIS.md`](PROJECT_ANALYSIS.md) | `.md` | 18 | 793 | Documentation asset |
 | [`README.md`](README.md) | `.md` | 390 | 17455 | Documentation asset |
 | [`SECURITY.md`](SECURITY.md) | `.md` | 25 | 991 | Documentation asset |
-| [`audit/dependabot-agent/2026-08-13-run.md`](audit/dependabot-agent/2026-08-13-run.md) | `.md` | 25 | 1961 | Documentation asset |
+| [`docs/audit/dependabot-agent/2026-08-13-run.md`](docs/audit/dependabot-agent/2026-08-13-run.md) | `.md` | 25 | 1961 | Documentation asset |
 | [`backend/conftest.py`](backend/conftest.py) | `.py` | 17 | 678 | Automated test suite component |
 | [`backend/lighthouserc.json`](backend/lighthouserc.json) | `.json` | 65 | 1248 | Configuration or static asset |
 | [`backend/logging_utils/structured_logging.py`](backend/logging_utils/structured_logging.py) | `.py` | 173 | 5386 | Python backend or pipeline script |
@@ -997,3 +997,4 @@ Production deployment is achieved via Docker Compose or Kubernetes manifests run
 | [`scripts/run_comparison.py`](scripts/run_comparison.py) | `.py` | 392 | 13856 | Python backend or pipeline script |
 | [`scripts/run_evaluation.py`](scripts/run_evaluation.py) | `.py` | 4 | 77 | Python backend or pipeline script |
 | [`uv.lock`](uv.lock) | `.lock` | 8 | 136 | Dependency manifest or lockfile |
+
