@@ -808,8 +808,6 @@ Production deployment is achieved via Docker Compose or Kubernetes manifests run
 | [`.gitmessage`](.gitmessage) | `no-ext` | 11 | 290 | Configuration or static asset |
 | [`.mailmap`](.mailmap) | `no-ext` | 6 | 298 | Configuration or static asset |
 | [`.pre-commit-config.yaml`](.pre-commit-config.yaml) | `.yaml` | 72 | 2106 | Configuration or static asset |
-| [`AGENTS.md`](AGENTS.md) | `.md` | 73 | 1818 | Documentation asset |
-| [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) | `.md` | 64 | 2531 | Documentation asset |
 | [`CHANGELOG.md`](CHANGELOG.md) | `.md` | 40 | 1378 | Documentation asset |
 | [`CODEOWNERS`](CODEOWNERS) | `no-ext` | 42 | 1293 | Configuration or static asset |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | `.md` | 14 | 536 | Documentation asset |
@@ -820,7 +818,6 @@ Production deployment is achieved via Docker Compose or Kubernetes manifests run
 | [`PROJECT_ANALYSIS.md`](PROJECT_ANALYSIS.md) | `.md` | 18 | 793 | Documentation asset |
 | [`README.md`](README.md) | `.md` | 390 | 17455 | Documentation asset |
 | [`SECURITY.md`](SECURITY.md) | `.md` | 25 | 991 | Documentation asset |
-| [`ai-provenance.json`](ai-provenance.json) | `.json` | 64 | 1652 | Configuration or static asset |
 | [`audit/dependabot-agent/2026-08-13-run.md`](audit/dependabot-agent/2026-08-13-run.md) | `.md` | 25 | 1961 | Documentation asset |
 | [`backend/conftest.py`](backend/conftest.py) | `.py` | 17 | 678 | Automated test suite component |
 | [`backend/lighthouserc.json`](backend/lighthouserc.json) | `.json` | 65 | 1248 | Configuration or static asset |
