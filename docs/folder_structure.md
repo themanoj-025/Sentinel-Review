@@ -36,7 +36,7 @@ sentinel-review/
 ├── render.yaml / fly.toml        # Deployment configs
 ├── Makefile                      # test / migrate / collectstatic targets
 ├── pyproject.toml / requirements*.txt
-└── README.md · LICENSE · AGENTS.md · CODEOWNERS · .env.example
+└── README.md · LICENSE · CODEOWNERS · .env.example
 ```
 
 ## Layout rules
