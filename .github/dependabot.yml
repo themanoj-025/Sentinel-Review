@@ -10,6 +10,9 @@ updates:
     labels:
       - "dependencies"
       - "python"
+    ignore:
+      - dependency-name: "redis"
+        versions: [">=6.5"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
