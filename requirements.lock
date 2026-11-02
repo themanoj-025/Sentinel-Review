@@ -154,7 +154,7 @@ python-multipart==0.0.32
     # via mcp
 pyyaml==6.0.3
     # via drf-spectacular
-redis==5.0.0
+redis==6.4.0
     # via
     #   -r requirements.txt
     #   kombu
