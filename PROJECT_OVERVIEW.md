@@ -7,8 +7,8 @@ git_commit_full: "788dc4f76c55f6f468c259d73fce3dcc2841a0ca"
 git_tree_hash: "12c998a8bda0d76243f29c0b12454a39aef8d46d"
 document_version: "3.0.0"
 generated_at: "2026-10-15T16:10:00+05:30"
-author: "Antigravity Autonomous Forensics Engine"
-verification_status: "VERIFIED_CANONICAL"
+author: "Manoj Jana"
+verification_status: "VERIFIED"
 manifests_sha256:
   requirements.txt: "4f34623a74310c55d47613aa0603557dcb9e7105bff2a2a7253ced6e78b15c94"
   pyproject.toml: "1f195d4e4ccfcef605ded8102716af6aa2f273d14f1288452df7d4179c55af7b"
@@ -813,9 +813,7 @@ Production deployment is achieved via Docker Compose or Kubernetes manifests run
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | `.md` | 14 | 536 | Documentation asset |
 | [`Dockerfile`](Dockerfile) | `no-ext` | 56 | 1801 | Configuration or static asset |
 | [`LICENSE`](LICENSE) | `no-ext` | 21 | 1072 | Configuration or static asset |
-| [`MODERNIZATION_AUDIT.md`](MODERNIZATION_AUDIT.md) | `.md` | 48 | 1973 | Documentation asset |
 | [`Makefile`](Makefile) | `no-ext` | 77 | 2102 | Configuration or static asset |
-| [`PROJECT_ANALYSIS.md`](PROJECT_ANALYSIS.md) | `.md` | 18 | 793 | Documentation asset |
 | [`README.md`](README.md) | `.md` | 390 | 17455 | Documentation asset |
 | [`SECURITY.md`](SECURITY.md) | `.md` | 25 | 991 | Documentation asset |
 | [`docs/audit/dependabot-agent/2026-08-13-run.md`](docs/audit/dependabot-agent/2026-08-13-run.md) | `.md` | 25 | 1961 | Documentation asset |
