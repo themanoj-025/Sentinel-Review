@@ -2,7 +2,7 @@ amqp==5.4.0
     # via kombu
 annotated-types==0.8.0
     # via pydantic
-anthropic==2.3.0
+anthropic==2.6.0
     # via -r requirements.txt
 anyio==4.15.1
     # via
@@ -23,7 +23,7 @@ attrs==26.1.0
     #   referencing
 billiard==4.3.0
     # via celery
-celery==5.6.3
+celery==5.7.0
     # via -r requirements.txt
 certifi==2026.7.22
     # via
@@ -48,7 +48,7 @@ cryptography==50.0.1
     # via pyjwt
 dj-database-url==3.1.2
     # via -r requirements.txt
-django==5.2.18
+django==5.2.19
     # via
     #   -r requirements.txt
     #   dj-database-url
@@ -111,7 +111,7 @@ mcp==2.3.0
     # via -r requirements.txt
 mcp-types==2.3.0
     # via mcp
-openai==3.41.0
+openai==3.46.0
     # via -r requirements.txt
 opentelemetry-api==1.45.0
     # via
@@ -125,13 +125,13 @@ prompt-toolkit==3.0.53
     # via click-repl
 protobuf==7.36.2
     # via -r requirements.txt
-psycopg==3.3.6
+psycopg==3.3.8
     # via -r requirements.txt
 psycopg-binary==3.3.6
     # via psycopg
 pycparser==3.0
     # via cffi
-pydantic==2.14.2
+pydantic==2.14.3
     # via
     #   -r requirements.txt
     #   anthropic
@@ -144,7 +144,7 @@ pyjwt==2.15.1
     # via
     #   -r requirements.txt
     #   mcp
-python-dateutil==3.0.0
+python-dateutil==4.0.0
     # via
     #   -r requirements.txt
     #   celery
