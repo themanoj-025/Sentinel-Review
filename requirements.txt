@@ -20,7 +20,7 @@ httpx-sse>=0.4.3,<0.5
 
 # LLM
 anthropic>=2.8.0,<2.9
-openai>=3.46.0,<3.47
+openai>=3.50.0,<3.51
 mcp>=2.3.0,<2.4
 protobuf>=7.36.2,<7.37
 
