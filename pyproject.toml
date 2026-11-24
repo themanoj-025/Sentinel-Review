@@ -61,6 +61,11 @@ line-ending = "auto"
 
 [tool.pytest.ini_options]
 addopts = "-m 'not slow' --nomigrations --strict-markers -p no:cacheprovider --cov --cov-fail-under=50"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "unit: marks tests as unit tests",
+    "integration: marks tests as integration tests",
+]
 DJANGO_SETTINGS_MODULE = "sentinel_review.settings"
 testpaths = ["backend/tests"]
 python_files = ["test_*.py"]
