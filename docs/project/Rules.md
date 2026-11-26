@@ -1,4 +1,4 @@
-# Rules — Sentinel Review: Coding Standards & AI-Agent Operating Rules
+# Rules — Sentinel Review: Coding Standards & Engineering Operating Rules
 
 | Field | Value |
 | --- | --- |
@@ -52,7 +52,7 @@ docs/             # mkdocs, 22 ADRs
 - MUST have tests: HMAC, schemas, cache, circuit breaker, ignore rules, GHA runner, health, E2E.
 - See [Testing.md](../technical/Testing.md).
 
-## 5. AI Agent Operating Rules
+## 5. Engineering Operating Rules
 
 - Always read Tracker.md and ImplementationPlan.md before starting.
 - Never mark a task 🟢 Done without tests passing.
