@@ -37,11 +37,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install cyclonedx-bom
+          # Pin the generator: v9 renamed the module to cyclonedx_py, so
+          # `python -m cyclonedx_bom` no longer exists.
+          pip install cyclonedx-bom==9.0.0
 
       - name: Generate CycloneDX SBOM
         run: |
-          python -m cyclonedx_bom -i requirements.txt -o sbom.cyclonedx.json --format json
+          cyclonedx-py requirements requirements.txt -o sbom.cyclonedx.json --of json
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
